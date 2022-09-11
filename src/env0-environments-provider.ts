@@ -1,13 +1,11 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import environments from './mock-environments.json';
+import environments from "./mock-environments.json";
 
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
   constructor(projectId: string) {
-    console.log("environments...");
-    console.log(environments);
     this.environments = environments as any;
   }
   private environments: Environment[];
@@ -27,14 +25,27 @@ export class Env0EnvironmentsProvider
 
 class Environment extends vscode.TreeItem {
   constructor(public readonly name: string, public readonly status: string) {
-    super(name);
-    this.tooltip = this.name;
+    super(`${getColorByStatus(status)} ${name}`);
     this.description = this.status;
   }
-
-  iconPath = {
-    light: path.join(__filename, "..", "resources", "env0-icon.svg"),
-    dark: path.join(__filename, "..", "resources", "env0-icon.svg"),
-  };
 }
 
+const getColorByStatus = (status: string): string => {
+  console.log(status);
+  switch (status) {
+    case "DRIFTED":
+      return "🟡";
+    case "FAIL":
+    case "CANCELLED":
+    case "FAILED":
+    case "TIMEOUT":
+    case "INTERNAL_FAILURE":
+    case "ABORTED":
+      return "🔴";
+    case "SUCCESS":
+    case "ACTIVE":
+      return "🟢";
+  }
+
+  return "⚪️";
+};
