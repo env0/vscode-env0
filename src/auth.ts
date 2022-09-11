@@ -6,7 +6,7 @@ export const getApiKeyCredentials = () => {
     const env0SecretKey: string | undefined = configurationWorkspace.get("env0.secretKey")
 
     if(!env0ApiKey || !env0SecretKey) {
-        throw new Error("Could not readt env0 api key values");
+        throw new Error("Could not read env0 api key values");
     }
 
     return { user: env0ApiKey, password: env0SecretKey }
