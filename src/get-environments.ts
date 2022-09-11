@@ -10,9 +10,6 @@ export type EnvironmentModel = {
 	status: string;
 	updatedAt: string;
 	projectId: string;
-	error?: {
-		message?: string;
-	};
 	latestDeploymentLog: {
 		blueprintRepository: string;
 		blueprintRevision: string;
@@ -39,7 +36,7 @@ export async function getEnvironmentsForBranch() {
 			(environment) =>
 				environment?.latestDeploymentLog?.blueprintRepository === repository &&
 				environment?.latestDeploymentLog?.blueprintRevision === currentBranch
-		);
+		).filter(environment => environment.status !== "INACTIVE");
 	}
 
 	return environments;
