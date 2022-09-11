@@ -3,8 +3,9 @@ import * as vscode from "vscode";
 
 const ENV0_BASE_URL = "api-dev.dev.env0.com";
 const DOT_GIT_SUFFIX_LENGTH = 4;
-type Environment = {
+export type EnvironmentModel = {
   id: string;
+  updatedAt: string;
   latestDeploymentLog: {
     blueprintRepository: string;
     blueprintRevision: string;
@@ -15,7 +16,7 @@ export async function getEnvironmentsForBranch() {
   // get env0 api key & secret
   const API_KEY = "wuf1wuklv3lw6mxj";
   const API_SECRET = "ltcH4y_GiQfw0FIPlAf9akWjGiDSY-br";
-  let environments: Environment[] = [];
+  let environments: EnvironmentModel[] = [];
 
   const organizationId = await getOrganizationId(API_KEY, API_SECRET);
 
@@ -40,7 +41,7 @@ async function getEnvironments(
   apiSecret: string,
   organizationId: string
 ) {
-  let environments: Environment[] = [];
+  let environments: EnvironmentModel[] = [];
 
   axios
     .get(`https://${ENV0_BASE_URL}/environments`, {
@@ -50,7 +51,7 @@ async function getEnvironments(
         password: apiSecret,
       },
     })
-    .then((response: AxiosResponse<Array<Environment>>) => {
+    .then((response: AxiosResponse<Array<EnvironmentModel>>) => {
       environments = response.data;
     })
     .catch(function (error) {
