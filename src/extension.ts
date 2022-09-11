@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Env0EnvironmentsProvider } from "./env0-environments-provider";
+import { getEnvironmentsForBranch} from './get-environments';
 
 let environmentPollingInstance: NodeJS.Timer;
 
@@ -11,8 +12,8 @@ export function activate(context: vscode.ExtensionContext) {
     treeDataProvider: environmentsDataProvider,
   });
 
-  environmentPollingInstance = setInterval(() => {
-    const fetchedEnvironments: any[] = []; // TODO: fetch environments
+  environmentPollingInstance = setInterval(async () => {
+    const fetchedEnvironments = await getEnvironmentsForBranch();
 
     if (environmentsDataProvider.shouldUpdate(fetchedEnvironments)) {
       environmentsDataProvider.refresh();

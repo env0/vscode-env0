@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { EnvironmentModel } from "./get-environments";
 import environments from "./mock-environments.json";
 
 export class Env0EnvironmentsProvider
@@ -22,7 +23,7 @@ export class Env0EnvironmentsProvider
     );
   }
 
-  public shouldUpdate(environmentsToCompareTo: any[]): boolean {
+  public shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
     if (environmentsToCompareTo.length !== this.environments.length) {
       return true;
     }
