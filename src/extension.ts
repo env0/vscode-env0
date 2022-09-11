@@ -10,7 +10,13 @@ export function activate(context: vscode.ExtensionContext) {
     treeDataProvider: environmentsDataProvider,
   });
 
-  tree.onDidChangeSelection((e) => openEnvironmentInBrowser(e.selection));
+  tree.onDidChangeSelection((e) => {
+    const env = e.selection[0] ?? e.selection;
+
+    if (env.id && env.projectId) {
+      openEnvironmentInBrowser(env);
+    }
+  });
 
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
