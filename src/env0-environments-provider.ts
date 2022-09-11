@@ -17,16 +17,22 @@ export class Env0EnvironmentsProvider
   getChildren(): Thenable<Environment[]> {
     return Promise.resolve(
       this.environments.map(
-        (mockEnv) => new Environment(mockEnv.name, mockEnv.status)
+        (mockEnv: any) =>
+          new Environment(mockEnv.name, mockEnv.status, mockEnv.updatedAt)
       )
     );
   }
 }
 
 class Environment extends vscode.TreeItem {
-  constructor(public readonly name: string, public readonly status: string) {
+  constructor(
+    public readonly name: string,
+    public readonly status: string,
+    lastUpdated: string
+  ) {
     super(`${getColorByStatus(status)} ${name}`);
     this.description = this.status;
+    this.tooltip = `last update at ${lastUpdated}`;
   }
 }
 
