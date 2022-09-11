@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:env0.helloWorld"
+    "*"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -33,7 +33,23 @@
           "required": true,
           "description": "env0 API secret key"
         }
-      }  
+      },  
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "env0",
+          "title": "env0",
+          "icon": "resources/env0-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "env0": [
+        {
+          "id": "env0-environments",
+          "name": "Environments"
+        }
+      ]
     }
   },
   "scripts": {
