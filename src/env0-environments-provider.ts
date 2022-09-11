@@ -17,7 +17,14 @@ export class Env0EnvironmentsProvider
   async getChildren(): Promise<Environment[]> {
     const envs = await getEnvironmentsForBranch();
     this.environments = envs.map(
-      (env) => new Environment(env.name, env.status, env.updatedAt, env.id)
+      (env) =>
+        new Environment(
+          env.name,
+          env.status,
+          env.updatedAt,
+          env.id,
+          env.projectId
+        )
     );
 
     return Promise.resolve(this.environments);
@@ -64,20 +71,19 @@ class Environment extends vscode.TreeItem {
     public readonly name: string,
     public readonly status: string,
     public readonly lastUpdated: string,
-    public readonly id: string
+    public readonly id: string,
+    public readonly projectId: string
   ) {
     super(name);
     this.description = this.status;
     this.tooltip = `last update at ${lastUpdated}`;
-    const x = path.join(
+    this.iconPath = path.join(
       __filename,
       "..",
       "..",
       "resources",
       getIconByStatus(status)
     );
-    console.log(x);
-    this.iconPath = x;
   }
 }
 

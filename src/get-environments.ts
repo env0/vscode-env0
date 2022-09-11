@@ -9,6 +9,7 @@ export type EnvironmentModel = {
 	name: string;
 	status: string;
 	updatedAt: string;
+	projectId: string;
 	latestDeploymentLog: {
 		blueprintRepository: string;
 		blueprintRevision: string;
