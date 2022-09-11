@@ -1,12 +1,11 @@
 import * as vscode from "vscode";
-import { EnvironmentModel } from "./get-environments";
-import environments from "./mock-environments.json";
+import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
 
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
-  constructor(projectId: string) {
-    this.environments = environments as any;
+  constructor() {
+    this.environments = [];
   }
   private environments: Environment[];
 
@@ -14,13 +13,14 @@ export class Env0EnvironmentsProvider
     return element;
   }
 
-  getChildren(): Thenable<Environment[]> {
-    return Promise.resolve(
-      this.environments.map(
-        (mockEnv: any) =>
-          new Environment(mockEnv.name, mockEnv.status, mockEnv.updatedAt)
-      )
+  async getChildren(): Promise<Environment[]> {
+    const envs = await getEnvironmentsForBranch();
+    this.environments = envs.map(
+      (env) =>
+        new Environment(env.name, env.status, env.updatedAt)
     );
+
+    return Promise.resolve(this.environments);
   }
 
   public shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
@@ -72,7 +72,6 @@ class Environment extends vscode.TreeItem {
 }
 
 const getColorByStatus = (status: string): string => {
-  console.log(status);
   switch (status) {
     case "DRIFTED":
       return "🟡";

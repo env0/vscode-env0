@@ -5,6 +5,8 @@ const ENV0_BASE_URL = "api-dev.dev.env0.com";
 const DOT_GIT_SUFFIX_LENGTH = 4;
 export type EnvironmentModel = {
   id: string;
+  name: string;
+  status: string;
   updatedAt: string;
   latestDeploymentLog: {
     blueprintRepository: string;
@@ -14,8 +16,9 @@ export type EnvironmentModel = {
 
 export async function getEnvironmentsForBranch() {
   // get env0 api key & secret
-  const API_KEY = "wuf1wuklv3lw6mxj";
-  const API_SECRET = "ltcH4y_GiQfw0FIPlAf9akWjGiDSY-br";
+  const API_KEY = "r0ryce5qq4ddi5lk";
+  const API_SECRET = "Sw5Y0mCjqIh3dG_atSIQFmLaADQK-964";
+
   let environments: EnvironmentModel[] = [];
 
   const organizationId = await getOrganizationId(API_KEY, API_SECRET);
@@ -43,44 +46,46 @@ async function getEnvironments(
 ) {
   let environments: EnvironmentModel[] = [];
 
-  axios
-    .get(`https://${ENV0_BASE_URL}/environments`, {
-      params: { organizationId: organizationId },
-      auth: {
-        username: apiKey,
-        password: apiSecret,
-      },
-    })
-    .then((response: AxiosResponse<Array<EnvironmentModel>>) => {
-      environments = response.data;
-    })
-    .catch(function (error) {
-      // handle error
-      console.log(error);
-    });
+  try {
+    const environments = (
+      await axios.get<EnvironmentModel[]>(
+        `https://${ENV0_BASE_URL}/environments`,
+        {
+          params: { organizationId: organizationId },
+          auth: {
+            username: apiKey,
+            password: apiSecret,
+          },
+        }
+      )
+    ).data;
 
-  return environments;
+    return environments;
+  } catch (e) {
+    console.log(e);
+  }
+
+  return [];
 }
 
 async function getOrganizationId(apiKey: string, apiSecret: string) {
-  let organizationId;
+  try {
+    const organizationId = (
+      await axios.get<{ id: string }[]>(
+        `https://${ENV0_BASE_URL}/organizations`,
+        {
+          auth: {
+            username: apiKey,
+            password: apiSecret,
+          },
+        }
+      )
+    ).data[0]?.id;
 
-  axios
-    .get(`https://${ENV0_BASE_URL}/organizations`, {
-      auth: {
-        username: apiKey,
-        password: apiSecret,
-      },
-    })
-    .then((response: AxiosResponse<Array<{ id: string }>>) => {
-      organizationId = response.data[0]?.id;
-    })
-    .catch(function (error) {
-      // handle error
-      console.log(error);
-    });
-
-  return organizationId;
+    return organizationId;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function getGitData() {

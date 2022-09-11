@@ -5,9 +5,7 @@ import { getEnvironmentsForBranch} from './get-environments';
 let environmentPollingInstance: NodeJS.Timer;
 
 export function activate(context: vscode.ExtensionContext) {
-  const environmentsDataProvider = new Env0EnvironmentsProvider(
-    "some-project-id"
-  );
+  const environmentsDataProvider = new Env0EnvironmentsProvider();
   vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
   });
