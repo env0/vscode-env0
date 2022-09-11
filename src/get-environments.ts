@@ -3,6 +3,7 @@ import axios, { AxiosResponse } from 'axios';
 import * as vscode from 'vscode';
 
 const ENV0_BASE_URL = 'api-dev.dev.env0.com'
+const DOT_GIT_SUFFIX_LENGTH = 4;
 type Environment = { id: string, latestDeploymentLog: { blueprintRepository: string, blueprintRevision: string } }; // TODO: change to real Environment Model
 
 export async function getEnvironmentsForBranch() {
@@ -81,7 +82,7 @@ function getGitData() {
 			const head = repository.state.HEAD;
 			currentBranch = head.name;
             const repositoryName = repository.repository.remotes[0].fetchUrl;
-            normalizedRepositoryName = repositoryName?.slice(0, -4);
+            normalizedRepositoryName = repositoryName?.slice(0, -DOT_GIT_SUFFIX_LENGTH);
 		}
 
 	}
