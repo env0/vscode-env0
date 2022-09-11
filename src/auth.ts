@@ -9,6 +9,6 @@ export const getApiKeyCredentials = () => {
         throw new Error("Could not read env0 api key values");
     }
 
-    return { user: env0ApiKey, password: env0SecretKey }
+    return { username: env0ApiKey, password: env0SecretKey }
 
 }
