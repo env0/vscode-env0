@@ -1,3 +1,4 @@
+import path from "path";
 import * as vscode from "vscode";
 import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
 
@@ -65,27 +66,43 @@ class Environment extends vscode.TreeItem {
     public readonly lastUpdated: string,
     public readonly id: string
   ) {
-    super(`${getColorByStatus(status)} ${name}`);
+    super(name);
     this.description = this.status;
     this.tooltip = `last update at ${lastUpdated}`;
+    const x = path.join(
+      __filename,
+      "..",
+      "..",
+      "resources",
+      getIconByStatus(status)
+    );
+    console.log(x);
+    this.iconPath = x;
   }
 }
 
-const getColorByStatus = (status: string): string => {
+const getIconByStatus = (status: string): string => {
   switch (status) {
     case "DRIFTED":
-      return "🟡";
+      return "waiting_for_user.png";
     case "FAIL":
     case "CANCELLED":
     case "FAILED":
     case "TIMEOUT":
     case "INTERNAL_FAILURE":
     case "ABORTED":
-      return "🔴";
+      return "failed.png";
     case "SUCCESS":
     case "ACTIVE":
-      return "🟢";
+      return "favicon-16x16.png";
+    case "IN_PROGRESS":
+    case "DEPLOY_IN_PROGRESS":
+    case "DESTROY_IN_PROGRESS":
+    case "PR_PLAN_IN_PROGRESS":
+    case "TASK_IN_PROGRESS":
+    case "DRIFT_DETECTION_IN_PROGRESS":
+      return "in_progress.png";
   }
 
-  return "⚪️";
+  return "inactive.png";
 };
