@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:env0.helloWorld"
+    "*"
   ],
   "main": "./dist/extension.js",
   "contributes": {
