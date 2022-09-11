@@ -1,3 +1,4 @@
+import path from "path";
 import * as vscode from "vscode";
 import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
 
@@ -16,7 +17,14 @@ export class Env0EnvironmentsProvider
   async getChildren(): Promise<Environment[]> {
     const envs = await getEnvironmentsForBranch();
     this.environments = envs.map(
-      (env) => new Environment(env.name, env.status, env.updatedAt, env.id)
+      (env) =>
+        new Environment(
+          env.name,
+          env.status,
+          env.updatedAt,
+          env.id,
+          env.projectId
+        )
     );
 
     return Promise.resolve(this.environments);
@@ -63,29 +71,44 @@ class Environment extends vscode.TreeItem {
     public readonly name: string,
     public readonly status: string,
     public readonly lastUpdated: string,
-    public readonly id: string
+    public readonly id: string,
+    public readonly projectId: string
   ) {
-    super(`${getColorByStatus(status)} ${name}`);
+    super(name);
     this.description = this.status;
     this.tooltip = `last update at ${lastUpdated}`;
+    this.iconPath = path.join(
+      __filename,
+      "..",
+      "..",
+      "resources",
+      getIconByStatus(status)
+    );
   }
 }
 
-const getColorByStatus = (status: string): string => {
+const getIconByStatus = (status: string): string => {
   switch (status) {
     case "DRIFTED":
-      return "🟡";
+      return "waiting_for_user.png";
     case "FAIL":
     case "CANCELLED":
     case "FAILED":
     case "TIMEOUT":
     case "INTERNAL_FAILURE":
     case "ABORTED":
-      return "🔴";
+      return "failed.png";
     case "SUCCESS":
     case "ACTIVE":
-      return "🟢";
+      return "favicon-16x16.png";
+    case "IN_PROGRESS":
+    case "DEPLOY_IN_PROGRESS":
+    case "DESTROY_IN_PROGRESS":
+    case "PR_PLAN_IN_PROGRESS":
+    case "TASK_IN_PROGRESS":
+    case "DRIFT_DETECTION_IN_PROGRESS":
+      return "in_progress.png";
   }
 
-  return "⚪️";
+  return "inactive.png";
 };
