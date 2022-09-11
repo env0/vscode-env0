@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
 
-    if (environmentsDataProvider.shouldUpdate(fetchedEnvironments)) {
+    if (fetchedEnvironments && environmentsDataProvider.shouldUpdate(fetchedEnvironments)) {
       environmentsDataProvider.refresh();
     }
   }, 3000);
