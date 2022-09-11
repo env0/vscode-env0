@@ -18,16 +18,23 @@ export function activate(context: vscode.ExtensionContext) {
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from env0!');
 	});
+	const configurationWorkspace = vscode.workspace.getConfiguration()
 
-	let readSecret = vscode.commands.registerCommand('env0.readSecret', () => {
-		const configurationWorkspace = vscode.workspace.getConfiguration()
-		const sshRemotePlatform: string | undefined = configurationWorkspace.get("env0.accessKey")
-		console.log(sshRemotePlatform)
-		vscode.window.showInformationMessage(sshRemotePlatform || 'could not find secret');
+	let readAccessKey = vscode.commands.registerCommand('env0.readAccessKey', () => {
+		const env0AccessKey: string | undefined = configurationWorkspace.get("env0.accessKey")
+		console.log(env0AccessKey)
+		vscode.window.showInformationMessage(env0AccessKey || 'could not find env0 access key');
+	});
+
+	let readSecretKey = vscode.commands.registerCommand('env0.readSecretKey', () => {
+		const env0SecretKey: string | undefined = configurationWorkspace.get("env0.secretKey")
+		console.log(env0SecretKey)
+		vscode.window.showInformationMessage(env0SecretKey || 'could not find env0 secret key');
 	});
 
 	context.subscriptions.push(disposable);
-	context.subscriptions.push(readSecret);
+	context.subscriptions.push(readAccessKey);
+	context.subscriptions.push(readSecretKey);
 }
 
 // this method is called when your extension is deactivated

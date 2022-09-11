@@ -11,7 +11,8 @@
   ],
   "activationEvents": [
     "onCommand:env0.helloWorld",
-    "onCommand:env0.readSecret"
+    "onCommand:env0.readSecretKey",
+    "onCommand:env0.readAccessKey"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -21,8 +22,12 @@
         "title": "Hello World"
       },
       {
-        "command": "env0.readSecret",
-        "title": "Read Secret"
+        "command": "env0.readSecretKey",
+        "title": "Read Secret key"
+      },
+      {
+        "command": "env0.readAccessKey",
+        "title": "Read Access key"
       }
     ],
     "configuration": {
@@ -32,6 +37,11 @@
           "type": "string",
           "required": true,
           "description": "env0 access key"
+        },
+        "env0.secretKey": {
+          "type": "string",
+          "required": true,
+          "description": "env0 secret key"
         }
       }  
     }
