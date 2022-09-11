@@ -20,6 +20,21 @@
         "title": "Hello World"
       }
     ],
+    "configuration": {
+      "title": "env0",
+      "properties": {
+        "env0.apiKeyId": {
+          "type": "string",
+          "required": true,
+          "description": "env0 API key ID"
+        },
+        "env0.secretKey": {
+          "type": "string",
+          "required": true,
+          "description": "env0 API secret key"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
