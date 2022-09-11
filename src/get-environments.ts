@@ -32,7 +32,7 @@ export async function getEnvironmentsForBranch() {
 			(environment) =>
 				environment?.latestDeploymentLog?.blueprintRepository === repository &&
 				environment?.latestDeploymentLog?.blueprintRevision === currentBranch
-		);
+		).filter(environment => environment.status !== "INACTIVE");
 	}
 
 	return environments;
