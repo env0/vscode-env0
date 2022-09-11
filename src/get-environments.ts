@@ -13,6 +13,9 @@ export type EnvironmentModel = {
 	latestDeploymentLog: {
 		blueprintRepository: string;
 		blueprintRevision: string;
+		error?: {
+			message?: string;
+		}
 	};
 }; // TODO: change to real Environment Model
 
