@@ -33,7 +33,8 @@
           "required": true,
           "description": "env0 API secret key"
         }
-      },  
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
