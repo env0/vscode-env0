@@ -1,0 +1,63 @@
+<svg width="35" height="35" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient x1="433.333%" y1="18.75%" x2="0%" y2="18.75%" id="a">
+            <stop stop-color="#23EAC0" offset="0%" />
+            <stop stop-color="#57E4CA" offset="24%" />
+            <stop stop-color="#49E6F4" offset="49%" />
+            <stop stop-color="#30A6FD" offset="75%" />
+            <stop stop-color="#8089FF" offset="100%" />
+        </linearGradient>
+        <linearGradient x1="100%" y1="-116.667%" x2="-62.5%" y2="-116.667%" id="b">
+            <stop stop-color="#23EAC0" offset="0%" />
+            <stop stop-color="#57E4CA" offset="24%" />
+            <stop stop-color="#49E6F4" offset="49%" />
+            <stop stop-color="#30A6FD" offset="75%" />
+            <stop stop-color="#8089FF" offset="100%" />
+        </linearGradient>
+        <linearGradient x1="162.5%" y1="216.667%" x2="0%" y2="216.667%" id="c">
+            <stop stop-color="#23EAC0" offset="0%" />
+            <stop stop-color="#57E4CA" offset="24%" />
+            <stop stop-color="#49E6F4" offset="49%" />
+            <stop stop-color="#30A6FD" offset="75%" />
+            <stop stop-color="#8089FF" offset="100%" />
+        </linearGradient>
+        <linearGradient x1="266.667%" y1="50%" x2="-166.667%" y2="50%" id="d">
+            <stop stop-color="#23EAC0" offset="0%" />
+            <stop stop-color="#57E4CA" offset="24%" />
+            <stop stop-color="#49E6F4" offset="49%" />
+            <stop stop-color="#30A6FD" offset="75%" />
+            <stop stop-color="#8089FF" offset="100%" />
+        </linearGradient>
+        <linearGradient x1="100%" y1="50%" x2="-333.333%" y2="50%" id="e">
+            <stop stop-color="#23EAC0" offset="0%" />
+            <stop stop-color="#57E4CA" offset="24%" />
+            <stop stop-color="#49E6F4" offset="49%" />
+            <stop stop-color="#30A6FD" offset="75%" />
+            <stop stop-color="#8089FF" offset="100%" />
+        </linearGradient>
+        <linearGradient x1="100%" y1="216.667%" x2="-333.333%" y2="216.667%" id="f">
+            <stop stop-color="#23EAC0" offset="0%" />
+            <stop stop-color="#57E4CA" offset="24%" />
+            <stop stop-color="#49E6F4" offset="49%" />
+            <stop stop-color="#30A6FD" offset="75%" />
+            <stop stop-color="#8089FF" offset="100%" />
+        </linearGradient>
+        <path id="g" d="M.246.242h20.058v24.291H.246z" />
+        <path id="i" d="M.255.241h20.787v24.292H.255z" />
+    </defs>
+    <g fill="none" fill-rule="evenodd">
+        <g transform="translate(0 .843)" fill-rule="nonzero">
+            <rect fill="#FFF" y="12.651" width="7.59" height="20.241" rx="1.5" />
+            <rect fill="#FFF" x="12.651" y="25.301" width="20.241" height="7.59" rx="1.5" />
+            <circle fill="#FFF" cx="16.446" cy="16.446" r="3.795" />
+            <circle fill="#FFF" cx="29.096" cy="16.446" r="3.795" />
+            <circle fill="#FFF" cx="29.096" cy="3.795" r="3.795" />
+            <rect fill="url(#a)" y="12.651" width="7.59" height="20.241" rx="1.5" />
+            <rect fill="url(#b)" x="12.651" y="25.301" width="20.241" height="7.59" rx="1.5" />
+            <rect fill="url(#c)" width="20.241" height="7.59" rx="1.5" />
+            <circle fill="url(#d)" cx="16.446" cy="16.446" r="3.795" />
+            <circle fill="url(#e)" cx="29.096" cy="16.446" r="3.795" />
+            <circle fill="url(#f)" cx="29.096" cy="3.795" r="3.795" />
+        </g>
+    </g>
+</svg>
