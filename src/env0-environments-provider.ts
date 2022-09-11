@@ -16,8 +16,7 @@ export class Env0EnvironmentsProvider
   async getChildren(): Promise<Environment[]> {
     const envs = await getEnvironmentsForBranch();
     this.environments = envs.map(
-      (env) =>
-        new Environment(env.name, env.status, env.updatedAt)
+      (env) => new Environment(env.name, env.status, env.updatedAt, env.id)
     );
 
     return Promise.resolve(this.environments);
@@ -63,7 +62,8 @@ class Environment extends vscode.TreeItem {
   constructor(
     public readonly name: string,
     public readonly status: string,
-    public readonly lastUpdated: string
+    public readonly lastUpdated: string,
+    public readonly id: string
   ) {
     super(`${getColorByStatus(status)} ${name}`);
     this.description = this.status;
