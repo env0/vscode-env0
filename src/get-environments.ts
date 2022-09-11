@@ -3,7 +3,7 @@ import axios, { AxiosResponse } from 'axios';
 import * as vscode from 'vscode';
 
 const ENV0_BASE_URL = 'api-dev.dev.env0.com'
-type Environment = { id: string, latestDeploymentLog: { blueprintRepository: string, blueprintRevision: string } };
+type Environment = { id: string, latestDeploymentLog: { blueprintRepository: string, blueprintRevision: string } }; // TODO: change to real Environment Model
 
 export async function getEnvironmentsForBranch() {
 	// get env0 api key & secret 
@@ -19,7 +19,6 @@ export async function getEnvironmentsForBranch() {
 
 	if (environments.length > 0) {
 		const { currentBranch, repository } = getGitData();
-		environments.filter(environment => environment.latestDeploymentLog.blueprintRepository === repository && environment.latestDeploymentLog.blueprintRevision === currentBranch)
 	}
 
 	return environments;

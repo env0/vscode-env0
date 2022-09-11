@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:env0.helloWorld"
+    "*"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -19,7 +19,24 @@
         "command": "env0.helloWorld",
         "title": "Hello World"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "env0",
+          "title": "env0",
+          "icon": "resources/env0-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "env0": [
+        {
+          "id": "env0-environments",
+          "name": "Environments"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
