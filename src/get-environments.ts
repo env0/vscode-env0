@@ -7,8 +7,8 @@ type Environment = { id: string, latestDeploymentLog: { blueprintRepository: str
 
 export async function getEnvironmentsForBranch() {
 	// get env0 api key & secret 
-	const API_KEY = "";
-	const API_SECRET = ""
+	const API_KEY = "wuf1wuklv3lw6mxj";
+	const API_SECRET = "ltcH4y_GiQfw0FIPlAf9akWjGiDSY-br"
 	let environments: Environment[] = [];
 
 	const organizationId = await getOrganizationId(API_KEY, API_SECRET);
@@ -19,7 +19,7 @@ export async function getEnvironmentsForBranch() {
 
 	if (environments.length > 0) {
 		const { currentBranch, repository } = getGitData();
-		environments.filter(environment => environment.latestDeploymentLog.blueprintRepository === repository && environment.latestDeploymentLog.blueprintRevision === currentBranch)
+		environments = environments.filter(environment => environment?.latestDeploymentLog?.blueprintRepository === repository && environment?.latestDeploymentLog?.blueprintRevision === currentBranch)
 	}
 
 	return environments;
@@ -68,23 +68,24 @@ async function getOrganizationId(apiKey: string, apiSecret: string) {
 
 function getGitData() {
 	const extensions = vscode.extensions;
-	let repository;
+	let normalizedRepositoryName;
 	let currentBranch;
 
 	if (extensions) {
 		const gitExtension = extensions.getExtension('vscode.git')?.exports;
 
 		const api = gitExtension.getAPI(1);
-		repository = api.repositories[0];
+		const repository = api.repositories[0];
 
 		if (repository) {
 			const head = repository.state.HEAD;
 			currentBranch = head.name;
+            const repositoryName = repository.repository.remotes[0].fetchUrl;
+            normalizedRepositoryName = repositoryName?.slice(0, -4);
 		}
 
 	}
 
-	return { repository, currentBranch }
-
+	return { repository: normalizedRepositoryName, currentBranch }
 }
 
