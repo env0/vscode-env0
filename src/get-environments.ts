@@ -29,7 +29,7 @@ export async function getEnvironmentsForBranch() {
 async function getEnvironments(apiKey: string, apiSecret: string, organizationId: string) {
 	let environments: Environment[] = [];
 
-	await axios.get(`https://${ENV0_BASE_URL}/environments`, {
+	axios.get(`https://${ENV0_BASE_URL}/environments`, {
 		params: { organizationId: organizationId },
 		auth: {
 			username: apiKey,
@@ -50,7 +50,7 @@ async function getEnvironments(apiKey: string, apiSecret: string, organizationId
 async function getOrganizationId(apiKey: string, apiSecret: string) {
 	let organizationId;
 
-	await axios.get(`https://${ENV0_BASE_URL}/organizations`, {
+	axios.get(`https://${ENV0_BASE_URL}/organizations`, {
 		auth: {
 			username: apiKey,
 			password: apiSecret
