@@ -7,8 +7,8 @@ type Environment = { id: string, latestDeploymentLog: { blueprintRepository: str
 
 export async function getEnvironmentsForBranch() {
 	// get env0 api key & secret 
-	const API_KEY = "wuf1wuklv3lw6mxj";
-	const API_SECRET = "ltcH4y_GiQfw0FIPlAf9akWjGiDSY-br"
+	const API_KEY = "";
+	const API_SECRET = ""
 	let environments: Environment[] = [];
 
 	const organizationId = await getOrganizationId(API_KEY, API_SECRET);
@@ -19,6 +19,7 @@ export async function getEnvironmentsForBranch() {
 
 	if (environments.length > 0) {
 		const { currentBranch, repository } = getGitData();
+		environments.filter(environment => environment.latestDeploymentLog.blueprintRepository === repository && environment.latestDeploymentLog.blueprintRevision === currentBranch)
 	}
 
 	return environments;
