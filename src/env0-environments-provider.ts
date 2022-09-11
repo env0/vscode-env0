@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
+import { showErrorMessage, showInProgressMessage, showSuccessMessage, showWaitingForApproval } from "./notification-messages";
 
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
@@ -37,8 +38,25 @@ export class Env0EnvironmentsProvider
       }
 
       if (
-        this.environments[envIndex].lastUpdated !== newEnvironment.updatedAt
+        this.environments[envIndex].lastUpdated !== newEnvironment.updatedAt && this.environments[envIndex].status !== newEnvironment.status
       ) {
+        if (newEnvironment.status === 'DEPLOY_IN_PROGRESS') {
+          showInProgressMessage({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        }
+
+        if (newEnvironment.status === 'FAILED') {
+          showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        }
+
+        if (newEnvironment.status === 'WAITING_FOR_USER') {
+          showWaitingForApproval({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        }
+
+        if (newEnvironment.status === 'ACTIVE') {
+          showSuccessMessage({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        }
+
+
         return true;
       }
     }

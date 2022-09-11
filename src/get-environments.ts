@@ -9,9 +9,16 @@ export type EnvironmentModel = {
 	name: string;
 	status: string;
 	updatedAt: string;
+	projectId: string;
+	error?: {
+		message?: string;
+	};
 	latestDeploymentLog: {
 		blueprintRepository: string;
 		blueprintRevision: string;
+		error: {
+			message: string;
+		}
 	};
 }; // TODO: change to real Environment Model
 
