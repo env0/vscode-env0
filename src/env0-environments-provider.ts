@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as path from "path";
 import environments from "./mock-environments.json";
 
 export class Env0EnvironmentsProvider
@@ -21,6 +20,17 @@ export class Env0EnvironmentsProvider
           new Environment(mockEnv.name, mockEnv.status, mockEnv.updatedAt)
       )
     );
+  }
+
+  private _onDidChangeTreeData: vscode.EventEmitter<
+    Environment | undefined | null | void
+  > = new vscode.EventEmitter<Environment | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<
+    Environment | undefined | null | void
+  > = this._onDidChangeTreeData.event;
+
+  refresh(): void {
+    this._onDidChangeTreeData.fire();
   }
 }
 
