@@ -1,14 +1,15 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 export const getApiKeyCredentials = () => {
-    const configurationWorkspace = vscode.workspace.getConfiguration()
-    const env0ApiKey: string | undefined = configurationWorkspace.get("env0.apiKeyId")
-    const env0SecretKey: string | undefined = configurationWorkspace.get("env0.secretKey")
+  const configurationWorkspace = vscode.workspace.getConfiguration();
+  const env0ApiKey: string | undefined =
+    configurationWorkspace.get("env0.apiKeyId");
+  const env0SecretKey: string | undefined =
+    configurationWorkspace.get("env0.secretKey");
 
-    if(!env0ApiKey || !env0SecretKey) {
-        throw new Error("Could not read env0 api key values");
-    }
+  if (!env0ApiKey || !env0SecretKey) {
+    throw new Error("Could not read env0 api key values");
+  }
 
-    return { username: env0ApiKey, password: env0SecretKey }
-
-}
+  return { username: env0ApiKey, password: env0SecretKey };
+};
