@@ -22,6 +22,30 @@ export class Env0EnvironmentsProvider
     );
   }
 
+  public shouldUpdate(environmentsToCompareTo: any[]): boolean {
+    if (environmentsToCompareTo.length !== this.environments.length) {
+      return true;
+    }
+
+    for (const newEnvironment of environmentsToCompareTo) {
+      const envIndex: number = this.environments.findIndex(
+        (env) => env.id === newEnvironment.id
+      );
+
+      if (envIndex === -1) {
+        return true;
+      }
+
+      if (
+        this.environments[envIndex].lastUpdated !== newEnvironment.updatedAt
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private _onDidChangeTreeData: vscode.EventEmitter<
     Environment | undefined | null | void
   > = new vscode.EventEmitter<Environment | undefined | null | void>();
@@ -38,7 +62,7 @@ class Environment extends vscode.TreeItem {
   constructor(
     public readonly name: string,
     public readonly status: string,
-    lastUpdated: string
+    public readonly lastUpdated: string
   ) {
     super(`${getColorByStatus(status)} ${name}`);
     this.description = this.status;
