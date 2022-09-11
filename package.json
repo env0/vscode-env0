@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:env0.helloWorld"
+    "onCommand:env0.helloWorld",
+    "onCommand:env0.readSecret"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -18,8 +19,22 @@
       {
         "command": "env0.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "env0.readSecret",
+        "title": "Read Secret"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "env0",
+      "properties": {
+        "env0.accessKey": {
+          "type": "string",
+          "required": true,
+          "description": "env0 access key"
+        }
+      }  
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
