@@ -5,9 +5,7 @@ export class Env0PrettyPlanProvider
   implements vscode.TreeDataProvider<PrettyPlan | ResourceAttribute>
 {
   setResourceChanges(resourceChanges: any[]) {
-    this.resourceChanges = resourceChanges;
-    console.log("setResourceChanges", resourceChanges);
-    
+    this.resourceChanges = resourceChanges;    
     this.refresh();
     //throw new Error("Method not implemented.");
   }
@@ -40,11 +38,6 @@ export class Env0PrettyPlanProvider
       return Promise.resolve(this.PrettyPlans);
 
     } else {
-      // const x: ResourceAttributeType = {
-      //   name: "foo",
-      //   before: "bar",
-      //   after: "baz"
-      // } 
       return Promise.resolve(element.attributes.map(x=> new ResourceAttribute(x)))
     }
 
@@ -84,16 +77,26 @@ class PrettyPlan extends vscode.TreeItem {
     public readonly attributes: ResourceAttributeType[],
     public readonly resourceChanges: vscode.TreeItemCollapsibleState
   ) {
-    super(`${action.toUpperCase()} || ${path} || ${name}`, vscode.TreeItemCollapsibleState.Collapsed);
+    super(`${getActionIcon(action.toUpperCase())} ${path} || ${name}`, vscode.TreeItemCollapsibleState.Collapsed);
     this.attributes = attributes;
-    //this.description = `${action} | ${path}`;
-    //this.tooltip = `last update at ${lastUpdated}`;
   }
+}
+
+function getActionIcon(action: string) {
+  switch(action) {
+    case 'DELETE':
+      return '🔴';
+    case 'CREATE':
+      return '🟢';
+    case 'UPDATE':
+      return '🟡';
+  }
+  return '❓'
 }
 
 class ResourceAttribute extends vscode.TreeItem {
   constructor(attribute: ResourceAttributeType) {
-    super(attribute.name)
+    super(`${attribute.name}: "${attribute.before}" -> ${attribute.after ?? 'null'}`)
   }
 
 }
