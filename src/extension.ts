@@ -88,45 +88,41 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
     const apiKeyCredentials = getApiKeyCredentials();
 
     const options = {
-      method: "GET",
+      method: 'GET',
       url: `https://${ENV0_BASE_URL}/deployments/${env?.latestDeploymentLogId}/steps`,
-      auth: apiKeyCredentials,
+      auth: apiKeyCredentials
     };
 
     const response = await axios.request(options);
 
     (response.data as any).forEach(async (step: any) => {
       let stepLog = logChannels[step.name];
-      if (!stepLog) {
-        logChannels[step.name] = {
-          channel: vscode.window.createOutputChannel(`(env0) ${step.name}`),
-        };
+      if(!stepLog) {
+        logChannels[step.name] = { channel: vscode.window.createOutputChannel(`(env0) ${step.name}`) };
         stepLog = logChannels[step.name];
       }
 
       if (stepLog.hasMoreLogs !== false) {
         try {
           const response: any = await axios.get(
-            `https://${ENV0_BASE_URL}/deployments/${
-              env?.latestDeploymentLogId
-            }/steps/${step.name}/log?startTime=${stepLog.startTime ?? ""}`,
+            `https://${ENV0_BASE_URL}/deployments/${env?.latestDeploymentLogId}/steps/${step.name}/log?startTime=${stepLog.startTime ?? ''}`,
             {
-              auth: apiKeyCredentials,
+              auth: apiKeyCredentials
             }
           );
 
-          console.log("got response", { response });
+          console.log('got response', {response});
           response.data.events.forEach((event: any) => {
-            (logChannels[step.name].channel as vscode.OutputChannel).appendLine(
-              event.message
-            );
+            (logChannels[step.name].channel as vscode.OutputChannel).appendLine(event.message);
           });
           stepLog.startTime = response.data.nextStartTime;
           stepLog.hasMoreLogs = response.data.hasMoreLogs;
-        } catch (e) {
-          console.error("oh no", { e });
+        } catch(e) {
+          console.error('oh no', {e});
         }
       }
     });
+
   }, 3000);
 }
+
