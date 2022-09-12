@@ -67,6 +67,18 @@ export function activate(context: vscode.ExtensionContext) {
     restartLogs(env);
   });
 
+  vscode.commands.registerCommand("env0.approve", (env) => {
+    resumeDeployment(env);
+    environmentsDataProvider.refresh();
+    restartLogs(env);
+  });
+
+  vscode.commands.registerCommand("env0.cancel", (env) => {
+    cancelDeployment(env);
+    environmentsDataProvider.refresh();
+    restartLogs(env);
+  });
+
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
 

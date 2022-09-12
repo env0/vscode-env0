@@ -12,7 +12,7 @@ export const openEnvironmentInBrowser = ({ id, projectId }: any) => {
     vscode.Uri.parse(
       `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
     )
-  );c
+  );
 };
 
 export const abortEnvironmentDeploy = (env: any) => {
