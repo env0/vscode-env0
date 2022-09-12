@@ -13,24 +13,23 @@ const botoError = 'https://i.postimg.cc/kggHTjDr/env0-boto0-fail.png';
 
 
 export function activate(context: vscode.ExtensionContext) {
-	const environmentsDataProvider = new Env0EnvironmentsProvider();
-	const tree = vscode.window.createTreeView("env0-environments", {
-		treeDataProvider: environmentsDataProvider,
-	});
+  const environmentsDataProvider = new Env0EnvironmentsProvider();
+  const tree = vscode.window.createTreeView("env0-environments", {
+    treeDataProvider: environmentsDataProvider,
+  });
 
   tree.onDidChangeSelection((e) => openEnvironmentInBrowser(e.selection));
 
-	environmentPollingInstance = setInterval(async () => {
-		const fetchedEnvironments = await getEnvironmentsForBranch();
+  environmentPollingInstance = setInterval(async () => {
+    const fetchedEnvironments = await getEnvironmentsForBranch();
 
-		if (
-			fetchedEnvironments &&
-			environmentsDataProvider.shouldUpdate(fetchedEnvironments)
-		) {
-			environmentsDataProvider.refresh();
-			
-		}
-	}, 3000);
+    if (
+      fetchedEnvironments &&
+      environmentsDataProvider.shouldUpdate(fetchedEnvironments)
+    ) {
+      environmentsDataProvider.refresh();
+    }
+  }, 3000);
 
 	///////////////////////
 
@@ -81,9 +80,13 @@ class BotoProvider implements vscode.WebviewViewProvider {
 	}
 }
 
-function openEnvironmentInBrowser(selection: readonly Environment[]): any {
-	throw new Error("Function not implemented.");
-}
+const openEnvironmentInBrowser = ({ id, projectId }: any) => {
+  vscode.env.openExternal(
+    vscode.Uri.parse(
+      `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
+    )
+  );
+};
 
 const abortEnvironmentDeploy = (env: any) => {
   const apiKeyCredentials = getApiKeyCredentials();
