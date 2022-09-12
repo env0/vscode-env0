@@ -2,8 +2,9 @@ import axios from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
 import { Env0EnvironmentsProvider } from "./env0-environments-provider";
-import { ENV0_BASE_URL, getEnvironmentsForBranch } from "./get-environments";
+import { getEnvironmentsForBranch } from "./get-environments";
 
+export const ENV0_BASE_URL = "api-dev.dev.env0.com";
 let environmentPollingInstance: NodeJS.Timer;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -30,6 +31,21 @@ export function activate(context: vscode.ExtensionContext) {
     openEnvironmentInBrowser(env);
   });
 
+  vscode.commands.registerCommand("env0.redeploy", (env) => {
+    redeployEnvironment(env);
+    environmentsDataProvider.refresh();
+  });
+
+  vscode.commands.registerCommand("env0.abort", (env) => {
+    abortEnvironmentDeploy(env);
+    environmentsDataProvider.refresh();
+  });
+
+  vscode.commands.registerCommand("env0.destroy", (env) => {
+    destroyEnvironment(env);
+    environmentsDataProvider.refresh();
+  });
+
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
 
@@ -47,11 +63,47 @@ export function deactivate() {
 }
 
 const openEnvironmentInBrowser = ({ id, projectId }: any) => {
+  if (!id || !projectId) {
+    return;
+  }
+
   vscode.env.openExternal(
     vscode.Uri.parse(
       `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
     )
   );
+};
+
+const abortEnvironmentDeploy = (env: any) => {
+  const apiKeyCredentials = getApiKeyCredentials();
+  const id = env?.latestDeploymentLogId;
+
+  if (!id) {
+    return;
+  }
+
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}/abort`;
+  axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
+};
+
+const redeployEnvironment = (env: any) => {
+  if (!env.id) {
+    return;
+  }
+
+  const apiKeyCredentials = getApiKeyCredentials();
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/deployments`;
+  axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
+};
+
+const destroyEnvironment = (env: any) => {
+  if (!env.id) {
+    return;
+  }
+
+  const apiKeyCredentials = getApiKeyCredentials();
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/destroy`;
+  axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
 };
 
 async function pollForEnvironmentLogs(env: any, logChannels: any) {
@@ -96,9 +148,7 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
         }   
       }
     });
-
   }, 3000);
 
   return logPoller;
 }
-
