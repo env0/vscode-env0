@@ -11,6 +11,7 @@ export type EnvironmentModel = {
 	updatedAt: string;
 	projectId: string;
 	latestDeploymentLog: {
+		id: string;
 		blueprintRepository: string;
 		blueprintRevision: string;
 		error?: {
@@ -30,6 +31,7 @@ export async function getEnvironmentsForBranch() {
 		environments = await getEnvironments(apiKeyCredentials, organizationId);
 	}
 
+	console.log(JSON.stringify(environments));
 	if (environments.length > 0) {
 		const { currentBranch, repository } = getGitData();
 		environments = environments.filter(
@@ -99,10 +101,10 @@ function getGitData() {
 			const head = repository.state.HEAD;
 			currentBranch = head.name;
 			const repositoryName = repository.repository.remotes[0].fetchUrl;
-			normalizedRepositoryName = repositoryName?.slice(
+			normalizedRepositoryName = repositoryName.endsWith('.git') ? repositoryName?.slice(
 				0,
 				-DOT_GIT_SUFFIX_LENGTH
-			);
+			) : repositoryName;
 		}
 	}
 
