@@ -111,4 +111,3 @@ function getGitData() {
 
 	return { repository: normalizedRepositoryName, currentBranch };
 }
-c
