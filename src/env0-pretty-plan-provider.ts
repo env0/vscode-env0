@@ -26,23 +26,7 @@ export class Env0PrettyPlanProvider
     // const envs = [{
     //   name:'a',status:'b', updatedAt: new Date().toDateString(), id:'id', projectId:'projectId'}]
     if (!element) {
-      const envs = [
-        {
-          "name": "name",
-          "providerName": "registry.terraform.io/hashicorp/null",
-          "type": "null_resource",
-          "path": "null_resource.null2",
-          "action": "create",
-          "attributes": [
-            {
-              "name": "id",
-              "before": "",
-              "after": "<computed>"
-            }
-          ]
-        }
-      ]
-      this.PrettyPlans = envs.map(
+      this.PrettyPlans = this.resourceChanges?.map(
         (env) =>
           new PrettyPlan(
             env.name,

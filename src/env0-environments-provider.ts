@@ -93,6 +93,8 @@ export class Env0EnvironmentsProvider
 }
 
 class Environment extends vscode.TreeItem {
+  resourceChanges: any;
+
   constructor(
     public readonly name: string,
     public readonly status: string,
@@ -100,7 +102,6 @@ class Environment extends vscode.TreeItem {
     public readonly id: string,
     public readonly projectId: string,
     public readonly latestDeploymentLogId: string
-    public resourceChanges: ResourceChanges[]
   ) {
     super(name);
     this.description = this.status;

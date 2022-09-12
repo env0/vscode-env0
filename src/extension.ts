@@ -21,9 +21,9 @@ const botoStars ='https://i.postimg.cc/3NC0PxyR/ezgif-com-gif-maker.gif';
 const botoRegular = 'https://i.postimg.cc/T3N4FrWK/env0-boto0-regular.png';
 const botoError = 'https://i.postimg.cc/kggHTjDr/env0-boto0-fail.png';
 
+const prettyPlanDataProvider = new Env0PrettyPlanProvider();
 
 export function activate(context: vscode.ExtensionContext) {
-  const prettyPlanDataProvider = new Env0PrettyPlanProvider();
 
   vscode.window.createTreeView("env0-pretty-plans", {
     treeDataProvider: prettyPlanDataProvider,
@@ -190,6 +190,18 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
         }
       }
     });
+
+    if(env.status === 'WAITING_FOR_USER' || env.status === 'ACTIVE' && !env.resourceChanges) {
+      const response: any = await axios.get(
+        `https://${ENV0_BASE_URL}/environments/${env?.id}`,
+        {
+          auth: apiKeyCredentials,
+        }
+      );
+
+      prettyPlanDataProvider.setResourceChanges(response.data.latestDeploymentLog?.plan?.resourceChanges);
+      env.resourceChanges = response.data.latestDeploymentLog?.plan?.resourceChanges;
+    }
   }, 1000);
 
   return logPoller;
