@@ -17,8 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.commands.registerCommand("env0.openInEnv0", (env) => {
-    console.log(env);
-    openEnvironmentInBrowser(env);
+c    openEnvironmentInBrowser(env);
   });
 
   environmentPollingInstance = setInterval(async () => {
