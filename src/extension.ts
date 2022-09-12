@@ -17,9 +17,11 @@ export function activate(context: vscode.ExtensionContext) {
   tree.onDidChangeSelection((e) => {
     const env = e.selection[0] ?? e.selection;
 
-    if (env.id && env.projectId) {
-      pollForEnvironmentLogs(env, logChannels);
-    }
+    // onClick here
+  });
+
+  vscode.commands.registerCommand("env0.openInEnv0", (env) => {
+    pollForEnvironmentLogs(env, logChannels);
   });
 
   environmentPollingInstance = setInterval(async () => {
@@ -47,29 +49,29 @@ const openEnvironmentInBrowser = ({ id, projectId }: any) => {
 };
 
 async function pollForEnvironmentLogs(env: any, logChannels: any) {
-  
+
 
   const logPoller = setInterval(async () => {
     const apiKeyCredentials = getApiKeyCredentials();
-    
+
     const options = {
       method: 'GET',
       url: `https://${ENV0_BASE_URL}/deployments/${env?.latestDeploymentLogId}/steps`,
       auth: apiKeyCredentials
     };
-    
+
     const response = await axios.request(options);
 
     (response.data as any).forEach(async (step: any) => {
       let stepLog = logChannels[step.name];
       if(!stepLog) {
-        logChannels[step.name] = { channel: vscode.window.createOutputChannel(`(env0) ${step.name}`) };        
+        logChannels[step.name] = { channel: vscode.window.createOutputChannel(`(env0) ${step.name}`) };
         stepLog = logChannels[step.name];
       }
 
       if(step.status != 'NOT_STARTED') {
         (logChannels[step.name].channel as vscode.OutputChannel).show();
-      }      
+      }
 
       if (stepLog.hasMoreLogs !== false) {
         try {
@@ -79,7 +81,7 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
               auth: apiKeyCredentials
             }
           );
-  
+
           console.log('got response', {response});
           response.data.events.forEach((event: any) => {
             (logChannels[step.name].channel as vscode.OutputChannel).appendLine(event.message);
