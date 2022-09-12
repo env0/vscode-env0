@@ -24,7 +24,8 @@ export class Env0EnvironmentsProvider
           env.status,
           env.updatedAt,
           env.id,
-          env.projectId
+          env.projectId,
+          env.latestDeploymentLog.id
         )
     );
 
@@ -90,7 +91,8 @@ class Environment extends vscode.TreeItem {
     public readonly status: string,
     public readonly lastUpdated: string,
     public readonly id: string,
-    public readonly projectId: string
+    public readonly projectId: string,
+    public readonly latestDeploymentLogId: string
   ) {
     super(name);
     this.description = this.status;
