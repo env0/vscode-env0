@@ -2,7 +2,12 @@ import path from "path";
 import * as vscode from "vscode";
 import { ResourceChanges } from "./env0-pretty-plan-provider";
 import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
-import { showErrorMessage, showInProgressMessage, showSuccessMessage, showWaitingForApproval } from "./notification-messages";
+import {
+  showErrorMessage,
+  showInProgressMessage,
+  showSuccessMessage,
+  showWaitingForApproval,
+} from "./notification-messages";
 
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
@@ -19,7 +24,7 @@ export class Env0EnvironmentsProvider
   async getChildren(): Promise<Environment[]> {
     const envs = await getEnvironmentsForBranch();
     console.log(envs);
-    
+
     this.environments = envs.map(
       (env) =>
         new Environment(
@@ -28,7 +33,7 @@ export class Env0EnvironmentsProvider
           env.updatedAt,
           env.id,
           env.projectId,
-          env.latestDeploymentLog.plan?.resourceChanges
+          env.latestDeploymentLog.id
         )
     );
 
@@ -68,7 +73,6 @@ export class Env0EnvironmentsProvider
           showSuccessMessage({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
         }
 
-
         return true;
       }
     }
@@ -95,7 +99,8 @@ class Environment extends vscode.TreeItem {
     public readonly lastUpdated: string,
     public readonly id: string,
     public readonly projectId: string,
-    public readonly resourceChanges: ResourceChanges[]
+    public readonly latestDeploymentLogId: string
+    public resourceChanges: ResourceChanges[]
   ) {
     super(name);
     this.description = this.status;
@@ -107,12 +112,21 @@ class Environment extends vscode.TreeItem {
       "resources",
       getIconByStatus(status)
     );
+
+    if (status.includes("IN_PROGRESS")) {
+      this.contextValue = "IN_PROGRESS";
+    }
+
+    if (status.includes("WAITING_FOR_USER")) {
+      this.contextValue = "WAITING_FOR_USER";
+    }
   }
 }
 
 const getIconByStatus = (status: string): string => {
   switch (status) {
     case "DRIFTED":
+    case "WAITING_FOR_USER":
       return "waiting_for_user.png";
     case "FAIL":
     case "CANCELLED":

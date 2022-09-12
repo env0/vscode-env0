@@ -2,9 +2,10 @@ import axios, { AxiosResponse } from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
 import { ResourceChanges } from "./env0-pretty-plan-provider";
+import { ENV0_BASE_URL} from './extension';
 
-const ENV0_BASE_URL = "api-dev.dev.env0.com";
 const DOT_GIT_SUFFIX_LENGTH = 4;
+
 export type EnvironmentModel = {
 	id: string;
 	name: string;
@@ -12,6 +13,7 @@ export type EnvironmentModel = {
 	updatedAt: string;
 	projectId: string;
 	latestDeploymentLog: {
+		id: string;
 		blueprintRepository: string;
 		blueprintRevision: string;
 		plan: {
@@ -33,9 +35,10 @@ export async function getEnvironmentsForBranch() {
 	if (organizationId) {
 		environments = await getEnvironments(apiKeyCredentials, organizationId);
 		console.log("got environments", environments);
-		
+
 	}
 
+	console.log(JSON.stringify(environments));
 	if (environments.length > 0) {
 		const { currentBranch, repository } = getGitData();
 		environments = environments.filter(
@@ -105,10 +108,10 @@ function getGitData() {
 			const head = repository.state.HEAD;
 			currentBranch = head.name;
 			const repositoryName = repository.repository.remotes[0].fetchUrl;
-			normalizedRepositoryName = repositoryName?.slice(
+			normalizedRepositoryName = repositoryName.endsWith('.git') ? repositoryName?.slice(
 				0,
 				-DOT_GIT_SUFFIX_LENGTH
-			);
+			) : repositoryName;
 		}
 	}
 
