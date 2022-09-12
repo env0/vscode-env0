@@ -1,7 +1,10 @@
+import axios from "axios";
 import * as vscode from "vscode";
 import { Env0EnvironmentsProvider } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
+import { getApiKeyCredentials } from "./auth";
 
+const ENV0_BASE_URL = "api-dev.dev.env0.com";
 let environmentPollingInstance: NodeJS.Timer;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -18,6 +21,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   vscode.commands.registerCommand("env0.openInEnv0", (env) => {
     openEnvironmentInBrowser(env);
+  });
+
+  vscode.commands.registerCommand("env0.redeploy", (env) => {
+    redeployEnvironment(env);
+    environmentsDataProvider.refresh();
+  });
+
+  vscode.commands.registerCommand("env0.destroy", (env) => {
+    destroyEnvironment(env);
+    environmentsDataProvider.refresh();
   });
 
   environmentPollingInstance = setInterval(async () => {
@@ -42,4 +55,16 @@ const openEnvironmentInBrowser = ({ id, projectId }: any) => {
       `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
     )
   );
+};
+
+const redeployEnvironment = (env: any) => {
+  const apiKeyCredentials = getApiKeyCredentials();
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/deployments`;
+  axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
+};
+
+const destroyEnvironment = (env: any) => {
+  const apiKeyCredentials = getApiKeyCredentials();
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/destroy`;
+  axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
 };
