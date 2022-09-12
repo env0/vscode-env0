@@ -46,6 +46,16 @@ export function activate(context: vscode.ExtensionContext) {
     environmentsDataProvider.refresh();
   });
 
+  vscode.commands.registerCommand("env0.approve", (env) => {
+    resumeDeployment(env);
+    environmentsDataProvider.refresh();
+  });
+
+  vscode.commands.registerCommand("env0.cancel", (env) => {
+    cancelEnvironment(env);
+    environmentsDataProvider.refresh();
+  });
+
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
 
@@ -84,6 +94,31 @@ const abortEnvironmentDeploy = (env: any) => {
 
   const redeployUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}/abort`;
   axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
+};
+
+
+const cancelEnvironment = (env: any) => {
+  const apiKeyCredentials = getApiKeyCredentials();
+  const id = env?.latestDeploymentLogId;
+
+  if (!id) {
+    return;
+  }
+
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}/cancel`;
+  axios.put(redeployUrl, undefined, { auth: apiKeyCredentials });
+};
+
+const resumeDeployment = (env: any) => {
+  const apiKeyCredentials = getApiKeyCredentials();
+  const id = env?.latestDeploymentLogId;
+
+  if (!id) {
+    return;
+  }
+
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}`;
+  axios.put(redeployUrl, undefined, { auth: apiKeyCredentials });
 };
 
 const redeployEnvironment = (env: any) => {
