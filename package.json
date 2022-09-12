@@ -15,6 +15,7 @@
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
+    
       {
         "command": "env0.helloWorld",
         "title": "Hello World"
@@ -49,6 +50,12 @@
         {
           "id": "env0-environments",
           "name": "Environments"
+        },
+        {
+          "type": "webview",
+          "id": "env0-boto0",
+          "name": "boto0",
+          "size": 40
         }
       ]
     }

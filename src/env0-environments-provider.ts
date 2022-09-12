@@ -25,7 +25,7 @@ export class Env0EnvironmentsProvider
           env.updatedAt,
           env.id,
           env.projectId
-        )
+        ) 
     );
 
     return Promise.resolve(this.environments);
