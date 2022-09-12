@@ -71,7 +71,7 @@ class BotoProvider implements vscode.WebviewViewProvider {
 			<body>
 				<div style="height: 100%; width: 100%;">
 					<div style="position: absolute; bottom:0;">
-						<img src="${botoStars}" width="300" style="padding-left: 50px;"/>
+						<img src="${botoRegular}" width="300" style="padding-left: 50px;"/>
 					</div>
 				</div>
 			</body>
