@@ -12,12 +12,18 @@ export function activate(context: vscode.ExtensionContext) {
     treeDataProvider: environmentsDataProvider,
   });
 
-  const logChannels = {};
+  const logChannels: any = {};
+  let logPoller: NodeJS.Timeout;
 
-  tree.onDidChangeSelection((e) => {
+  tree.onDidChangeSelection(async (e) => {
     const env = e.selection[0] ?? e.selection;
 
-    pollForEnvironmentLogs(env, logChannels);
+    Object.values(logChannels).forEach((l: any) => (l.channel as vscode.OutputChannel).dispose());
+    Object.keys(logChannels).forEach(key => delete logChannels[key]);
+    clearInterval(logPoller);
+    if (env.id) {
+      logPoller = await pollForEnvironmentLogs(env, logChannels);
+    }
   });
 
   vscode.commands.registerCommand("env0.openInEnv0", (env) => {
@@ -49,8 +55,6 @@ const openEnvironmentInBrowser = ({ id, projectId }: any) => {
 };
 
 async function pollForEnvironmentLogs(env: any, logChannels: any) {
-
-
   const logPoller = setInterval(async () => {
     const apiKeyCredentials = getApiKeyCredentials();
 
@@ -84,12 +88,17 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
           });
           stepLog.startTime = response.data.nextStartTime;
           stepLog.hasMoreLogs = response.data.hasMoreLogs;
+          if (step.status === 'IN_PROGRESS') {
+            stepLog.channel.show();
+          }     
         } catch(e) {
           console.error('oh no', {e});
-        }
+        }   
       }
     });
 
   }, 3000);
+
+  return logPoller;
 }
 
