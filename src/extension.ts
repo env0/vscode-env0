@@ -148,7 +148,7 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
         }   
       }
     });
-  }, 3000);
+  }, 1000);
 
   return logPoller;
 }
