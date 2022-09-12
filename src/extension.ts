@@ -4,7 +4,7 @@ import { Env0EnvironmentsProvider } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 import { getApiKeyCredentials } from "./auth";
 
-const ENV0_BASE_URL = "api-dev.dev.env0.com";
+export const ENV0_BASE_URL = "api-dev.dev.env0.com";
 let environmentPollingInstance: NodeJS.Timer;
 
 export function activate(context: vscode.ExtensionContext) {

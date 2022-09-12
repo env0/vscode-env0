@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
+import { ENV0_BASE_URL} from './extension';
 
-const ENV0_BASE_URL = "api-dev.dev.env0.com";
 const DOT_GIT_SUFFIX_LENGTH = 4;
 export type EnvironmentModel = {
 	id: string;
