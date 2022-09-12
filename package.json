@@ -18,6 +18,11 @@
       {
         "command": "env0.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "env0.openInEnv0",
+        "title": "Open in env0",
+        "icon": "resources/link-icon.svg"
       }
     ],
     "configuration": {
@@ -49,6 +54,15 @@
         {
           "id": "env0-environments",
           "name": "Environments"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "env0.openInEnv0",
+          "when": "view == env0-environments",
+          "group": "inline"
         }
       ]
     }
