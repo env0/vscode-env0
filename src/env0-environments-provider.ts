@@ -1,5 +1,6 @@
 import path from "path";
 import * as vscode from "vscode";
+import { ResourceChanges } from "./env0-pretty-plan-provider";
 import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
 import { showErrorMessage, showInProgressMessage, showSuccessMessage, showWaitingForApproval } from "./notification-messages";
 
@@ -17,6 +18,8 @@ export class Env0EnvironmentsProvider
 
   async getChildren(): Promise<Environment[]> {
     const envs = await getEnvironmentsForBranch();
+    console.log(envs);
+    
     this.environments = envs.map(
       (env) =>
         new Environment(
@@ -24,7 +27,8 @@ export class Env0EnvironmentsProvider
           env.status,
           env.updatedAt,
           env.id,
-          env.projectId
+          env.projectId,
+          env.latestDeploymentLog.plan?.resourceChanges
         )
     );
 
@@ -90,7 +94,8 @@ class Environment extends vscode.TreeItem {
     public readonly status: string,
     public readonly lastUpdated: string,
     public readonly id: string,
-    public readonly projectId: string
+    public readonly projectId: string,
+    public readonly resourceChanges: ResourceChanges[]
   ) {
     super(name);
     this.description = this.status;

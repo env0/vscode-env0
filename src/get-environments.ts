@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
+import { ResourceChanges } from "./env0-pretty-plan-provider";
 
 const ENV0_BASE_URL = "api-dev.dev.env0.com";
 const DOT_GIT_SUFFIX_LENGTH = 4;
@@ -13,6 +14,9 @@ export type EnvironmentModel = {
 	latestDeploymentLog: {
 		blueprintRepository: string;
 		blueprintRevision: string;
+		plan: {
+			resourceChanges: ResourceChanges[];
+		}
 		error?: {
 			message?: string;
 		}
@@ -28,6 +32,8 @@ export async function getEnvironmentsForBranch() {
 
 	if (organizationId) {
 		environments = await getEnvironments(apiKeyCredentials, organizationId);
+		console.log("got environments", environments);
+		
 	}
 
 	if (environments.length > 0) {

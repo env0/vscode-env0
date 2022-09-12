@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Env0EnvironmentsProvider } from "./env0-environments-provider";
+import { Env0PrettyPlanProvider } from "./env0-pretty-plan-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 
 let environmentPollingInstance: NodeJS.Timer;
@@ -10,10 +11,17 @@ export function activate(context: vscode.ExtensionContext) {
     treeDataProvider: environmentsDataProvider,
   });
 
+  const prettyPlanDataProvider = new Env0PrettyPlanProvider();
+
+  vscode.window.createTreeView("env0-pretty-plans", {
+    treeDataProvider: prettyPlanDataProvider,
+  })
+
   tree.onDidChangeSelection((e) => {
     const env = e.selection[0] ?? e.selection;
 
     // onClick here
+    prettyPlanDataProvider.setResourceChanges(env.resourceChanges);
   });
 
   vscode.commands.registerCommand("env0.openInEnv0", (env) => {

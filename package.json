@@ -47,6 +47,13 @@
           "title": "env0",
           "icon": "resources/env0-icon.svg"
         }
+      ],
+      "panel": [ 
+        {
+        "id": "env0-pretty-plan",
+        "title": "Pretty Plan",
+        "icon": "resources/env0-icon.svg"
+        }
       ]
     },
     "views": {
@@ -54,6 +61,13 @@
         {
           "id": "env0-environments",
           "name": "Environments"
+        }
+      ],
+      "env0-pretty-plan": [
+        {
+          "id": "env0-pretty-plans",
+          "name": "",
+          "visibility": "collapsed" 
         }
       ]
     },
