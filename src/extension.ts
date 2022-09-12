@@ -13,9 +13,11 @@ export function activate(context: vscode.ExtensionContext) {
   tree.onDidChangeSelection((e) => {
     const env = e.selection[0] ?? e.selection;
 
-    if (env.id && env.projectId) {
-      openEnvironmentInBrowser(env);
-    }
+    // onClick here
+  });
+
+  vscode.commands.registerCommand("env0.openInEnv0", (env) => {
+c    openEnvironmentInBrowser(env);
   });
 
   environmentPollingInstance = setInterval(async () => {
