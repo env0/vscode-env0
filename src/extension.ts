@@ -69,10 +69,6 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
         stepLog = logChannels[step.name];
       }
 
-      if(step.status != 'NOT_STARTED') {
-        (logChannels[step.name].channel as vscode.OutputChannel).show();
-      }
-
       if (stepLog.hasMoreLogs !== false) {
         try {
           const response: any = await axios.get(
