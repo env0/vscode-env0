@@ -191,7 +191,7 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
       }
     });
 
-    if(env.status === 'WAITING_FOR_USER' || env.status === 'ACTIVE' && !env.resourceChanges) {
+    if((env.status === 'WAITING_FOR_USER' || env.status === 'ACTIVE') && !env.resourceChanges) {
       const response: any = await axios.get(
         `https://${ENV0_BASE_URL}/environments/${env?.id}`,
         {
