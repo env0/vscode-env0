@@ -112,6 +112,10 @@ class Environment extends vscode.TreeItem {
     if (status.includes("IN_PROGRESS")) {
       this.contextValue = "IN_PROGRESS";
     }
+
+    if (status.includes("WAITING_FOR_USER")) {
+      this.contextValue = "WAITING_FOR_USER";
+    }
   }
 }
 

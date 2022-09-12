@@ -38,6 +38,16 @@
         "command": "env0.destroy",
         "title": "Destroy",
         "icon": "resources/destroy.svg"
+      },
+      {
+        "command": "env0.approve",
+        "title": "Approve",
+        "icon": "resources/approve.svg"
+      },
+      {
+        "command": "env0.cancel",
+        "title": "Cancel",
+        "icon": "resources/cancel.svg"
       }
     ],
     "configuration": {
@@ -81,12 +91,22 @@
         },
         {
           "command": "env0.redeploy",
-          "when": "view == env0-environments && viewItem != IN_PROGRESS",
+          "when": "view == env0-environments && viewItem != IN_PROGRESS && viewItem != WAITING_FOR_USER",
           "group": "inline"
         },
         {
           "command": "env0.abort",
-          "when": "view == env0-environments && viewItem == IN_PROGRESS",
+          "when": "view == env0-environments && viewItem == IN_PROGRESS && viewItem != WAITING_FOR_USER",
+          "group": "inline"
+        },
+        {
+          "command": "env0.approve",
+          "when": "view == env0-environments && viewItem == WAITING_FOR_USER",
+          "group": "inline"
+        },
+        {
+          "command": "env0.cancel",
+          "when": "view == env0-environments && viewItem == WAITING_FOR_USER",
           "group": "inline"
         },
         {
