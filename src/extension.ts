@@ -50,6 +50,10 @@ export function deactivate() {
 }
 
 const openEnvironmentInBrowser = ({ id, projectId }: any) => {
+  if (!id || !projectId) {
+    return;
+  }
+
   vscode.env.openExternal(
     vscode.Uri.parse(
       `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
@@ -58,12 +62,20 @@ const openEnvironmentInBrowser = ({ id, projectId }: any) => {
 };
 
 const redeployEnvironment = (env: any) => {
+  if (!env.id) {
+    return;
+  }
+
   const apiKeyCredentials = getApiKeyCredentials();
   const redeployUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/deployments`;
   axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
 };
 
 const destroyEnvironment = (env: any) => {
+  if (!env.id) {
+    return;
+  }
+
   const apiKeyCredentials = getApiKeyCredentials();
   const redeployUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/destroy`;
   axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
