@@ -19,6 +19,26 @@
       {
         "command": "env0.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "env0.openInEnv0",
+        "title": "Open in env0",
+        "icon": "resources/link-icon.svg"
+      },
+      {
+        "command": "env0.redeploy",
+        "title": "Redeploy",
+        "icon": "resources/redeploy.svg"
+      },
+      {
+        "command": "env0.abort",
+        "title": "Abort",
+        "icon": "resources/abort.svg"
+      },
+      {
+        "command": "env0.destroy",
+        "title": "Destroy",
+        "icon": "resources/destroy.svg"
       }
     ],
     "configuration": {
@@ -56,6 +76,30 @@
           "id": "env0-boto0",
           "name": "boto0",
           "size": 40
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "env0.openInEnv0",
+          "when": "view == env0-environments",
+          "group": "inline"
+        },
+        {
+          "command": "env0.redeploy",
+          "when": "view == env0-environments && viewItem != IN_PROGRESS",
+          "group": "inline"
+        },
+        {
+          "command": "env0.abort",
+          "when": "view == env0-environments && viewItem == IN_PROGRESS",
+          "group": "inline"
+        },
+        {
+          "command": "env0.destroy",
+          "when": "view == env0-environments",
+          "group": "inline"
         }
       ]
     }
