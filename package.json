@@ -30,6 +30,11 @@
         "icon": "resources/redeploy.svg"
       },
       {
+        "command": "env0.abort",
+        "title": "Abort",
+        "icon": "resources/abort.svg"
+      },
+      {
         "command": "env0.destroy",
         "title": "Destroy",
         "icon": "resources/destroy.svg"
@@ -76,7 +81,12 @@
         },
         {
           "command": "env0.redeploy",
-          "when": "view == env0-environments",
+          "when": "view == env0-environments && viewItem != IN_PROGRESS",
+          "group": "inline"
+        },
+        {
+          "command": "env0.abort",
+          "when": "view == env0-environments && viewItem == IN_PROGRESS",
           "group": "inline"
         },
         {

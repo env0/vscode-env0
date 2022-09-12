@@ -30,6 +30,11 @@ export function activate(context: vscode.ExtensionContext) {
     environmentsDataProvider.refresh();
   });
 
+  vscode.commands.registerCommand("env0.abort", (env) => {
+    abortEnvironmentDeploy(env);
+    environmentsDataProvider.refresh();
+  });
+
   vscode.commands.registerCommand("env0.destroy", (env) => {
     destroyEnvironment(env);
     environmentsDataProvider.refresh();
@@ -61,6 +66,18 @@ const openEnvironmentInBrowser = ({ id, projectId }: any) => {
       `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
     )
   );
+};
+
+const abortEnvironmentDeploy = (env: any) => {
+  const apiKeyCredentials = getApiKeyCredentials();
+  const id = env?.latestDeploymentLogId;
+
+  if (!id) {
+    return;
+  }
+
+  const redeployUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}/abort`;
+  axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
 };
 
 const redeployEnvironment = (env: any) => {
@@ -122,7 +139,5 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
         }
       }
     });
-
   }, 3000);
 }
-

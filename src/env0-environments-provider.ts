@@ -1,7 +1,12 @@
 import path from "path";
 import * as vscode from "vscode";
 import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
-import { showErrorMessage, showInProgressMessage, showSuccessMessage, showWaitingForApproval } from "./notification-messages";
+import {
+  showErrorMessage,
+  showInProgressMessage,
+  showSuccessMessage,
+  showWaitingForApproval,
+} from "./notification-messages";
 
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
@@ -65,7 +70,6 @@ export class Env0EnvironmentsProvider
           showSuccessMessage({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
         }
 
-
         return true;
       }
     }
@@ -104,12 +108,17 @@ class Environment extends vscode.TreeItem {
       "resources",
       getIconByStatus(status)
     );
+
+    if (status.includes("IN_PROGRESS")) {
+      this.contextValue = "IN_PROGRESS";
+    }
   }
 }
 
 const getIconByStatus = (status: string): string => {
   switch (status) {
     case "DRIFTED":
+    case "WAITING_FOR_USER":
       return "waiting_for_user.png";
     case "FAIL":
     case "CANCELLED":
