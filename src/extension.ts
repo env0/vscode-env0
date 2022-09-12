@@ -18,7 +18,38 @@ export function activate(context: vscode.ExtensionContext) {
     treeDataProvider: environmentsDataProvider,
   });
 
-  tree.onDidChangeSelection((e) => openEnvironmentInBrowser(e.selection));
+  const logChannels: any = {};
+  let logPoller: NodeJS.Timeout;
+
+  tree.onDidChangeSelection(async (e) => {
+    const env = e.selection[0] ?? e.selection;
+
+    Object.values(logChannels).forEach((l: any) => (l.channel as vscode.OutputChannel).dispose());
+    Object.keys(logChannels).forEach(key => delete logChannels[key]);
+    clearInterval(logPoller);
+    if (env.id) {
+      logPoller = await pollForEnvironmentLogs(env, logChannels);
+    }
+  });
+
+  vscode.commands.registerCommand("env0.openInEnv0", (env) => {
+    openEnvironmentInBrowser(env);
+  });
+
+  vscode.commands.registerCommand("env0.redeploy", (env) => {
+    redeployEnvironment(env);
+    environmentsDataProvider.refresh();
+  });
+
+  vscode.commands.registerCommand("env0.abort", (env) => {
+    abortEnvironmentDeploy(env);
+    environmentsDataProvider.refresh();
+  });
+
+  vscode.commands.registerCommand("env0.destroy", (env) => {
+    destroyEnvironment(env);
+    environmentsDataProvider.refresh();
+  });
 
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
@@ -81,6 +112,10 @@ class BotoProvider implements vscode.WebviewViewProvider {
 }
 
 const openEnvironmentInBrowser = ({ id, projectId }: any) => {
+  if (!id || !projectId) {
+    return;
+  }
+
   vscode.env.openExternal(
     vscode.Uri.parse(
       `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
