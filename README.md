@@ -1,3 +1,5 @@
+# 👷🏻‍♀️ This extension is WIP
+
 # env0 README
 
 This is the README for your extension "env0". After writing up a brief description, we recommend including the following sections.
