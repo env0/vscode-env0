@@ -1,5 +1,6 @@
 # env0 Extension for Visual Studio Code
 
+
 The env0 Extension for Visual Studio Code (VS Code) lets you interact with your env0 project form your IDE!
 
 ## Features
