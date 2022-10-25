@@ -11,6 +11,7 @@ import {
 } from "./actions";
 import { getApiKeyCredentials } from "./auth";
 import { Env0EnvironmentsProvider } from "./env0-environments-provider";
+import { Env0PrettyPlanProvider } from "./env0-pretty-plan-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 
 export const ENV0_BASE_URL = "api-dev.dev.env0.com";
@@ -20,8 +21,14 @@ const botoStars ='https://i.postimg.cc/3NC0PxyR/ezgif-com-gif-maker.gif';
 const botoRegular = 'https://i.postimg.cc/T3N4FrWK/env0-boto0-regular.png';
 const botoError = 'https://i.postimg.cc/kggHTjDr/env0-boto0-fail.png';
 
+const prettyPlanDataProvider = new Env0PrettyPlanProvider();
 
 export function activate(context: vscode.ExtensionContext) {
+
+  vscode.window.createTreeView("env0-pretty-plans", {
+    treeDataProvider: prettyPlanDataProvider,
+  })
+
   const environmentsDataProvider = new Env0EnvironmentsProvider();
   const tree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
@@ -29,7 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const logChannels: any = {};
   let logPoller: NodeJS.Timeout;
-  
+
   async function restartLogs(env: any) {
     Object.values(logChannels).forEach((l: any) => (l.channel as vscode.OutputChannel).dispose());
       Object.keys(logChannels).forEach(key => delete logChannels[key]);
@@ -41,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   tree.onDidChangeSelection(async (e) => {
     const env = e.selection[0] ?? e.selection;
-
+    prettyPlanDataProvider.setResourceChanges(env.resourceChanges);
     restartLogs(env);
   });
 
@@ -182,6 +189,18 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
         }
       }
     });
+
+    if((env.status === 'WAITING_FOR_USER' || env.status === 'ACTIVE') && !env.resourceChanges) {
+      const response: any = await axios.get(
+        `https://${ENV0_BASE_URL}/environments/${env?.id}`,
+        {
+          auth: apiKeyCredentials,
+        }
+      );
+
+      prettyPlanDataProvider.setResourceChanges(response.data.latestDeploymentLog?.plan?.resourceChanges);
+      env.resourceChanges = response.data.latestDeploymentLog?.plan?.resourceChanges;
+    }
   }, 1000);
 
   return logPoller;

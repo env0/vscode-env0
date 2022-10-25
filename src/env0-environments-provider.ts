@@ -1,5 +1,6 @@
 import path from "path";
 import * as vscode from "vscode";
+import { ResourceChanges } from "./env0-pretty-plan-provider";
 import { EnvironmentModel, getEnvironmentsForBranch } from "./get-environments";
 import {
   showErrorMessage,
@@ -22,6 +23,8 @@ export class Env0EnvironmentsProvider
 
   async getChildren(): Promise<Environment[]> {
     const envs = await getEnvironmentsForBranch();
+    console.log(envs);
+
     this.environments = envs.map(
       (env) =>
         new Environment(
@@ -90,6 +93,8 @@ export class Env0EnvironmentsProvider
 }
 
 class Environment extends vscode.TreeItem {
+  resourceChanges: any;
+
   constructor(
     public readonly name: string,
     public readonly status: string,
