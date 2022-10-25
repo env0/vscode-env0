@@ -10,16 +10,61 @@ import {
   resumeDeployment,
 } from "./actions";
 import { getApiKeyCredentials } from "./auth";
-import { Env0EnvironmentsProvider } from "./env0-environments-provider";
+import {
+  Env0EnvironmentsProvider,
+  Environment,
+} from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 
 export const ENV0_BASE_URL = "api-dev.dev.env0.com";
 let environmentPollingInstance: NodeJS.Timer;
 // const botoStars = 'env0-boto0-stars-eyes.png';
-const botoStars ='https://i.postimg.cc/3NC0PxyR/ezgif-com-gif-maker.gif';
-const botoRegular = 'https://i.postimg.cc/T3N4FrWK/env0-boto0-regular.png';
-const botoError = 'https://i.postimg.cc/kggHTjDr/env0-boto0-fail.png';
+// const botoStars = "https://i.postimg.cc/3NC0PxyR/ezgif-com-gif-maker.gif";
+const botoRegular = "https://i.postimg.cc/T3N4FrWK/env0-boto0-regular.png";
+// const botoError = "https://i.postimg.cc/kggHTjDr/env0-boto0-fail.png";
 
+type DeploymentStepType =
+  | "NOT_STARTED"
+  | "IN_PROGRESS"
+  | "WAITING_FOR_USER"
+  | "TIMEOUT"
+  | "FAIL"
+  | "SUCCESS"
+  | "CANCELLED"
+  | "SKIPPED";
+
+interface DeploymentStep {
+  id: string;
+  deploymentLogId: string;
+  name: string;
+  order: number;
+  projectId: string;
+  organizationId: string;
+  status: DeploymentStepType;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+type DeploymentStepResponse = DeploymentStep[];
+
+interface DeploymentStepLog {
+  eventId: string;
+  message: string;
+  level: string;
+  timestamp: string | number;
+}
+
+interface DeploymentStepLogsResponse {
+  events: DeploymentStepLog[];
+  nextStartTime?: number | string;
+  hasMoreLogs: boolean;
+}
+
+interface LogChannel {
+  channel: vscode.OutputChannel;
+  startTime?: number | string;
+  hasMoreLogs?: boolean;
+}
 
 export function activate(context: vscode.ExtensionContext) {
   const environmentsDataProvider = new Env0EnvironmentsProvider();
@@ -27,16 +72,18 @@ export function activate(context: vscode.ExtensionContext) {
     treeDataProvider: environmentsDataProvider,
   });
 
-  const logChannels: any = {};
+  const logChannels: Record<string, LogChannel> = {};
   let logPoller: NodeJS.Timeout;
-  
-  async function restartLogs(env: any) {
-    Object.values(logChannels).forEach((l: any) => (l.channel as vscode.OutputChannel).dispose());
-      Object.keys(logChannels).forEach(key => delete logChannels[key]);
-      clearInterval(logPoller);
-      if (env.id) {
-        logPoller = await pollForEnvironmentLogs(env, logChannels);
-      }
+
+  async function restartLogs(env: Environment) {
+    Object.values(logChannels).forEach((l) =>
+      (l.channel as vscode.OutputChannel).dispose()
+    );
+    Object.keys(logChannels).forEach((key) => delete logChannels[key]);
+    clearInterval(logPoller);
+    if (env.id) {
+      logPoller = await pollForEnvironmentLogs(env, logChannels);
+    }
   }
 
   tree.onDidChangeSelection(async (e) => {
@@ -90,39 +137,36 @@ export function activate(context: vscode.ExtensionContext) {
     }
   }, 3000);
 
-	///////////////////////
+  /// ////////////////////
 
-	const provider = new BotoProvider(context.extensionUri);
+  const provider = new BotoProvider(context.extensionUri);
 
-	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider(BotoProvider.viewType, provider));
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(BotoProvider.viewType, provider)
+  );
 }
 
 export function deactivate() {
-	clearInterval(environmentPollingInstance);
+  clearInterval(environmentPollingInstance);
 }
 
 class BotoProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = "env0-boto0";
+  private readonly _extensionUri: vscode.Uri;
 
-	public static readonly viewType = 'env0-boto0';
-	private readonly _extensionUri: vscode.Uri;
+  private _view?: vscode.WebviewView;
 
-	private _view?: vscode.WebviewView;
+  constructor(extensionUri: vscode.Uri) {
+    this._extensionUri = extensionUri;
+  }
 
-	constructor(extensionUri: vscode.Uri) {
-		this._extensionUri = extensionUri;
-	}
+  public resolveWebviewView(webviewView: vscode.WebviewView) {
+    this._view = webviewView;
+    webviewView.webview.html = this._getHtmlForWebview();
+  }
 
-	public resolveWebviewView(
-		webviewView: vscode.WebviewView,
-	) {
-		this._view = webviewView;
-		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-	}
-
-	private _getHtmlForWebview(webview: vscode.Webview) {
-
-		return `<!DOCTYPE html>
+  private _getHtmlForWebview() {
+    return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
@@ -136,31 +180,38 @@ class BotoProvider implements vscode.WebviewViewProvider {
 				</div>
 			</body>
 			</html>`;
-	}
+  }
 }
 
-async function pollForEnvironmentLogs(env: any, logChannels: any) {
+async function pollForEnvironmentLogs(
+  env: Environment,
+  logChannels: Record<string, LogChannel>
+) {
   const logPoller = setInterval(async () => {
     const apiKeyCredentials = getApiKeyCredentials();
 
-    const options = {
-      method: "GET",
-      url: `https://${ENV0_BASE_URL}/deployments/${env?.latestDeploymentLogId}/steps`,
-      auth: apiKeyCredentials,
-    };
+    const response = await axios.get<DeploymentStepResponse>(
+      `https://${ENV0_BASE_URL}/deployments/${env?.latestDeploymentLogId}/steps`,
+      {
+        auth: apiKeyCredentials,
+      }
+    );
 
-    const response = await axios.request(options);
-
-    (response.data as any).forEach(async (step: any) => {
+    response.data.forEach(async (step) => {
       let stepLog = logChannels[step.name];
-      if(!stepLog) {
-        logChannels[step.name] = { channel: vscode.window.createOutputChannel(`(env0) ${step.name}`, 'ansi') };
+      if (!stepLog) {
+        logChannels[step.name] = {
+          channel: vscode.window.createOutputChannel(
+            `(env0) ${step.name}`,
+            "ansi"
+          ),
+        };
         stepLog = logChannels[step.name];
       }
 
       if (stepLog.hasMoreLogs !== false) {
         try {
-          const response: any = await axios.get(
+          const response = await axios.get<DeploymentStepLogsResponse>(
             `https://${ENV0_BASE_URL}/deployments/${
               env?.latestDeploymentLogId
             }/steps/${step.name}/log?startTime=${stepLog.startTime ?? ""}`,
@@ -169,8 +220,10 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
             }
           );
 
-          response.data.events.forEach((event: any) => {
-            (logChannels[step.name].channel as vscode.OutputChannel).appendLine(stripAnsi(event.message));
+          response.data.events.forEach((event) => {
+            (logChannels[step.name].channel as vscode.OutputChannel).appendLine(
+              stripAnsi(event.message)
+            );
           });
           stepLog.startTime = response.data.nextStartTime;
           stepLog.hasMoreLogs = response.data.hasMoreLogs;

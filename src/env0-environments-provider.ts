@@ -8,13 +8,44 @@ import {
   showWaitingForApproval,
 } from "./notification-messages";
 
+export class Environment extends vscode.TreeItem {
+  constructor(
+    public readonly name: string,
+    public readonly status: string,
+    public readonly lastUpdated: string,
+    public readonly id: string,
+    public readonly projectId: string,
+    public readonly latestDeploymentLogId: string
+  ) {
+    super(name);
+    this.description = this.status;
+    this.tooltip = `last update at ${lastUpdated}`;
+    this.iconPath = path.join(
+      __filename,
+      "..",
+      "..",
+      "resources",
+      getIconByStatus(status)
+    );
+
+    if (status.includes("IN_PROGRESS")) {
+      this.contextValue = "IN_PROGRESS";
+    }
+
+    if (status.includes("WAITING_FOR_USER")) {
+      this.contextValue = "WAITING_FOR_USER";
+    }
+  }
+}
+
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
+  private environments: Environment[];
+
   constructor() {
     this.environments = [];
   }
-  private environments: Environment[];
 
   getTreeItem(element: Environment): vscode.TreeItem {
     return element;
@@ -52,22 +83,35 @@ export class Env0EnvironmentsProvider
       }
 
       if (
-        this.environments[envIndex].lastUpdated !== newEnvironment.updatedAt && this.environments[envIndex].status !== newEnvironment.status
+        this.environments[envIndex].lastUpdated !== newEnvironment.updatedAt &&
+        this.environments[envIndex].status !== newEnvironment.status
       ) {
-        if (newEnvironment.status === 'DEPLOY_IN_PROGRESS') {
-          showInProgressMessage({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        if (newEnvironment.status === "DEPLOY_IN_PROGRESS") {
+          showInProgressMessage({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+          });
         }
 
-        if (newEnvironment.status === 'FAILED') {
-          showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        if (newEnvironment.status === "FAILED") {
+          showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+          });
         }
 
-        if (newEnvironment.status === 'WAITING_FOR_USER') {
-          showWaitingForApproval({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        if (newEnvironment.status === "WAITING_FOR_USER") {
+          showWaitingForApproval({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+          });
         }
 
-        if (newEnvironment.status === 'ACTIVE') {
-          showSuccessMessage({environmentId:newEnvironment.id, projectId:newEnvironment.projectId})
+        if (newEnvironment.status === "ACTIVE") {
+          showSuccessMessage({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+          });
         }
 
         return true;
@@ -80,42 +124,13 @@ export class Env0EnvironmentsProvider
   private _onDidChangeTreeData: vscode.EventEmitter<
     Environment | undefined | null | void
   > = new vscode.EventEmitter<Environment | undefined | null | void>();
+
   readonly onDidChangeTreeData: vscode.Event<
     Environment | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
-  }
-}
-
-class Environment extends vscode.TreeItem {
-  constructor(
-    public readonly name: string,
-    public readonly status: string,
-    public readonly lastUpdated: string,
-    public readonly id: string,
-    public readonly projectId: string,
-    public readonly latestDeploymentLogId: string
-  ) {
-    super(name);
-    this.description = this.status;
-    this.tooltip = `last update at ${lastUpdated}`;
-    this.iconPath = path.join(
-      __filename,
-      "..",
-      "..",
-      "resources",
-      getIconByStatus(status)
-    );
-
-    if (status.includes("IN_PROGRESS")) {
-      this.contextValue = "IN_PROGRESS";
-    }
-
-    if (status.includes("WAITING_FOR_USER")) {
-      this.contextValue = "WAITING_FOR_USER";
-    }
   }
 }
 

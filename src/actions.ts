@@ -1,9 +1,10 @@
 import axios from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
+import { Environment } from "./env0-environments-provider";
 import { ENV0_BASE_URL } from "./extension";
 
-export const openEnvironmentInBrowser = ({ id, projectId }: any) => {
+export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   if (!id || !projectId) {
     return;
   }
@@ -15,7 +16,7 @@ export const openEnvironmentInBrowser = ({ id, projectId }: any) => {
   );
 };
 
-export const abortEnvironmentDeploy = (env: any) => {
+export const abortEnvironmentDeploy = (env: Environment) => {
   const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
@@ -27,7 +28,7 @@ export const abortEnvironmentDeploy = (env: any) => {
   axios.post(abortDeploymentUrl, {}, { auth: apiKeyCredentials });
 };
 
-export const cancelDeployment = (env: any) => {
+export const cancelDeployment = (env: Environment) => {
   const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
@@ -39,7 +40,7 @@ export const cancelDeployment = (env: any) => {
   axios.put(cancelDeployUrl, undefined, { auth: apiKeyCredentials });
 };
 
-export const resumeDeployment = (env: any) => {
+export const resumeDeployment = (env: Environment) => {
   const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
@@ -51,7 +52,7 @@ export const resumeDeployment = (env: any) => {
   axios.put(resumeDeployUrl, undefined, { auth: apiKeyCredentials });
 };
 
-export const redeployEnvironment = (env: any) => {
+export const redeployEnvironment = (env: Environment) => {
   if (!env.id) {
     return;
   }
@@ -61,7 +62,7 @@ export const redeployEnvironment = (env: any) => {
   axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
 };
 
-export const destroyEnvironment = (env: any) => {
+export const destroyEnvironment = (env: Environment) => {
   if (!env.id) {
     return;
   }
