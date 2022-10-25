@@ -169,7 +169,6 @@ async function pollForEnvironmentLogs(env: any, logChannels: any) {
             }
           );
 
-          console.log("got response", { response });
           response.data.events.forEach((event: any) => {
             (logChannels[step.name].channel as vscode.OutputChannel).appendLine(stripAnsi(event.message));
           });
