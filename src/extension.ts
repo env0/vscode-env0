@@ -76,9 +76,7 @@ export function activate(context: vscode.ExtensionContext) {
   let logPoller: NodeJS.Timeout;
 
   async function restartLogs(env: Environment) {
-    Object.values(logChannels).forEach((l) =>
-      (l.channel as vscode.OutputChannel).dispose()
-    );
+    Object.values(logChannels).forEach((l) => l.channel.dispose());
     Object.keys(logChannels).forEach((key) => delete logChannels[key]);
     clearInterval(logPoller);
     if (env.id) {
@@ -136,8 +134,6 @@ export function activate(context: vscode.ExtensionContext) {
       environmentsDataProvider.refresh();
     }
   }, 3000);
-
-  /// ////////////////////
 
   const provider = new BotoProvider(context.extensionUri);
 
