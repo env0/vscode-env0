@@ -16,7 +16,8 @@ import {
 } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 
-export const ENV0_BASE_URL = "api-dev.dev.env0.com";
+export const ENV0_BASE_URL = process.env.ENV0_BASE_URL || "api.env0.com";
+
 let environmentPollingInstance: NodeJS.Timer;
 // const botoStars = 'env0-boto0-stars-eyes.png';
 // const botoStars = "https://i.postimg.cc/3NC0PxyR/ezgif-com-gif-maker.gif";
