@@ -15,8 +15,7 @@ import {
   Environment,
 } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
-
-export const ENV0_BASE_URL = process.env.ENV0_BASE_URL || "api.env0.com";
+import { ENV0_API_URL } from "./common";
 
 let environmentPollingInstance: NodeJS.Timer;
 // const botoStars = 'env0-boto0-stars-eyes.png';
@@ -188,7 +187,7 @@ async function pollForEnvironmentLogs(
     const apiKeyCredentials = getApiKeyCredentials();
 
     const response = await axios.get<DeploymentStepResponse>(
-      `https://${ENV0_BASE_URL}/deployments/${env?.latestDeploymentLogId}/steps`,
+      `https://${ENV0_API_URL}/deployments/${env?.latestDeploymentLogId}/steps`,
       {
         auth: apiKeyCredentials,
       }
@@ -209,7 +208,7 @@ async function pollForEnvironmentLogs(
       if (stepLog.hasMoreLogs !== false) {
         try {
           const response = await axios.get<DeploymentStepLogsResponse>(
-            `https://${ENV0_BASE_URL}/deployments/${
+            `https://${ENV0_API_URL}/deployments/${
               env?.latestDeploymentLogId
             }/steps/${step.name}/log?startTime=${stepLog.startTime ?? ""}`,
             {

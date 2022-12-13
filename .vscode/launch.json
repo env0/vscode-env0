@@ -27,7 +27,8 @@
       ],
       "preLaunchTask": "tasks: watch-tests",
       "env": {
-        "ENV0_BASE_URL": "api-dev.dev.env0.com"
+        "ENV0_API_URL": "api-dev.dev.env0.com",
+        "ENV0_WEB_URL": "dev.dev.env0.com"
       }
     }
   ]

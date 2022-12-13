@@ -2,7 +2,7 @@ import axios from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
 import { Environment } from "./env0-environments-provider";
-import { ENV0_BASE_URL } from "./extension";
+import { ENV0_API_URL, ENV0_WEB_URL } from "./common";
 
 export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   if (!id || !projectId) {
@@ -11,7 +11,7 @@ export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
 
   vscode.env.openExternal(
     vscode.Uri.parse(
-      `https://dev.dev.env0.com/p/${projectId}/environments/${id}`
+      `https://${ENV0_WEB_URL}/p/${projectId}/environments/${id}`
     )
   );
 };
@@ -24,7 +24,7 @@ export const abortEnvironmentDeploy = (env: Environment) => {
     return;
   }
 
-  const abortDeploymentUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}/abort`;
+  const abortDeploymentUrl = `https://${ENV0_API_URL}/environments/deployments/${id}/abort`;
   axios.post(abortDeploymentUrl, {}, { auth: apiKeyCredentials });
 };
 
@@ -36,7 +36,7 @@ export const cancelDeployment = (env: Environment) => {
     return;
   }
 
-  const cancelDeployUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}/cancel`;
+  const cancelDeployUrl = `https://${ENV0_API_URL}/environments/deployments/${id}/cancel`;
   axios.put(cancelDeployUrl, undefined, { auth: apiKeyCredentials });
 };
 
@@ -48,7 +48,7 @@ export const resumeDeployment = (env: Environment) => {
     return;
   }
 
-  const resumeDeployUrl = `https://${ENV0_BASE_URL}/environments/deployments/${id}`;
+  const resumeDeployUrl = `https://${ENV0_API_URL}/environments/deployments/${id}`;
   axios.put(resumeDeployUrl, undefined, { auth: apiKeyCredentials });
 };
 
@@ -58,7 +58,7 @@ export const redeployEnvironment = (env: Environment) => {
   }
 
   const apiKeyCredentials = getApiKeyCredentials();
-  const redeployUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/deployments`;
+  const redeployUrl = `https://${ENV0_API_URL}/environments/${env.id}/deployments`;
   axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
 };
 
@@ -68,6 +68,6 @@ export const destroyEnvironment = (env: Environment) => {
   }
 
   const apiKeyCredentials = getApiKeyCredentials();
-  const destroyUrl = `https://${ENV0_BASE_URL}/environments/${env.id}/destroy`;
+  const destroyUrl = `https://${ENV0_API_URL}/environments/${env.id}/destroy`;
   axios.post(destroyUrl, {}, { auth: apiKeyCredentials });
 };

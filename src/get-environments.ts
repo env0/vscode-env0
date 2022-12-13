@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
-import { ENV0_BASE_URL } from "./extension";
+import { ENV0_API_URL } from "./common";
 
 const DOT_GIT_SUFFIX_LENGTH = 4;
 
@@ -74,7 +74,7 @@ async function getEnvironments(
   try {
     const environments = (
       await axios.get<EnvironmentModel[]>(
-        `https://${ENV0_BASE_URL}/environments`,
+        `https://${ENV0_API_URL}/environments`,
         {
           params: { organizationId },
           auth: apiKeyCredentials,
@@ -95,12 +95,9 @@ async function getOrganizationId(apiKeyCredentials: {
   password: string;
 }) {
   const organizationId = (
-    await axios.get<{ id: string }[]>(
-      `https://${ENV0_BASE_URL}/organizations`,
-      {
-        auth: apiKeyCredentials,
-      }
-    )
+    await axios.get<{ id: string }[]>(`https://${ENV0_API_URL}/organizations`, {
+      auth: apiKeyCredentials,
+    })
   ).data[0]?.id;
 
   return organizationId;

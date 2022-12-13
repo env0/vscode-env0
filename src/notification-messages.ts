@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { ENV0_WEB_URL } from "./common";
 
 const MORE_INFO_BUTTON = "More info";
 
@@ -50,7 +51,7 @@ function addLinkToEnvironment(
   if (button === MORE_INFO_BUTTON) {
     vscode.env.openExternal(
       vscode.Uri.parse(
-        `https://dev.dev.env0.com/p/${projectId}/environments/${environmentId}`
+        `https://${ENV0_WEB_URL}/p/${projectId}/environments/${environmentId}`
       )
     );
   }
