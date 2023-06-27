@@ -71,7 +71,10 @@ export function activate(context: vscode.ExtensionContext) {
   const tree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
   });
-
+  tree.message = "loading";
+  environmentsDataProvider.refresh().then(() => {
+    tree.message = undefined;
+  });
   const logChannels: Record<string, LogChannel> = {};
   let logPoller: NodeJS.Timeout;
 

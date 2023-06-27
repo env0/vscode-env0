@@ -42,9 +42,11 @@ export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
   private environments: Environment[];
+  private envs: EnvironmentModel[];
 
   constructor() {
     this.environments = [];
+    this.envs = [];
   }
 
   getTreeItem(element: Environment): vscode.TreeItem {
@@ -52,8 +54,7 @@ export class Env0EnvironmentsProvider
   }
 
   async getChildren(): Promise<Environment[]> {
-    const envs = await getEnvironmentsForBranch();
-    this.environments = envs.map(
+    this.environments = this.envs.map(
       (env) =>
         new Environment(
           env.name,
@@ -129,7 +130,8 @@ export class Env0EnvironmentsProvider
     Environment | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
-  refresh(): void {
+  async refresh(): Promise<void> {
+    this.envs = await getEnvironmentsForBranch();
     this._onDidChangeTreeData.fire();
   }
 }
