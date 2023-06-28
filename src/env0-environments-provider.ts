@@ -48,9 +48,7 @@ export class Env0EnvironmentsProvider
     return element;
   }
 
-  async getChildren(...args: any): Promise<Environment[]> {
-    console.log("get children args", args);
-
+  async getChildren(): Promise<Environment[]> {
     this.environmentTreeItems = this.environments.map(
       (env) =>
         new Environment(
