@@ -41,20 +41,17 @@ export class Environment extends vscode.TreeItem {
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
-  private environments: Environment[];
-  private envs: EnvironmentModel[];
-
-  constructor() {
-    this.environments = [];
-    this.envs = [];
-  }
+  private environmentTreeItems: Environment[] = [];
+  private environments: EnvironmentModel[] = [];
 
   getTreeItem(element: Environment): vscode.TreeItem {
     return element;
   }
 
-  async getChildren(): Promise<Environment[]> {
-    this.environments = this.envs.map(
+  async getChildren(...args: any): Promise<Environment[]> {
+    console.log("get children args", args);
+
+    this.environmentTreeItems = this.environments.map(
       (env) =>
         new Environment(
           env.name,
@@ -66,16 +63,16 @@ export class Env0EnvironmentsProvider
         )
     );
 
-    return Promise.resolve(this.environments);
+    return Promise.resolve(this.environmentTreeItems);
   }
 
   public shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
-    if (environmentsToCompareTo.length !== this.environments.length) {
+    if (environmentsToCompareTo.length !== this.environmentTreeItems.length) {
       return true;
     }
 
     for (const newEnvironment of environmentsToCompareTo) {
-      const envIndex: number = this.environments.findIndex(
+      const envIndex: number = this.environmentTreeItems.findIndex(
         (env) => env.id === newEnvironment.id
       );
 
@@ -84,8 +81,9 @@ export class Env0EnvironmentsProvider
       }
 
       if (
-        this.environments[envIndex].lastUpdated !== newEnvironment.updatedAt &&
-        this.environments[envIndex].status !== newEnvironment.status
+        this.environmentTreeItems[envIndex].lastUpdated !==
+          newEnvironment.updatedAt &&
+        this.environmentTreeItems[envIndex].status !== newEnvironment.status
       ) {
         if (newEnvironment.status === "DEPLOY_IN_PROGRESS") {
           showInProgressMessage({
@@ -131,7 +129,7 @@ export class Env0EnvironmentsProvider
   > = this._onDidChangeTreeData.event;
 
   async refresh(): Promise<void> {
-    this.envs = await getEnvironmentsForBranch();
+    this.environments = await getEnvironmentsForBranch();
     this._onDidChangeTreeData.fire();
   }
 }

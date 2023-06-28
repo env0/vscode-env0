@@ -16,7 +16,9 @@ import {
 } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 import { ENV0_API_URL } from "./common";
+import { getGitData } from "./utils/git";
 
+let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
 // const botoStars = 'env0-boto0-stars-eyes.png';
 // const botoStars = "https://i.postimg.cc/3NC0PxyR/ezgif-com-gif-maker.gif";
@@ -66,17 +68,27 @@ interface LogChannel {
   hasMoreLogs?: boolean;
 }
 
+const loadEnvironments = async (
+  environmentsDataProvider: Env0EnvironmentsProvider,
+  environmentsTree: vscode.TreeView<Environment>
+) => {
+  try {
+    const { currentBranch } = getGitData();
+    environmentsTree.message = `loading environments from branch ${currentBranch}…`;
+  } catch {
+    environmentsTree.message = `loading environments...`;
+  }
+  await environmentsDataProvider.refresh();
+  environmentsTree.message = undefined;
+};
+
 export function activate(context: vscode.ExtensionContext) {
   const environmentsDataProvider = new Env0EnvironmentsProvider();
-  const tree = vscode.window.createTreeView("env0-environments", {
+  const environmentsTree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
   });
-  tree.message = "loading";
-  environmentsDataProvider.refresh().then(() => {
-    tree.message = undefined;
-  });
+  loadEnvironments(environmentsDataProvider, environmentsTree);
   const logChannels: Record<string, LogChannel> = {};
-  let logPoller: NodeJS.Timeout;
 
   async function restartLogs(env: Environment) {
     Object.values(logChannels).forEach((l) => l.channel.dispose());
@@ -87,7 +99,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  tree.onDidChangeSelection(async (e) => {
+  environmentsTree.onDidChangeSelection(async (e) => {
     const env = e.selection[0] ?? e.selection;
 
     restartLogs(env);
@@ -146,6 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+  clearInterval(logPoller);
   clearInterval(environmentPollingInstance);
 }
 
