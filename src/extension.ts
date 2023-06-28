@@ -18,10 +18,6 @@ import { getEnvironmentsForBranch } from "./get-environments";
 import { ENV0_API_URL } from "./common";
 
 let environmentPollingInstance: NodeJS.Timer;
-// const botoStars = 'env0-boto0-stars-eyes.png';
-// const botoStars = "https://i.postimg.cc/3NC0PxyR/ezgif-com-gif-maker.gif";
-const botoRegular = "https://i.postimg.cc/T3N4FrWK/env0-boto0-regular.png";
-// const botoError = "https://i.postimg.cc/kggHTjDr/env0-boto0-fail.png";
 
 type DeploymentStepType =
   | "NOT_STARTED"
