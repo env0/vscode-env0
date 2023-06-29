@@ -96,7 +96,7 @@ async function getOrganizationId(apiKeyCredentials: {
     await axios.get<{ id: string }[]>(`https://${ENV0_API_URL}/organizations`, {
       auth: apiKeyCredentials,
     })
-  ).data[1]?.id;
+  ).data[0]?.id;
 
   return organizationId;
 }
