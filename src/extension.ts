@@ -64,7 +64,7 @@ interface LogChannel {
   hasMoreLogs?: boolean;
 }
 
-const loadEnvironments = async (
+export const loadEnvironments = async (
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>
 ) => {
@@ -75,7 +75,7 @@ const loadEnvironments = async (
   environmentsTree.message = undefined;
 };
 
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate() {
   const environmentsDataProvider = new Env0EnvironmentsProvider();
   const environmentsTree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
