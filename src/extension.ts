@@ -16,7 +16,7 @@ import {
 } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 import { ENV0_API_URL } from "./common";
-import { getGitData } from "./utils/git";
+import { getCurrentBranchWithRetry } from "./utils/git";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
@@ -68,22 +68,19 @@ const loadEnvironments = async (
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>
 ) => {
-  try {
-    const { currentBranch } = getGitData();
-    environmentsTree.message = `loading environments from branch ${currentBranch}…`;
-  } catch {
-    environmentsTree.message = `loading environments...`;
-  }
+  environmentsTree.message = `loading environments...`;
+  const currentBranch = await getCurrentBranchWithRetry();
+  environmentsTree.message = `loading environments from branch ${currentBranch}…`;
   await environmentsDataProvider.refresh();
   environmentsTree.message = undefined;
 };
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   const environmentsDataProvider = new Env0EnvironmentsProvider();
   const environmentsTree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
   });
-  loadEnvironments(environmentsDataProvider, environmentsTree);
+  await loadEnvironments(environmentsDataProvider, environmentsTree);
   const logChannels: Record<string, LogChannel> = {};
 
   async function restartLogs(env: Environment) {
