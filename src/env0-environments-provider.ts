@@ -41,15 +41,14 @@ export class Environment extends vscode.TreeItem {
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
-  private environmentTreeItems: Environment[] = [];
   private environments: EnvironmentModel[] = [];
 
   getTreeItem(element: Environment): vscode.TreeItem {
     return element;
   }
 
-  async getChildren(): Promise<Environment[]> {
-    this.environmentTreeItems = this.environments.map(
+  getChildren(): Environment[] {
+    return this.environments.map(
       (env) =>
         new Environment(
           env.name,
@@ -60,17 +59,15 @@ export class Env0EnvironmentsProvider
           env.latestDeploymentLog.id
         )
     );
-
-    return Promise.resolve(this.environmentTreeItems);
   }
 
   public shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
-    if (environmentsToCompareTo.length !== this.environmentTreeItems.length) {
+    if (environmentsToCompareTo.length !== this.environments.length) {
       return true;
     }
 
     for (const newEnvironment of environmentsToCompareTo) {
-      const envIndex: number = this.environmentTreeItems.findIndex(
+      const envIndex: number = this.environments.findIndex(
         (env) => env.id === newEnvironment.id
       );
 
@@ -79,9 +76,8 @@ export class Env0EnvironmentsProvider
       }
 
       if (
-        this.environmentTreeItems[envIndex].lastUpdated !==
-          newEnvironment.updatedAt &&
-        this.environmentTreeItems[envIndex].status !== newEnvironment.status
+        this.environments[envIndex].updatedAt !== newEnvironment.updatedAt &&
+        this.environments[envIndex].status !== newEnvironment.status
       ) {
         if (newEnvironment.status === "DEPLOY_IN_PROGRESS") {
           showInProgressMessage({
