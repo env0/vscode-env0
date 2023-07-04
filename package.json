@@ -131,7 +131,8 @@
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "unit:test": "jest"
+    "unit:test": "jest",
+    "unit:test-watch": "jest --watch"
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.5",

@@ -70,7 +70,7 @@ export const loadEnvironments = async (
 ) => {
   environmentsTree.message = `loading environments...`;
   const currentBranch = await getCurrentBranchWithRetry();
-  environmentsTree.message = `loading environments from branch ${currentBranch}…`;
+  environmentsTree.message = `loading environments from branch ${currentBranch}...`;
   await environmentsDataProvider.refresh();
   environmentsTree.message = undefined;
 };
