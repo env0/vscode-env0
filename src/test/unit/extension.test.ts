@@ -7,7 +7,7 @@ import type vscode from "vscode";
 import { getCurrentBranchWithRetry } from "../../utils/git";
 jest.mock("../../utils/git");
 
-const mockGetCurrentBranch = (branchName: string) => {
+const mockGetCurrentBranchWithRetry = (branchName: string) => {
   const getCurrentBranchWithRetryPromise = Promise.resolve(branchName);
   (getCurrentBranchWithRetry as jest.Mock).mockImplementation(
     () => getCurrentBranchWithRetryPromise
@@ -29,7 +29,7 @@ describe("extension init", () => {
 
   it("should show loading message", async () => {
     const branchName = "my-branch";
-    const getCurrentBranchPromise = mockGetCurrentBranch(branchName);
+    const getCurrentBranchPromise = mockGetCurrentBranchWithRetry(branchName);
 
     const loadEnvironmentsPromise = myExtension.loadEnvironments(
       environmentsDataProvider,
