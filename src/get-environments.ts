@@ -2,7 +2,7 @@ import axios from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
 import { ENV0_API_URL } from "./common";
-import { getGitData } from "./utils/git";
+import { getGitRepoAndBranch } from "./utils/git";
 
 export type EnvironmentModel = {
   id: string;
@@ -49,7 +49,7 @@ export async function getEnvironmentsForBranch() {
   }
 
   if (environments.length > 0) {
-    const { currentBranch, repository } = getGitData();
+    const { currentBranch, repository } = getGitRepoAndBranch();
     environments = environments
       .filter(
         (environment) =>

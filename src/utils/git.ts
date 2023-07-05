@@ -3,7 +3,7 @@ import retry from "async-retry";
 
 const DOT_GIT_SUFFIX_LENGTH = 4;
 
-export function getGitData() {
+export function getGitRepoAndBranch() {
   const extensions = vscode.extensions;
   let normalizedRepositoryName;
   let currentBranch;
@@ -29,7 +29,7 @@ export function getGitData() {
 export async function getCurrentBranchWithRetry() {
   return await retry(
     () => {
-      const result = getGitData();
+      const result = getGitRepoAndBranch();
       if (!result.currentBranch) {
         throw new Error("couldn't find git current branch");
       } else {
