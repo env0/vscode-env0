@@ -17,8 +17,9 @@ const mockGetCurrentBranchWithRetry = (branchName: string) => {
 
 let environmentsDataProvider: Env0EnvironmentsProvider;
 let environmentsTree: vscode.TreeView<Environment>;
+const branchName = "my-branch";
 
-describe("extension init", () => {
+describe("extension", () => {
   beforeEach(() => {
     environmentsDataProvider = {
       refresh: jest.fn(),
@@ -26,21 +27,38 @@ describe("extension init", () => {
 
     environmentsTree = {} as vscode.TreeView<Environment>;
   });
+  describe("init", () => {
+    it("should display simple loading message when branch name is yet to load", async () => {
+      mockGetCurrentBranchWithRetry(branchName);
+      const loadEnvironmentsPromise = myExtension.loadEnvironments(
+        environmentsDataProvider,
+        environmentsTree
+      );
+      expect(environmentsTree.message).toBe("loading environments...");
+      await loadEnvironmentsPromise;
+    });
 
-  it("should show loading message", async () => {
-    const branchName = "my-branch";
-    const getCurrentBranchPromise = mockGetCurrentBranchWithRetry(branchName);
+    it("should display 'loading from branch' message when branch name is loaded", async () => {
+      const getCurrentBranchPromise = mockGetCurrentBranchWithRetry(branchName);
+      const loadEnvironmentsPromise = myExtension.loadEnvironments(
+        environmentsDataProvider,
+        environmentsTree
+      );
+      await getCurrentBranchPromise;
+      expect(environmentsTree.message).toBe(
+        `loading environments from branch ${branchName}...`
+      );
+      await loadEnvironmentsPromise;
+    });
 
-    const loadEnvironmentsPromise = myExtension.loadEnvironments(
-      environmentsDataProvider,
-      environmentsTree
-    );
-    expect(environmentsTree.message).toBe("loading environments...");
-    await getCurrentBranchPromise;
-    expect(environmentsTree.message).toBe(
-      `loading environments from branch ${branchName}...`
-    );
-    await loadEnvironmentsPromise;
-    expect(environmentsTree.message).toBe(undefined);
+    it("should not display loading message when done fetching environments", async () => {
+      mockGetCurrentBranchWithRetry(branchName);
+      const loadEnvironmentsPromise = myExtension.loadEnvironments(
+        environmentsDataProvider,
+        environmentsTree
+      );
+      await loadEnvironmentsPromise;
+      expect(environmentsTree.message).toBe(undefined);
+    });
   });
 });
