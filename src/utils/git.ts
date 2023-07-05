@@ -41,7 +41,7 @@ export async function getCurrentBranchWithRetry() {
       minTimeout: 300,
       maxTimeout: 300,
       randomize: false,
-      retries: 8,
+      retries: 30,
     }
   );
 }
