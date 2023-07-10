@@ -83,6 +83,7 @@ export class Env0EnvironmentsProvider
           showInProgressMessage({
             environmentId: newEnvironment.id,
             projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
           });
         }
 
@@ -90,6 +91,7 @@ export class Env0EnvironmentsProvider
           showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {
             environmentId: newEnvironment.id,
             projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
           });
         }
 
@@ -97,6 +99,7 @@ export class Env0EnvironmentsProvider
           showWaitingForApproval({
             environmentId: newEnvironment.id,
             projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
           });
         }
 
@@ -104,6 +107,7 @@ export class Env0EnvironmentsProvider
           showSuccessMessage({
             environmentId: newEnvironment.id,
             projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
           });
         }
 
