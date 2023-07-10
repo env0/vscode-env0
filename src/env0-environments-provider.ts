@@ -41,19 +41,14 @@ export class Environment extends vscode.TreeItem {
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
-  private environments: Environment[];
-
-  constructor() {
-    this.environments = [];
-  }
+  private environments: EnvironmentModel[] = [];
 
   getTreeItem(element: Environment): vscode.TreeItem {
     return element;
   }
 
-  async getChildren(): Promise<Environment[]> {
-    const envs = await getEnvironmentsForBranch();
-    this.environments = envs.map(
+  getChildren(): Environment[] {
+    return this.environments.map(
       (env) =>
         new Environment(
           env.name,
@@ -64,8 +59,6 @@ export class Env0EnvironmentsProvider
           env.latestDeploymentLog.id
         )
     );
-
-    return Promise.resolve(this.environments);
   }
 
   public shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
@@ -83,7 +76,7 @@ export class Env0EnvironmentsProvider
       }
 
       if (
-        this.environments[envIndex].lastUpdated !== newEnvironment.updatedAt &&
+        this.environments[envIndex].updatedAt !== newEnvironment.updatedAt &&
         this.environments[envIndex].status !== newEnvironment.status
       ) {
         if (newEnvironment.status === "DEPLOY_IN_PROGRESS") {
@@ -129,7 +122,8 @@ export class Env0EnvironmentsProvider
     Environment | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
-  refresh(): void {
+  async refresh(): Promise<void> {
+    this.environments = await getEnvironmentsForBranch();
     this._onDidChangeTreeData.fire();
   }
 }

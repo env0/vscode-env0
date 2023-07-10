@@ -2,8 +2,7 @@ import axios from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
 import { ENV0_API_URL } from "./common";
-
-const DOT_GIT_SUFFIX_LENGTH = 4;
+import { getGitRepoAndBranch } from "./utils/git";
 
 export type EnvironmentModel = {
   id: string;
@@ -49,9 +48,8 @@ export async function getEnvironmentsForBranch() {
     environments = await getEnvironments(apiKeyCredentials, organizationId);
   }
 
-  console.log(JSON.stringify(environments));
   if (environments.length > 0) {
-    const { currentBranch, repository } = getGitData();
+    const { currentBranch, repository } = getGitRepoAndBranch();
     environments = environments
       .filter(
         (environment) =>
@@ -101,28 +99,4 @@ async function getOrganizationId(apiKeyCredentials: {
   ).data[0]?.id;
 
   return organizationId;
-}
-
-function getGitData() {
-  const extensions = vscode.extensions;
-  let normalizedRepositoryName;
-  let currentBranch;
-
-  if (extensions) {
-    const gitExtension = extensions.getExtension("vscode.git")?.exports;
-
-    const api = gitExtension.getAPI(1);
-    const repository = api.repositories[0];
-
-    if (repository) {
-      const head = repository.state.HEAD;
-      currentBranch = head.name;
-      const repositoryName = repository.repository.remotes[0].fetchUrl;
-      normalizedRepositoryName = repositoryName.endsWith(".git")
-        ? repositoryName?.slice(0, -DOT_GIT_SUFFIX_LENGTH)
-        : repositoryName;
-    }
-  }
-
-  return { repository: normalizedRepositoryName, currentBranch };
 }
