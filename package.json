@@ -52,7 +52,15 @@
         "command": "env0.cancel",
         "title": "Cancel",
         "icon": "resources/cancel.svg"
-      }
+      }, 
+       {
+        "command": "env0.login",
+        "title": "env0 Login"
+      }, 
+      {
+       "command": "env0.logout",
+       "title": "env0 Logout"
+     }
     ],
     "configuration": {
       "title": "env0",
