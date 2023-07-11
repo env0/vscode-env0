@@ -9,7 +9,7 @@ import {
   redeployEnvironment,
   resumeDeployment,
 } from "./actions";
-import { getApiKeyCredentials } from "./auth";
+import { AuthService, getApiKeyCredentials } from "./auth";
 import {
   Env0EnvironmentsProvider,
   Environment,
@@ -17,6 +17,7 @@ import {
 import { getEnvironmentsForBranch } from "./get-environments";
 import { ENV0_API_URL } from "./common";
 import { getCurrentBranchWithRetry } from "./utils/git";
+import { ApiClient } from "./api-client";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
@@ -75,7 +76,11 @@ export const loadEnvironments = async (
   environmentsTree.message = undefined;
 };
 
-export async function activate() {
+export async function activate(context: vscode.ExtensionContext) {
+  const authService = new AuthService(context);
+  authService.registerLoginCommand();
+  authService.registerLogoutCommand();
+  const apiClient: ApiClient = new ApiClient(authService);
   const environmentsDataProvider = new Env0EnvironmentsProvider();
   const environmentsTree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
@@ -103,31 +108,31 @@ export async function activate() {
   });
 
   vscode.commands.registerCommand("env0.redeploy", (env) => {
-    redeployEnvironment(env);
+    redeployEnvironment(env, apiClient);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.abort", (env) => {
-    abortEnvironmentDeploy(env);
+    abortEnvironmentDeploy(env, apiClient);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.destroy", (env) => {
-    destroyEnvironment(env);
+    destroyEnvironment(env, apiClient);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.approve", (env) => {
-    resumeDeployment(env);
+    resumeDeployment(env, apiClient);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.cancel", (env) => {
-    cancelDeployment(env);
+    cancelDeployment(env, apiClient);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
@@ -201,7 +206,7 @@ async function pollForEnvironmentLogs(
         }
       }
     });
-  }, 1000);
+  }, 3000);
 
   return logPoller;
 }

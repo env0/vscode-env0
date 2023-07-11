@@ -1,8 +1,8 @@
-import axios from "axios";
 import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
 import { Environment } from "./env0-environments-provider";
 import { ENV0_API_URL, ENV0_WEB_URL } from "./common";
+import { ApiClient } from "./api-client";
 
 export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   if (!id || !projectId) {
@@ -16,7 +16,17 @@ export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   );
 };
 
-export const abortEnvironmentDeploy = (env: Environment) => {
+export const abortEnvironmentDeploy = (env: Environment, api: ApiClient) => {
+  const apiKeyCredentials = getApiKeyCredentials();
+  const id = env?.latestDeploymentLogId;
+
+  if (!id) {
+    return;
+  }
+  api.abortDeployment(id);
+};
+
+export const cancelDeployment = (env: Environment, api: ApiClient) => {
   const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
@@ -24,50 +34,29 @@ export const abortEnvironmentDeploy = (env: Environment) => {
     return;
   }
 
-  const abortDeploymentUrl = `https://${ENV0_API_URL}/environments/deployments/${id}/abort`;
-  axios.post(abortDeploymentUrl, {}, { auth: apiKeyCredentials });
+  api.cancelDeployment(id);
 };
 
-export const cancelDeployment = (env: Environment) => {
+export const resumeDeployment = (env: Environment, api: ApiClient) => {
   const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
     return;
   }
-
-  const cancelDeployUrl = `https://${ENV0_API_URL}/environments/deployments/${id}/cancel`;
-  axios.put(cancelDeployUrl, undefined, { auth: apiKeyCredentials });
+  api.resumeDeployment(id);
 };
 
-export const resumeDeployment = (env: Environment) => {
-  const apiKeyCredentials = getApiKeyCredentials();
-  const id = env?.latestDeploymentLogId;
-
-  if (!id) {
-    return;
-  }
-
-  const resumeDeployUrl = `https://${ENV0_API_URL}/environments/deployments/${id}`;
-  axios.put(resumeDeployUrl, undefined, { auth: apiKeyCredentials });
-};
-
-export const redeployEnvironment = (env: Environment) => {
+export const redeployEnvironment = (env: Environment, api: ApiClient) => {
   if (!env.id) {
     return;
   }
-
-  const apiKeyCredentials = getApiKeyCredentials();
-  const redeployUrl = `https://${ENV0_API_URL}/environments/${env.id}/deployments`;
-  axios.post(redeployUrl, {}, { auth: apiKeyCredentials });
+  api.redeployEnvironment(env.id);
 };
 
-export const destroyEnvironment = (env: Environment) => {
+export const destroyEnvironment = (env: Environment, api: ApiClient) => {
   if (!env.id) {
     return;
   }
-
-  const apiKeyCredentials = getApiKeyCredentials();
-  const destroyUrl = `https://${ENV0_API_URL}/environments/${env.id}/destroy`;
-  axios.post(destroyUrl, {}, { auth: apiKeyCredentials });
+  api.destroyEnvironment(env.id);
 };
