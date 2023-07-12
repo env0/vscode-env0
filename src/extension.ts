@@ -37,15 +37,11 @@ export const loadEnvironments = async (
   environmentsTree.message = undefined;
 };
 
-export async function activate(context: vscode.ExtensionContext) {
-  const authService = new AuthService(context);
-  authService.registerLoginCommand();
-  authService.registerLogoutCommand();
-  const apiClient: ApiClient = new ApiClient(authService);
-  const environmentsDataProvider = new Env0EnvironmentsProvider(apiClient);
-  const environmentsTree = vscode.window.createTreeView("env0-environments", {
-    treeDataProvider: environmentsDataProvider,
-  });
+const init = async (
+  environmentsDataProvider: Env0EnvironmentsProvider,
+  environmentsTree: vscode.TreeView<Environment>,
+  apiClient: ApiClient
+) => {
   await loadEnvironments(environmentsDataProvider, environmentsTree);
   const logChannels: Record<string, LogChannel> = {};
 
@@ -108,6 +104,18 @@ export async function activate(context: vscode.ExtensionContext) {
       environmentsDataProvider.refresh();
     }
   }, 3000);
+};
+
+export async function activate(context: vscode.ExtensionContext) {
+  const authService = new AuthService(context);
+  authService.registerLoginCommand();
+  authService.registerLogoutCommand();
+  const apiClient: ApiClient = new ApiClient(authService);
+  const environmentsDataProvider = new Env0EnvironmentsProvider(apiClient);
+  const environmentsTree = vscode.window.createTreeView("env0-environments", {
+    treeDataProvider: environmentsDataProvider,
+  });
+  await init(environmentsDataProvider, environmentsTree, apiClient);
 }
 
 export function deactivate() {
