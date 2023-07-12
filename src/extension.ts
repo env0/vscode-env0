@@ -15,8 +15,8 @@ import {
   Environment,
 } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
-import { ENV0_API_URL } from "./common";
 import { getCurrentBranchWithRetry } from "./utils/git";
+import { setContextShowLoginMessage } from "./utils/vscode-context";
 import { ApiClient } from "./api-client";
 
 let logPoller: NodeJS.Timeout;
@@ -115,7 +115,17 @@ export async function activate(context: vscode.ExtensionContext) {
   const environmentsTree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
   });
-  await init(environmentsDataProvider, environmentsTree, apiClient);
+  const isLoggedIn = await authService.isLoggedIn();
+
+  if (isLoggedIn) {
+    await init(environmentsDataProvider, environmentsTree, apiClient);
+  } else {
+    authService.onAuth = async () => {
+      await init(environmentsDataProvider, environmentsTree, apiClient);
+      await setContextShowLoginMessage(false);
+    };
+    await setContextShowLoginMessage(true);
+  }
 }
 
 export function deactivate() {

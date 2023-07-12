@@ -94,6 +94,13 @@
         }
       ]
     },
+    "viewsWelcome":[
+      {
+        "view": "env0-environments",
+        "contents": "Welcome to env0.\n In order to use env0 you should login.\n[Login](command:env0.login)",
+        "when": "env0.showLoginMessage"
+      }
+    ],
     "menus": {
       "view/item/context": [
         {

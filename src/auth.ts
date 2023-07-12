@@ -4,6 +4,7 @@ const env0KeyIdKey = "env0.keyId";
 const env0SecretKey = "env0.secret";
 
 export class AuthService {
+  public onAuth?: () => any = undefined;
   constructor(private readonly context: vscode.ExtensionContext) {}
   public registerLoginCommand() {
     const disposable = vscode.commands.registerCommand(
@@ -37,6 +38,7 @@ export class AuthService {
           },
         });
         await this.storeAuthData(keyId!, secret!);
+        this.onAuth?.();
       }
     );
     this.context.subscriptions.push(disposable);
@@ -50,6 +52,11 @@ export class AuthService {
       }
     );
     this.context.subscriptions.push(disposable);
+  }
+
+  public async isLoggedIn() {
+    const { secret, keyId } = await this.getAuthData();
+    return !!(secret && keyId);
   }
 
   public async getApiKeyCredentials() {
