@@ -7,6 +7,7 @@ import {
   showSuccessMessage,
   showWaitingForApproval,
 } from "./notification-messages";
+import { ApiClient } from "./api-client";
 
 export class Environment extends vscode.TreeItem {
   constructor(
@@ -41,6 +42,7 @@ export class Environment extends vscode.TreeItem {
 export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
+  constructor(private readonly apiClient: ApiClient) {}
   private environments: EnvironmentModel[] = [];
 
   getTreeItem(element: Environment): vscode.TreeItem {
@@ -127,7 +129,7 @@ export class Env0EnvironmentsProvider
   > = this._onDidChangeTreeData.event;
 
   async refresh(): Promise<void> {
-    this.environments = await getEnvironmentsForBranch();
+    this.environments = await getEnvironmentsForBranch(this.apiClient);
     this._onDidChangeTreeData.fire();
   }
 }

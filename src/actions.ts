@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
-import { getApiKeyCredentials } from "./auth";
 import { Environment } from "./env0-environments-provider";
-import { ENV0_API_URL, ENV0_WEB_URL } from "./common";
+import { ENV0_WEB_URL } from "./common";
 import { ApiClient } from "./api-client";
 
 export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
@@ -17,7 +16,6 @@ export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
 };
 
 export const abortEnvironmentDeploy = (env: Environment, api: ApiClient) => {
-  const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
@@ -27,7 +25,6 @@ export const abortEnvironmentDeploy = (env: Environment, api: ApiClient) => {
 };
 
 export const cancelDeployment = (env: Environment, api: ApiClient) => {
-  const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
@@ -38,7 +35,6 @@ export const cancelDeployment = (env: Environment, api: ApiClient) => {
 };
 
 export const resumeDeployment = (env: Environment, api: ApiClient) => {
-  const apiKeyCredentials = getApiKeyCredentials();
   const id = env?.latestDeploymentLogId;
 
   if (!id) {

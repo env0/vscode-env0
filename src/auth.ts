@@ -3,20 +3,6 @@ import * as vscode from "vscode";
 const env0KeyIdKey = "env0.keyId";
 const env0SecretKey = "env0.secret";
 
-export const getApiKeyCredentials = () => {
-  const configurationWorkspace = vscode.workspace.getConfiguration();
-  const env0ApiKey: string | undefined =
-    configurationWorkspace.get("env0.apiKeyId");
-  const env0SecretKey: string | undefined =
-    configurationWorkspace.get("env0.secretKey");
-
-  if (!env0ApiKey || !env0SecretKey) {
-    throw new Error("Could not read env0 api key values");
-  }
-
-  return { username: env0ApiKey, password: env0SecretKey };
-};
-
 export class AuthService {
   constructor(private readonly context: vscode.ExtensionContext) {}
   public registerLoginCommand() {
@@ -33,6 +19,7 @@ export class AuthService {
               // todo better message
               return "The entered token has an invalid format.";
             }
+            return null;
           },
         });
 
@@ -46,6 +33,7 @@ export class AuthService {
               // todo better message
               return "The entered token has an invalid format.";
             }
+            return null;
           },
         });
         await this.storeAuthData(keyId!, secret!);

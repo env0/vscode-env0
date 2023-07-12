@@ -9,7 +9,7 @@ import {
   redeployEnvironment,
   resumeDeployment,
 } from "./actions";
-import { AuthService, getApiKeyCredentials } from "./auth";
+import { AuthService } from "./auth";
 import {
   Env0EnvironmentsProvider,
   Environment,
@@ -21,50 +21,11 @@ import { ApiClient } from "./api-client";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
-
-type DeploymentStepType =
-  | "NOT_STARTED"
-  | "IN_PROGRESS"
-  | "WAITING_FOR_USER"
-  | "TIMEOUT"
-  | "FAIL"
-  | "SUCCESS"
-  | "CANCELLED"
-  | "SKIPPED";
-
-interface DeploymentStep {
-  id: string;
-  deploymentLogId: string;
-  name: string;
-  order: number;
-  projectId: string;
-  organizationId: string;
-  status: DeploymentStepType;
-  startedAt?: string;
-  completedAt?: string;
-}
-
-type DeploymentStepResponse = DeploymentStep[];
-
-interface DeploymentStepLog {
-  eventId: string;
-  message: string;
-  level: string;
-  timestamp: string | number;
-}
-
-interface DeploymentStepLogsResponse {
-  events: DeploymentStepLog[];
-  nextStartTime?: number | string;
-  hasMoreLogs: boolean;
-}
-
-interface LogChannel {
+export interface LogChannel {
   channel: vscode.OutputChannel;
   startTime?: number | string;
   hasMoreLogs?: boolean;
 }
-
 export const loadEnvironments = async (
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>
@@ -81,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
   authService.registerLoginCommand();
   authService.registerLogoutCommand();
   const apiClient: ApiClient = new ApiClient(authService);
-  const environmentsDataProvider = new Env0EnvironmentsProvider();
+  const environmentsDataProvider = new Env0EnvironmentsProvider(apiClient);
   const environmentsTree = vscode.window.createTreeView("env0-environments", {
     treeDataProvider: environmentsDataProvider,
   });
@@ -93,7 +54,7 @@ export async function activate(context: vscode.ExtensionContext) {
     Object.keys(logChannels).forEach((key) => delete logChannels[key]);
     clearInterval(logPoller);
     if (env.id) {
-      logPoller = await pollForEnvironmentLogs(env, logChannels);
+      logPoller = await pollForEnvironmentLogs(env, logChannels, apiClient);
     }
   }
 
@@ -138,7 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   environmentPollingInstance = setInterval(async () => {
-    const fetchedEnvironments = await getEnvironmentsForBranch();
+    const fetchedEnvironments = await getEnvironmentsForBranch(apiClient);
 
     if (
       fetchedEnvironments &&
@@ -156,19 +117,13 @@ export function deactivate() {
 
 async function pollForEnvironmentLogs(
   env: Environment,
-  logChannels: Record<string, LogChannel>
+  logChannels: Record<string, LogChannel>,
+  apiClient: ApiClient
 ) {
   const logPoller = setInterval(async () => {
-    const apiKeyCredentials = getApiKeyCredentials();
+    const steps = await apiClient.getDeploymentSteps(env.latestDeploymentLogId);
 
-    const response = await axios.get<DeploymentStepResponse>(
-      `https://${ENV0_API_URL}/deployments/${env?.latestDeploymentLogId}/steps`,
-      {
-        auth: apiKeyCredentials,
-      }
-    );
-
-    response.data.forEach(async (step) => {
+    steps.forEach(async (step) => {
       let stepLog = logChannels[step.name];
       if (!stepLog) {
         logChannels[step.name] = {
@@ -182,22 +137,19 @@ async function pollForEnvironmentLogs(
 
       if (stepLog.hasMoreLogs !== false) {
         try {
-          const response = await axios.get<DeploymentStepLogsResponse>(
-            `https://${ENV0_API_URL}/deployments/${
-              env?.latestDeploymentLogId
-            }/steps/${step.name}/log?startTime=${stepLog.startTime ?? ""}`,
-            {
-              auth: apiKeyCredentials,
-            }
+          const logs = await apiClient.getDeploymentStepLogs(
+            env.latestDeploymentLogId,
+            step.name,
+            stepLog.startTime
           );
 
-          response.data.events.forEach((event) => {
+          logs.events.forEach((event) => {
             (logChannels[step.name].channel as vscode.OutputChannel).appendLine(
               stripAnsi(event.message)
             );
           });
-          stepLog.startTime = response.data.nextStartTime;
-          stepLog.hasMoreLogs = response.data.hasMoreLogs;
+          stepLog.startTime = logs.nextStartTime;
+          stepLog.hasMoreLogs = logs.hasMoreLogs;
           if (step.status === "IN_PROGRESS") {
             stepLog.channel.show();
           }
