@@ -166,7 +166,7 @@ async function pollForEnvironmentLogs(
         }
       }
     });
-  }, 3000);
+  }, 1000);
 
   return logPoller;
 }
