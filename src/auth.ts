@@ -12,13 +12,12 @@ export class AuthService {
       async () => {
         const keyId = await vscode.window.showInputBox({
           ignoreFocusOut: true,
-          placeHolder: "API Key ID	",
+          placeHolder: "API Key ID",
           prompt: "Enter your API Key ID.",
           password: true,
           validateInput: (token) => {
             if (!token) {
-              // todo better message
-              return "The entered token has an invalid format.";
+              return "API Key ID cannot be empty";
             }
             return null;
           },
@@ -26,13 +25,12 @@ export class AuthService {
 
         const secret = await vscode.window.showInputBox({
           ignoreFocusOut: true,
-          placeHolder: "secret key",
+          placeHolder: "API Key Secret",
           prompt: "Enter your API Key Secret.",
           password: true,
           validateInput: (token) => {
             if (!token) {
-              // todo better message
-              return "The entered token has an invalid format.";
+              return "API Key Secret cannot be empty";
             }
             return null;
           },
