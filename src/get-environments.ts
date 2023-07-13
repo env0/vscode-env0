@@ -1,5 +1,4 @@
 import axios from "axios";
-import * as vscode from "vscode";
 import { getApiKeyCredentials } from "./auth";
 import { ENV0_API_URL } from "./common";
 import { getGitRepoAndBranch } from "./utils/git";
