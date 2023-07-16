@@ -15,44 +15,47 @@ export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   );
 };
 
-export const abortEnvironmentDeploy = (env: Environment, api: ApiClient) => {
+export const abortEnvironmentDeploy = (
+  env: Environment,
+  apiClient: ApiClient
+) => {
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
     return;
   }
-  api.abortDeployment(id);
+  apiClient.abortDeployment(id);
 };
 
-export const cancelDeployment = (env: Environment, api: ApiClient) => {
+export const cancelDeployment = (env: Environment, apiClient: ApiClient) => {
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
     return;
   }
 
-  api.cancelDeployment(id);
+  apiClient.cancelDeployment(id);
 };
 
-export const resumeDeployment = (env: Environment, api: ApiClient) => {
+export const resumeDeployment = (env: Environment, apiClient: ApiClient) => {
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
     return;
   }
-  api.resumeDeployment(id);
+  apiClient.resumeDeployment(id);
 };
 
-export const redeployEnvironment = (env: Environment, api: ApiClient) => {
+export const redeployEnvironment = (env: Environment, apiClient: ApiClient) => {
   if (!env.id) {
     return;
   }
-  api.redeployEnvironment(env.id);
+  apiClient.redeployEnvironment(env.id);
 };
 
-export const destroyEnvironment = (env: Environment, api: ApiClient) => {
+export const destroyEnvironment = (env: Environment, apiClient: ApiClient) => {
   if (!env.id) {
     return;
   }
-  api.destroyEnvironment(env.id);
+  apiClient.destroyEnvironment(env.id);
 };

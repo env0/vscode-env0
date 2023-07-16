@@ -1,6 +1,3 @@
-import axios from "axios";
-import * as vscode from "vscode";
-import { ENV0_API_URL } from "./common";
 import { getGitRepoAndBranch } from "./utils/git";
 import { ApiClient } from "./api-client";
 
@@ -37,13 +34,13 @@ function repositoriesEqual(rep1: string, rep2: string): boolean {
   );
 }
 
-export async function getEnvironmentsForBranch(api: ApiClient) {
+export async function getEnvironmentsForBranch(apiClient: ApiClient) {
   let environments: EnvironmentModel[] = [];
 
-  const organizationId = await getOrganizationId(api);
+  const organizationId = await getOrganizationId(apiClient);
 
   if (organizationId) {
-    environments = await getEnvironments(api, organizationId);
+    environments = await getEnvironments(apiClient, organizationId);
   }
 
   if (environments.length > 0) {
@@ -63,9 +60,9 @@ export async function getEnvironmentsForBranch(api: ApiClient) {
   return environments;
 }
 
-async function getEnvironments(api: ApiClient, organizationId: string) {
+async function getEnvironments(apiClient: ApiClient, organizationId: string) {
   try {
-    return api.getEnvironments(organizationId);
+    return apiClient.getEnvironments(organizationId);
   } catch (e) {
     console.log(e);
   }
@@ -73,7 +70,7 @@ async function getEnvironments(api: ApiClient, organizationId: string) {
   return [];
 }
 
-async function getOrganizationId(api: ApiClient) {
-  const organizations = await api.getOrganizations();
+async function getOrganizationId(apiClient: ApiClient) {
+  const organizations = await apiClient.getOrganizations();
   return organizations[0]?.id;
 }
