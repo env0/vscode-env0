@@ -16,16 +16,25 @@ import {
 } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 import { getCurrentBranchWithRetry } from "./utils/git";
-import { setContextShowLoginMessage } from "./utils/vscode-context";
 import { ApiClient } from "./api-client";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
+
 export interface LogChannel {
   channel: vscode.OutputChannel;
   startTime?: number | string;
   hasMoreLogs?: boolean;
 }
+
+export const setContextShowLoginMessage = async (value: boolean) => {
+  await vscode.commands.executeCommand(
+    "setContext",
+    `env0.showLoginMessage`,
+    value
+  );
+};
+
 export const loadEnvironments = async (
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>
