@@ -1,4 +1,10 @@
+import axios, { AxiosError } from "axios";
 import * as vscode from "vscode";
+import { ENV0_API_URL, ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
+import {
+  showInvalidCredentialsMessage,
+  showUnexpectedErrorMessage,
+} from "./notification-messages";
 
 const env0KeyIdKey = "env0.keyId";
 const env0SecretKey = "env0.secret";
@@ -35,8 +41,11 @@ export class AuthService {
             return null;
           },
         });
-        await this.storeAuthData(keyId!, secret!);
-        this.onAuth?.();
+        if (await this.validateUserCredentials(keyId!, secret!)) {
+          await this.storeAuthData(keyId!, secret!);
+          this.onAuth?.();
+          this.onAuth = undefined;
+        }
       }
     );
     this.context.subscriptions.push(disposable);
@@ -70,6 +79,31 @@ export class AuthService {
       keyId: await this.context.secrets.get(env0KeyIdKey),
       secret: await this.context.secrets.get(env0SecretKey),
     };
+  }
+
+  private async validateUserCredentials(keyId: string, secret: string) {
+    // Displaying a loading indicator to inform the user that something is happening
+    return await vscode.window.withProgress(
+      { location: { viewId: ENV0_ENVIRONMENTS_VIEW_ID } },
+      async () => {
+        try {
+          await axios.get(`https://${ENV0_API_URL}/organizations`, {
+            auth: { username: keyId, password: secret },
+            validateStatus: function (status) {
+              return status >= 200 && status < 300;
+            },
+          });
+          return true;
+        } catch (e: any | AxiosError) {
+          if (e?.response?.status >= 400 && e?.response?.status < 500) {
+            showInvalidCredentialsMessage();
+          } else {
+            showUnexpectedErrorMessage();
+          }
+          return false;
+        }
+      }
+    );
   }
 
   private async storeAuthData(keyId: string, secret: string) {

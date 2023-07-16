@@ -17,6 +17,7 @@ import {
 import { getEnvironmentsForBranch } from "./get-environments";
 import { getCurrentBranchWithRetry } from "./utils/git";
 import { ApiClient } from "./api-client";
+import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
@@ -121,9 +122,12 @@ export async function activate(context: vscode.ExtensionContext) {
   authService.registerLogoutCommand();
   const apiClient: ApiClient = new ApiClient(authService);
   const environmentsDataProvider = new Env0EnvironmentsProvider(apiClient);
-  const environmentsTree = vscode.window.createTreeView("env0-environments", {
-    treeDataProvider: environmentsDataProvider,
-  });
+  const environmentsTree = vscode.window.createTreeView(
+    ENV0_ENVIRONMENTS_VIEW_ID,
+    {
+      treeDataProvider: environmentsDataProvider,
+    }
+  );
   const isLoggedIn = await authService.isLoggedIn();
 
   if (isLoggedIn) {
