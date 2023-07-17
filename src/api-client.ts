@@ -4,13 +4,18 @@ import { ENV0_API_URL, ENV0_WEB_URL } from "./common";
 import { EnvironmentModel } from "./get-environments";
 import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
 
-export class ApiClient {
-  constructor(private readonly authService: AuthService) {}
+class ApiClient {
+  private credentials?: { username: string; password: string };
+
+  public init(credentials: { username: string; password: string }) {
+    this.credentials = credentials;
+  }
+
   public async abortDeployment(deploymentId: string) {
     return axios.post(
       `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/abort`,
       {},
-      { auth: await this.authService.getApiKeyCredentials() }
+      { auth: this.credentials }
     );
   }
 
@@ -18,7 +23,7 @@ export class ApiClient {
     return axios.post(
       `https://${ENV0_API_URL}/environments/${envId}/deployments`,
       {},
-      { auth: await this.authService.getApiKeyCredentials() }
+      { auth: this.credentials }
     );
   }
 
@@ -27,7 +32,7 @@ export class ApiClient {
       `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/cancel`,
       undefined,
       {
-        auth: await this.authService.getApiKeyCredentials(),
+        auth: this.credentials,
       }
     );
   }
@@ -37,7 +42,7 @@ export class ApiClient {
       `https://${ENV0_API_URL}/environments/deployments/${deploymentId}`,
       undefined,
       {
-        auth: await this.authService.getApiKeyCredentials(),
+        auth: this.credentials,
       }
     );
   }
@@ -46,7 +51,7 @@ export class ApiClient {
     axios.post(
       `https://${ENV0_API_URL}/environments/${deploymentId}/destroy`,
       {},
-      { auth: await this.authService.getApiKeyCredentials() }
+      { auth: this.credentials }
     );
   }
 
@@ -55,7 +60,7 @@ export class ApiClient {
       `https://${ENV0_API_URL}/environments`,
       {
         params: { organizationId },
-        auth: await this.authService.getApiKeyCredentials(),
+        auth: this.credentials,
       }
     );
 
@@ -64,7 +69,7 @@ export class ApiClient {
 
   public async getOrganizations() {
     const res = await axios.get(`https://${ENV0_API_URL}/organizations`, {
-      auth: await this.authService.getApiKeyCredentials(),
+      auth: this.credentials,
     });
     return res.data;
   }
@@ -73,7 +78,7 @@ export class ApiClient {
     const response = await axios.get<DeploymentStepResponse>(
       `https://${ENV0_API_URL}/deployments/${deploymentLogId}/steps`,
       {
-        auth: await this.authService.getApiKeyCredentials(),
+        auth: this.credentials,
       }
     );
     return response.data;
@@ -89,9 +94,11 @@ export class ApiClient {
         stepStartTime ?? ""
       }`,
       {
-        auth: await this.authService.getApiKeyCredentials(),
+        auth: this.credentials,
       }
     );
     return response.data;
   }
 }
+
+export const apiClient = new ApiClient();

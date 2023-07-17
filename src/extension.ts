@@ -16,7 +16,7 @@ import {
 } from "./env0-environments-provider";
 import { getEnvironmentsForBranch } from "./get-environments";
 import { getCurrentBranchWithRetry } from "./utils/git";
-import { ApiClient } from "./api-client";
+import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 
 let logPoller: NodeJS.Timeout;
@@ -50,7 +50,6 @@ export const loadEnvironments = async (
 const init = async (
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>,
-  apiClient: ApiClient
 ) => {
   await loadEnvironments(environmentsDataProvider, environmentsTree);
   const logChannels: Record<string, LogChannel> = {};
@@ -60,7 +59,7 @@ const init = async (
     Object.keys(logChannels).forEach((key) => delete logChannels[key]);
     clearInterval(logPoller);
     if (env.id) {
-      logPoller = await pollForEnvironmentLogs(env, logChannels, apiClient);
+      logPoller = await pollForEnvironmentLogs(env, logChannels);
     }
   }
 
@@ -75,37 +74,37 @@ const init = async (
   });
 
   vscode.commands.registerCommand("env0.redeploy", (env) => {
-    redeployEnvironment(env, apiClient);
+    redeployEnvironment(env);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.abort", (env) => {
-    abortEnvironmentDeploy(env, apiClient);
+    abortEnvironmentDeploy(env);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.destroy", (env) => {
-    destroyEnvironment(env, apiClient);
+    destroyEnvironment(env);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.approve", (env) => {
-    resumeDeployment(env, apiClient);
+    resumeDeployment(env);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   vscode.commands.registerCommand("env0.cancel", (env) => {
-    cancelDeployment(env, apiClient);
+    cancelDeployment(env);
     environmentsDataProvider.refresh();
     restartLogs(env);
   });
 
   environmentPollingInstance = setInterval(async () => {
-    const fetchedEnvironments = await getEnvironmentsForBranch(apiClient);
+    const fetchedEnvironments = await getEnvironmentsForBranch();
 
     if (
       fetchedEnvironments &&
@@ -120,8 +119,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const authService = new AuthService(context);
   authService.registerLoginCommand();
   authService.registerLogoutCommand();
-  const apiClient: ApiClient = new ApiClient(authService);
-  const environmentsDataProvider = new Env0EnvironmentsProvider(apiClient);
+  const environmentsDataProvider = new Env0EnvironmentsProvider();
   const environmentsTree = vscode.window.createTreeView(
     ENV0_ENVIRONMENTS_VIEW_ID,
     {
@@ -131,10 +129,12 @@ export async function activate(context: vscode.ExtensionContext) {
   const isLoggedIn = await authService.isLoggedIn();
 
   if (isLoggedIn) {
-    await init(environmentsDataProvider, environmentsTree, apiClient);
+    apiClient.init(await authService.getApiKeyCredentials());
+    await init(environmentsDataProvider, environmentsTree);
   } else {
     authService.onAuth = async () => {
-      await init(environmentsDataProvider, environmentsTree, apiClient);
+      apiClient.init(await authService.getApiKeyCredentials());
+      await init(environmentsDataProvider, environmentsTree);
       await setContextShowLoginMessage(false);
     };
     await setContextShowLoginMessage(true);
@@ -148,8 +148,7 @@ export function deactivate() {
 
 async function pollForEnvironmentLogs(
   env: Environment,
-  logChannels: Record<string, LogChannel>,
-  apiClient: ApiClient
+  logChannels: Record<string, LogChannel>
 ) {
   const logPoller = setInterval(async () => {
     const steps = await apiClient.getDeploymentSteps(env.latestDeploymentLogId);

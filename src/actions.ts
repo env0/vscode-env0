@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Environment } from "./env0-environments-provider";
 import { ENV0_WEB_URL } from "./common";
-import { ApiClient } from "./api-client";
+import { apiClient } from "./api-client";
 
 export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   if (!id || !projectId) {
@@ -15,10 +15,7 @@ export const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   );
 };
 
-export const abortEnvironmentDeploy = (
-  env: Environment,
-  apiClient: ApiClient
-) => {
+export const abortEnvironmentDeploy = (env: Environment) => {
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
@@ -27,7 +24,7 @@ export const abortEnvironmentDeploy = (
   apiClient.abortDeployment(id);
 };
 
-export const cancelDeployment = (env: Environment, apiClient: ApiClient) => {
+export const cancelDeployment = (env: Environment) => {
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
@@ -37,7 +34,7 @@ export const cancelDeployment = (env: Environment, apiClient: ApiClient) => {
   apiClient.cancelDeployment(id);
 };
 
-export const resumeDeployment = (env: Environment, apiClient: ApiClient) => {
+export const resumeDeployment = (env: Environment) => {
   const id = env?.latestDeploymentLogId;
 
   if (!id) {
@@ -46,14 +43,14 @@ export const resumeDeployment = (env: Environment, apiClient: ApiClient) => {
   apiClient.resumeDeployment(id);
 };
 
-export const redeployEnvironment = (env: Environment, apiClient: ApiClient) => {
+export const redeployEnvironment = (env: Environment) => {
   if (!env.id) {
     return;
   }
   apiClient.redeployEnvironment(env.id);
 };
 
-export const destroyEnvironment = (env: Environment, apiClient: ApiClient) => {
+export const destroyEnvironment = (env: Environment) => {
   if (!env.id) {
     return;
   }

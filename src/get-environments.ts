@@ -1,5 +1,5 @@
 import { getGitRepoAndBranch } from "./utils/git";
-import { ApiClient } from "./api-client";
+import { apiClient } from "./api-client";
 
 export type EnvironmentModel = {
   id: string;
@@ -34,13 +34,13 @@ function repositoriesEqual(rep1: string, rep2: string): boolean {
   );
 }
 
-export async function getEnvironmentsForBranch(apiClient: ApiClient) {
+export async function getEnvironmentsForBranch() {
   let environments: EnvironmentModel[] = [];
 
-  const organizationId = await getOrganizationId(apiClient);
+  const organizationId = await getOrganizationId();
 
   if (organizationId) {
-    environments = await getEnvironments(apiClient, organizationId);
+    environments = await getEnvironments(organizationId);
   }
 
   if (environments.length > 0) {
@@ -60,7 +60,7 @@ export async function getEnvironmentsForBranch(apiClient: ApiClient) {
   return environments;
 }
 
-async function getEnvironments(apiClient: ApiClient, organizationId: string) {
+async function getEnvironments(organizationId: string) {
   try {
     return apiClient.getEnvironments(organizationId);
   } catch (e) {
@@ -70,7 +70,7 @@ async function getEnvironments(apiClient: ApiClient, organizationId: string) {
   return [];
 }
 
-async function getOrganizationId(apiClient: ApiClient) {
+async function getOrganizationId() {
   const organizations = await apiClient.getOrganizations();
   return organizations[0]?.id;
 }
