@@ -7,6 +7,6 @@ module.exports = {
   modulePathIgnorePatterns: ["node_modules/"],
   testEnvironment: "<rootDir>/out/test/integration/vscode-env.js",
   moduleNameMapper: {
-    vscode: path.join(__dirname, "src", "test", "integration", "vscode.js"),
+    vscode: "<rootDir>/src/test/integration/vscode.js",
   },
 };
