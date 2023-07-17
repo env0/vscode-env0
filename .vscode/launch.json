@@ -29,6 +29,7 @@
         "${workspaceFolder}/out/**/*.js",
         "${workspaceFolder}/dist/**/*.js"
       ],
+      "cwd": "${workspaceFolder}",
       "preLaunchTask": "npm: pretest",
       "env": {
         "ENV0_API_URL": "api-dev.dev.env0.com",
