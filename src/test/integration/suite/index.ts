@@ -8,6 +8,7 @@ export async function run() {
   await jest.runCLI(
     {
       runInBand: true,
+      cache: false,
       config,
     } as any,
     [projectRootPath]
