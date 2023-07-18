@@ -7,4 +7,9 @@ module.exports = {
   testMatch: ["<rootDir>/out/test/integration/suite/**.test.it.js"],
   modulePathIgnorePatterns: ["node_modules/"],
   testEnvironment: "<rootDir>/out/test/integration/vscode-env.js",
+  moduleDirectories: [
+    "node_modules",
+    "<rootDir>",
+    "src"
+]
 };
