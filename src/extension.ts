@@ -49,7 +49,7 @@ export const loadEnvironments = async (
 
 const init = async (
   environmentsDataProvider: Env0EnvironmentsProvider,
-  environmentsTree: vscode.TreeView<Environment>,
+  environmentsTree: vscode.TreeView<Environment>
 ) => {
   await loadEnvironments(environmentsDataProvider, environmentsTree);
   const logChannels: Record<string, LogChannel> = {};
