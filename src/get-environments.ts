@@ -1,8 +1,5 @@
-import axios from "axios";
-import * as vscode from "vscode";
-import { getApiKeyCredentials } from "./auth";
-import { ENV0_API_URL } from "./common";
 import { getGitRepoAndBranch } from "./utils/git";
+import { apiClient } from "./api-client";
 
 export type EnvironmentModel = {
   id: string;
@@ -38,14 +35,12 @@ function repositoriesEqual(rep1: string, rep2: string): boolean {
 }
 
 export async function getEnvironmentsForBranch() {
-  const apiKeyCredentials = getApiKeyCredentials();
-
   let environments: EnvironmentModel[] = [];
 
-  const organizationId = await getOrganizationId(apiKeyCredentials);
+  const organizationId = await getOrganizationId();
 
   if (organizationId) {
-    environments = await getEnvironments(apiKeyCredentials, organizationId);
+    environments = await getEnvironments(organizationId);
   }
 
   if (environments.length > 0) {
@@ -65,22 +60,9 @@ export async function getEnvironmentsForBranch() {
   return environments;
 }
 
-async function getEnvironments(
-  apiKeyCredentials: { username: string; password: string },
-  organizationId: string
-) {
+async function getEnvironments(organizationId: string) {
   try {
-    const environments = (
-      await axios.get<EnvironmentModel[]>(
-        `https://${ENV0_API_URL}/environments`,
-        {
-          params: { organizationId },
-          auth: apiKeyCredentials,
-        }
-      )
-    ).data;
-
-    return environments;
+    return apiClient.getEnvironments(organizationId);
   } catch (e) {
     console.log(e);
   }
@@ -88,15 +70,7 @@ async function getEnvironments(
   return [];
 }
 
-async function getOrganizationId(apiKeyCredentials: {
-  username: string;
-  password: string;
-}) {
-  const organizationId = (
-    await axios.get<{ id: string }[]>(`https://${ENV0_API_URL}/organizations`, {
-      auth: apiKeyCredentials,
-    })
-  ).data[0]?.id;
-
-  return organizationId;
+async function getOrganizationId() {
+  const organizations = await apiClient.getOrganizations();
+  return organizations[0]?.id;
 }

@@ -44,6 +44,18 @@ export const showErrorMessage = (
   });
 };
 
+export const showInvalidCredentialsMessage = () => {
+  vscode.window.showErrorMessage(
+    "Invalid key ID or key secret. Please check your credentials."
+  );
+};
+
+export const showUnexpectedErrorMessage = () => {
+  vscode.window.showErrorMessage(
+    "An unexpected error occurred. Please try again later."
+  );
+};
+
 function addLinkToEnvironment(
   button: string | undefined,
   linkProps: LinkProps

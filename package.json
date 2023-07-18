@@ -52,7 +52,15 @@
         "command": "env0.cancel",
         "title": "Cancel",
         "icon": "resources/cancel.svg"
-      }
+      }, 
+       {
+        "command": "env0.login",
+        "title": "env0 Login"
+      }, 
+      {
+       "command": "env0.logout",
+       "title": "env0 Logout"
+     }
     ],
     "configuration": {
       "title": "env0",
@@ -86,6 +94,13 @@
         }
       ]
     },
+    "viewsWelcome":[
+      {
+        "view": "env0-environments",
+        "contents": "Welcome to env0.\n In order to use env0 you should login.\n[Login](command:env0.login)",
+        "when": "env0.showLoginMessage"
+      }
+    ],
     "menus": {
       "view/item/context": [
         {
