@@ -1,85 +1,67 @@
 import { AuthService } from "./auth";
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import { ENV0_API_URL, ENV0_WEB_URL } from "./common";
 import { EnvironmentModel } from "./get-environments";
 import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
 
 class ApiClient {
   private credentials?: { username: string; password: string };
+  private readonly instance: AxiosInstance;
+  constructor() {
+    this.instance = axios.create({ baseURL: `https://${ENV0_API_URL}` });
+    this.instance.interceptors.request.use((config) => {
+      if (this.credentials) {
+        config.auth = this.credentials;
+      }
+      return config;
+    });
+  }
 
   public init(credentials: { username: string; password: string }) {
     this.credentials = credentials;
   }
 
   public async abortDeployment(deploymentId: string) {
-    return axios.post(
-      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/abort`,
-      {},
-      { auth: this.credentials }
+    return this.instance.post(
+      `/environments/deployments/${deploymentId}/abort`,
+      {}
     );
   }
 
   public async redeployEnvironment(envId: string) {
-    return axios.post(
-      `https://${ENV0_API_URL}/environments/${envId}/deployments`,
-      {},
-      { auth: this.credentials }
-    );
+    return this.instance.post(`/environments/${envId}/deployments`, {});
   }
 
   public async cancelDeployment(deploymentId: string) {
-    return axios.put(
-      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/cancel`,
-      undefined,
-      {
-        auth: this.credentials,
-      }
+    return this.instance.put(
+      `/environments/deployments/${deploymentId}/cancel`
     );
   }
 
   public async resumeDeployment(deploymentId: string) {
-    return axios.put(
-      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}`,
-      undefined,
-      {
-        auth: this.credentials,
-      }
-    );
+    return this.instance.put(`/environments/deployments/${deploymentId}`);
   }
 
   public async destroyEnvironment(deploymentId: string) {
-    axios.post(
-      `https://${ENV0_API_URL}/environments/${deploymentId}/destroy`,
-      {},
-      { auth: this.credentials }
-    );
+    this.instance.post(`/environments/${deploymentId}/destroy`, {});
   }
 
   public async getEnvironments(organizationId: string) {
-    const res = await axios.get<EnvironmentModel[]>(
-      `https://${ENV0_API_URL}/environments`,
-      {
-        params: { organizationId },
-        auth: this.credentials,
-      }
-    );
+    const res = await this.instance.get<EnvironmentModel[]>(`/environments`, {
+      params: { organizationId },
+    });
 
     return res.data;
   }
 
   public async getOrganizations() {
-    const res = await axios.get(`https://${ENV0_API_URL}/organizations`, {
-      auth: this.credentials,
-    });
+    const res = await this.instance.get(`/organizations`);
     return res.data;
   }
 
   public async getDeploymentSteps(deploymentLogId: string) {
-    const response = await axios.get<DeploymentStepResponse>(
-      `https://${ENV0_API_URL}/deployments/${deploymentLogId}/steps`,
-      {
-        auth: this.credentials,
-      }
+    const response = await this.instance.get<DeploymentStepResponse>(
+      `/deployments/${deploymentLogId}/steps`
     );
     return response.data;
   }
@@ -89,13 +71,10 @@ class ApiClient {
     stepName: string,
     stepStartTime?: string | number
   ) {
-    const response = await axios.get<DeploymentStepLogsResponse>(
-      `https://${ENV0_API_URL}/deployments/${deploymentLogId}/steps/${stepName}/log?startTime=${
+    const response = await this.instance.get<DeploymentStepLogsResponse>(
+      `/deployments/${deploymentLogId}/steps/${stepName}/log?startTime=${
         stepStartTime ?? ""
-      }`,
-      {
-        auth: this.credentials,
-      }
+      }`
     );
     return response.data;
   }
