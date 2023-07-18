@@ -84,6 +84,13 @@
           "title": "env0",
           "icon": "resources/env0-icon.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "env0-logs",
+          "title": "env0 logs",
+          "icon": "resources/env0-icon.svg"
+        }
       ]
     },
     "views": {
@@ -91,8 +98,13 @@
         {
           "id": "env0-environments",
           "name": "Environments"
+        },
+        {
+          "id": "env0-logs",
+          "name": "env0 logs"
         }
       ]
+      
     },
     "viewsWelcome":[
       {
