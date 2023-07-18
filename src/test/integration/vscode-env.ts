@@ -1,9 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { TestEnvironment } = require("jest-environment-node");
+const NodeEnvironment = require("jest-environment-node");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const vscode = require("vscode");
 
-class VsCodeEnvironment extends TestEnvironment {
+class VsCodeEnvironment extends NodeEnvironment {
   async setup() {
     this.global.vscode = vscode;
     await super.setup();
