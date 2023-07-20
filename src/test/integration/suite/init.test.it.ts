@@ -1,11 +1,17 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
+import sinon from "sinon";
+import { mockGetOrganization } from "../mocks/server";
 
-suite("Extension Test Suite", () => {
-  test("Sample test", async () => {
-    await vscode.window.showInformationMessage("Start all tests.");
+const auth = { keyId: "key-id", secret: "key-secret" };
 
-    assert.strictEqual([1, 2, 3].indexOf(5), -1);
-    assert.strictEqual([1, 2, 3].indexOf(0), -1);
+suite("init", () => {
+  test("should show environments", async () => {
+    mockGetOrganization(auth);
+    const inputStub = sinon.stub(vscode.window, "showInputBox");
+    inputStub.onFirstCall().resolves(auth.keyId);
+    inputStub.onSecondCall().resolves(auth.secret);
+
+    await vscode.commands.executeCommand("env0.login");
   }).timeout(1000 * 60);
 });
