@@ -21,6 +21,8 @@ import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
+export let environmentsTree: vscode.TreeView<Environment>;
+export let environmentsDataProvider: Env0EnvironmentsProvider;
 
 export interface LogChannel {
   channel: vscode.OutputChannel;
@@ -119,13 +121,10 @@ export async function activate(context: vscode.ExtensionContext) {
   const authService = new AuthService(context);
   authService.registerLoginCommand();
   authService.registerLogoutCommand();
-  const environmentsDataProvider = new Env0EnvironmentsProvider();
-  const environmentsTree = vscode.window.createTreeView(
-    ENV0_ENVIRONMENTS_VIEW_ID,
-    {
-      treeDataProvider: environmentsDataProvider,
-    }
-  );
+  environmentsDataProvider = new Env0EnvironmentsProvider();
+  environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
+    treeDataProvider: environmentsDataProvider,
+  });
   const isLoggedIn = await authService.isLoggedIn();
 
   if (isLoggedIn) {

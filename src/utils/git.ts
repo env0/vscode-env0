@@ -29,7 +29,7 @@ export function getGitRepoAndBranch() {
 export async function getCurrentBranchWithRetry() {
   return await retry(
     () => {
-      const result = getGitRepoAndBranch();
+      const result = getGitRepoAndBranch() as any;
       if (!result.currentBranch) {
         throw new Error("couldn't find git current branch");
       } else {
