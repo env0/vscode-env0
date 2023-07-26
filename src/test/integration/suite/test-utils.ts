@@ -5,7 +5,7 @@ import sinon from "sinon";
 import { Credentials } from "../../../types";
 
 export const waitFor = <T>(callback: (...args: any[]) => T): Promise<T> => {
-  return retry(callback, { retries: 5, minTimeout: 300, maxTimeout: 10000 });
+  return retry(callback, { retries: 5, minTimeout: 300, maxTimeout: 1000 });
 };
 
 export const login = async (auth: Credentials) => {

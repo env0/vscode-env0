@@ -21,8 +21,17 @@ import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
+let _context: vscode.ExtensionContext;
 export let environmentsTree: vscode.TreeView<Environment>;
 export let environmentsDataProvider: Env0EnvironmentsProvider;
+// this function used by tests in order to reset the extension state after each test
+export const _reset = async () => {
+  deactivate();
+  for (const sub of _context.subscriptions) {
+    sub.dispose();
+  }
+  await activate(_context);
+};
 
 export interface LogChannel {
   channel: vscode.OutputChannel;
@@ -118,6 +127,7 @@ const init = async (
 };
 
 export async function activate(context: vscode.ExtensionContext) {
+  _context = context;
   const authService = new AuthService(context);
   authService.registerLoginCommand();
   authService.registerLogoutCommand();
