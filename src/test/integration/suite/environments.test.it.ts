@@ -1,4 +1,3 @@
-import * as assert from "assert";
 import { mockGetEnvironment, mockGetOrganization } from "../mocks/server";
 import { mockGitRepoAndBranch } from "../mocks/git";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -9,6 +8,7 @@ import { getEnvironmentMock, login, logout, waitFor } from "./test-utils";
 import { afterEach } from "mocha";
 import sinon from "sinon";
 import { EnvironmentModel } from "../../../get-environments";
+import expect from "expect";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
@@ -40,12 +40,9 @@ suite("environments", function () {
 
     await waitFor(() => {
       const environments = environmentsDataProvider.getChildren();
-      assert.strictEqual(environments.length, 1);
-      assert.strictEqual(environments[0].label, envName);
-      assert.ok(
-        (environments[0].iconPath as string).endsWith("favicon-16x16.png"),
-        "should show active environment icon"
-      );
+      expect(environments).toHaveLength(1);
+      expect(environments[0].label).toBe(envName);
+      expect(environments[0].iconPath).toContain("favicon-16x16.png");
     });
   });
 
@@ -68,8 +65,8 @@ suite("environments", function () {
 
     await waitFor(() => {
       const environments = environmentsDataProvider.getChildren();
-      assert.strictEqual(environments.length, 1);
-      assert.strictEqual(environments[0].label, activeEnvName);
+      expect(environments).toHaveLength(1);
+      expect(environments[0].label).toBe(activeEnvName);
     });
   });
 
@@ -91,8 +88,8 @@ suite("environments", function () {
 
     await waitFor(() => {
       const environments = environmentsDataProvider.getChildren();
-      assert.strictEqual(environments.length, 1);
-      assert.strictEqual(environments[0].label, envName);
+      expect(environments).toHaveLength(1);
+      expect(environments[0].label).toBe(envName);
     });
   });
 });
