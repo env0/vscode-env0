@@ -59,6 +59,7 @@ export const loadEnvironments = async (
 };
 
 const init = async (
+  context: vscode.ExtensionContext,
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>
 ) => {
@@ -80,39 +81,51 @@ const init = async (
     restartLogs(env);
   });
 
-  vscode.commands.registerCommand("env0.openInEnv0", (env) => {
-    openEnvironmentInBrowser(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.openInEnv0", (env) => {
+      openEnvironmentInBrowser(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.redeploy", (env) => {
-    redeployEnvironment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.redeploy", (env) => {
+      redeployEnvironment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.abort", (env) => {
-    abortEnvironmentDeploy(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.abort", (env) => {
+      abortEnvironmentDeploy(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.destroy", (env) => {
-    destroyEnvironment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.destroy", (env) => {
+      destroyEnvironment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.approve", (env) => {
-    resumeDeployment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.approve", (env) => {
+      resumeDeployment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.cancel", (env) => {
-    cancelDeployment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.cancel", (env) => {
+      cancelDeployment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
@@ -139,11 +152,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   if (isLoggedIn) {
     apiClient.init(await authService.getApiKeyCredentials());
-    await init(environmentsDataProvider, environmentsTree);
+    await init(context, environmentsDataProvider, environmentsTree);
   } else {
     authService.onAuth = async () => {
       apiClient.init(await authService.getApiKeyCredentials());
-      await init(environmentsDataProvider, environmentsTree);
+      await init(context, environmentsDataProvider, environmentsTree);
       await setContextShowLoginMessage(false);
     };
     await setContextShowLoginMessage(true);
