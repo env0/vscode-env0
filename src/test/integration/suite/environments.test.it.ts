@@ -20,7 +20,6 @@ const initTest = async (environments: EnvironmentModel[]) => {
 };
 
 suite("environments", function () {
-  this.timeout(1000 * 10);
   afterEach(async () => {
     sinon.restore();
     await logout();
