@@ -18,7 +18,6 @@ import { getEnvironmentsForBranch } from "./get-environments";
 import { getCurrentBranchWithRetry } from "./utils/git";
 import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
-import { StepsViewProvider } from "./env0-steps-provider";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
@@ -117,8 +116,6 @@ const init = async (
 };
 
 export async function activate(context: vscode.ExtensionContext) {
-  const stepsViewProvider = new StepsViewProvider(context.extensionUri);
-  vscode.window.registerWebviewViewProvider("env0-logs", stepsViewProvider);
   const authService = new AuthService(context);
   authService.registerLoginCommand();
   authService.registerLogoutCommand();

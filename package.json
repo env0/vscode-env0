@@ -80,34 +80,19 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "env0-environments",
-          "title": "env0 environments",
-          "icon": "resources/env0-icon.svg"
-        }
-      ],
-      "panel": [
-        {
           "id": "env0",
-          "title": "env0 logs",
+          "title": "env0",
           "icon": "resources/env0-icon.svg"
         }
       ]
     },
     "views": {
-      "env0-environments": [
+      "env0": [
         {
           "id": "env0-environments",
           "name": "Environments"
         }
-      ],
-      "env0":[
-        {
-          "id": "env0-logs",
-          "name": "env0 logs",
-          "type": "webview"
-        }
       ]
-      
     },
     "viewsWelcome":[
       {
