@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as vscode from "vscode";
 import stripAnsi from "strip-ansi";
 import {
@@ -64,14 +63,12 @@ const init = async (
   environmentsTree: vscode.TreeView<Environment>
 ) => {
   await loadEnvironments(environmentsDataProvider, environmentsTree);
-  const logChannels: Record<string, LogChannel> = {};
+  const logChannel = vscode.window.createOutputChannel(`env0 logs`, "ansi");
 
   async function restartLogs(env: Environment) {
-    Object.values(logChannels).forEach((l) => l.channel.dispose());
-    Object.keys(logChannels).forEach((key) => delete logChannels[key]);
     clearInterval(logPoller);
     if (env.id) {
-      logPoller = await pollForEnvironmentLogs(env, logChannels);
+      logPoller = await pollForEnvironmentLogs(env, logChannel);
     }
   }
 
@@ -170,24 +167,13 @@ export function deactivate() {
 
 async function pollForEnvironmentLogs(
   env: Environment,
-  logChannels: Record<string, LogChannel>
+  logChannel: vscode.OutputChannel
 ) {
   const logPoller = setInterval(async () => {
     const steps = await apiClient.getDeploymentSteps(env.latestDeploymentLogId);
 
     steps.forEach(async (step) => {
-      let stepLog = logChannels[step.name];
-      if (!stepLog) {
-        logChannels[step.name] = {
-          channel: vscode.window.createOutputChannel(
-            `(env0) ${step.name}`,
-            "ansi"
-          ),
-        };
-        stepLog = logChannels[step.name];
-      }
-
-      if (stepLog.hasMoreLogs !== false) {
+      if (step.hasMoreLogs !== false) {
         try {
           const logs = await apiClient.getDeploymentStepLogs(
             env.latestDeploymentLogId,
@@ -202,9 +188,7 @@ async function pollForEnvironmentLogs(
           });
           stepLog.startTime = logs.nextStartTime;
           stepLog.hasMoreLogs = logs.hasMoreLogs;
-          if (step.status === "IN_PROGRESS") {
-            stepLog.channel.show();
-          }
+          
         } catch (e) {
           console.error("oh no", { e });
         }

@@ -59,6 +59,14 @@ class ApiClient {
     return res.data;
   }
 
+  public async getDeployment(deploymentLogId: string) {
+    const res = await this.instance.get(
+      `environments/deployments/${deploymentLogId}`
+    );
+    return res.data;
+  }
+
+  // todo add return type
   public async getDeploymentSteps(deploymentLogId: string) {
     const response = await this.instance.get<DeploymentStepResponse>(
       `/deployments/${deploymentLogId}/steps`
