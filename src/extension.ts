@@ -21,6 +21,17 @@ import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
+let _context: vscode.ExtensionContext;
+export let environmentsTree: vscode.TreeView<Environment>;
+export let environmentsDataProvider: Env0EnvironmentsProvider;
+// this function used by tests in order to reset the extension state after each test
+export const _reset = async () => {
+  deactivate();
+  for (const sub of _context.subscriptions) {
+    sub.dispose();
+  }
+  await activate(_context);
+};
 
 export interface LogChannel {
   channel: vscode.OutputChannel;
@@ -48,8 +59,9 @@ export const loadEnvironments = async (
 };
 
 const init = async (
+  context: vscode.ExtensionContext,
   environmentsDataProvider: Env0EnvironmentsProvider,
-  environmentsTree: vscode.TreeView<Environment>,
+  environmentsTree: vscode.TreeView<Environment>
 ) => {
   await loadEnvironments(environmentsDataProvider, environmentsTree);
   const logChannels: Record<string, LogChannel> = {};
@@ -69,39 +81,51 @@ const init = async (
     restartLogs(env);
   });
 
-  vscode.commands.registerCommand("env0.openInEnv0", (env) => {
-    openEnvironmentInBrowser(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.openInEnv0", (env) => {
+      openEnvironmentInBrowser(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.redeploy", (env) => {
-    redeployEnvironment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.redeploy", (env) => {
+      redeployEnvironment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.abort", (env) => {
-    abortEnvironmentDeploy(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.abort", (env) => {
+      abortEnvironmentDeploy(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.destroy", (env) => {
-    destroyEnvironment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.destroy", (env) => {
+      destroyEnvironment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.approve", (env) => {
-    resumeDeployment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.approve", (env) => {
+      resumeDeployment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
-  vscode.commands.registerCommand("env0.cancel", (env) => {
-    cancelDeployment(env);
-    environmentsDataProvider.refresh();
-    restartLogs(env);
-  });
+  context.subscriptions.push(
+    vscode.commands.registerCommand("env0.cancel", (env) => {
+      cancelDeployment(env);
+      environmentsDataProvider.refresh();
+      restartLogs(env);
+    })
+  );
 
   environmentPollingInstance = setInterval(async () => {
     const fetchedEnvironments = await getEnvironmentsForBranch();
@@ -116,25 +140,23 @@ const init = async (
 };
 
 export async function activate(context: vscode.ExtensionContext) {
+  _context = context;
   const authService = new AuthService(context);
   authService.registerLoginCommand();
   authService.registerLogoutCommand();
-  const environmentsDataProvider = new Env0EnvironmentsProvider();
-  const environmentsTree = vscode.window.createTreeView(
-    ENV0_ENVIRONMENTS_VIEW_ID,
-    {
-      treeDataProvider: environmentsDataProvider,
-    }
-  );
+  environmentsDataProvider = new Env0EnvironmentsProvider();
+  environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
+    treeDataProvider: environmentsDataProvider,
+  });
   const isLoggedIn = await authService.isLoggedIn();
 
   if (isLoggedIn) {
     apiClient.init(await authService.getApiKeyCredentials());
-    await init(environmentsDataProvider, environmentsTree);
+    await init(context, environmentsDataProvider, environmentsTree);
   } else {
     authService.onAuth = async () => {
       apiClient.init(await authService.getApiKeyCredentials());
-      await init(environmentsDataProvider, environmentsTree);
+      await init(context, environmentsDataProvider, environmentsTree);
       await setContextShowLoginMessage(false);
     };
     await setContextShowLoginMessage(true);

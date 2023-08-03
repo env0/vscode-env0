@@ -34,3 +34,8 @@ export interface DeploymentStepLogsResponse {
   nextStartTime?: number | string;
   hasMoreLogs: boolean;
 }
+
+export interface Credentials {
+  keyId: string;
+  secret: string;
+}

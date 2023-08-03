@@ -11,7 +11,11 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "${defaultBuildTask}"
+      "preLaunchTask": "${defaultBuildTask}",
+      "env": {
+        "ENV0_API_URL": "api-dev.dev.env0.com",
+        "ENV0_WEB_URL": "dev.dev.env0.com"
+      }
     },
     {
       "name": "Extension Tests",
@@ -19,13 +23,14 @@
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
+        "--extensionTestsPath=${workspaceFolder}/out/test/integration/suite/index"
       ],
       "outFiles": [
         "${workspaceFolder}/out/**/*.js",
         "${workspaceFolder}/dist/**/*.js"
       ],
-      "preLaunchTask": "tasks: watch-tests",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "npm: pretest",
       "env": {
         "ENV0_API_URL": "api-dev.dev.env0.com",
         "ENV0_WEB_URL": "dev.dev.env0.com"
