@@ -15,6 +15,7 @@ export class EnvironmentLogsProvider {
   abort() {
     this.abortController.abort();
     this._isAborted = true;
+    EnvironmentLogsProvider.environmentLogsOutputChannel.clear();
   }
 
   get isAborted() {
