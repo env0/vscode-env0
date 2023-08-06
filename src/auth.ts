@@ -11,7 +11,6 @@ const env0SecretKey = "env0.secret";
 
 export class AuthService {
   public onAuth?: () => any = undefined;
-  // eslint-disable-next-line no-useless-constructor
   constructor(private readonly context: vscode.ExtensionContext) {}
   public registerLoginCommand() {
     const disposable = vscode.commands.registerCommand(

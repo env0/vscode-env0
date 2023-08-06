@@ -1,6 +1,5 @@
 import { mockGetEnvironment, mockGetOrganization } from "../mocks/server";
 import { mockGitRepoAndBranch } from "../mocks/git";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import * as extension from "../../../../dist/extension.js";
 import { Env0EnvironmentsProvider } from "../../../env0-environments-provider";

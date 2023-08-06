@@ -17,5 +17,9 @@
     "ignorePatterns": [
         "dist",
         "**/*.d.ts"
-    ]
+    ],
+    "rules": {
+        "no-useless-constructor": "off",
+        "@typescript-eslint/ban-ts-comment": "off"
+      }
 }
