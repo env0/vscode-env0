@@ -35,9 +35,7 @@ export class EnvironmentLogsProvider {
   }
 
   private async logDeployment(deploymentId: string) {
-    const pollableStatuses = ["IN_PROGRESS", "QUEUED"]; // todo extract status to enum
-    const pollStepLogsInterval = 5000; // todo maybe extract to const or env var
-    const stepsAlreadyLogged: string[] = [];
+    EnvironmentLogsProvider.environmentLogsOutputChannel.show();
     let previousStatus;
 
     const deployment = await apiClient.getDeployment(deploymentId);
