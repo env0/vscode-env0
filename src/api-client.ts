@@ -59,17 +59,24 @@ class ApiClient {
     return res.data;
   }
 
-  public async getDeployment(deploymentLogId: string) {
+  public async getDeployment(
+    deploymentLogId: string,
+    abortController?: AbortController
+  ) {
     const res = await this.instance.get(
-      `environments/deployments/${deploymentLogId}`
+      `environments/deployments/${deploymentLogId}`,
+      { signal: abortController?.signal }
     );
     return res.data;
   }
 
-  // todo add return type
-  public async getDeploymentSteps(deploymentLogId: string) {
+  public async getDeploymentSteps(
+    deploymentLogId: string,
+    abortController?: AbortController
+  ) {
     const response = await this.instance.get<DeploymentStepResponse>(
-      `/deployments/${deploymentLogId}/steps`
+      `/deployments/${deploymentLogId}/steps`,
+      { signal: abortController?.signal }
     );
     return response.data;
   }
@@ -77,12 +84,14 @@ class ApiClient {
   public async getDeploymentStepLogs(
     deploymentLogId: string,
     stepName: string,
-    stepStartTime?: string | number
+    stepStartTime?: string | number,
+    abortController?: AbortController
   ) {
     const response = await this.instance.get<DeploymentStepLogsResponse>(
       `/deployments/${deploymentLogId}/steps/${stepName}/log?startTime=${
         stepStartTime ?? ""
-      }`
+      }`,
+      { signal: abortController?.signal }
     );
     return response.data;
   }
