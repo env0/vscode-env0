@@ -1,13 +1,17 @@
 import * as vscode from "vscode";
 import { Environment } from "./env0-environments-provider";
 import { apiClient } from "./api-client";
+import stripAnsi from "strip-ansi";
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pollStepLogsInterval = 1000;
+const pollableStatuses = ["IN_PROGRESS", "QUEUED"];
 
 export class EnvironmentLogsProvider {
   private static environmentLogsOutputChannel: vscode.OutputChannel;
-  // todo pass abort signal to requests
   private readonly abortController = new AbortController();
   private _isAborted = false;
+  private readonly stepsAlreadyLogged: string[] = [];
   constructor(private readonly env: Environment) {
     this.logDeployment(this.env.latestDeploymentLogId);
   }
@@ -38,13 +42,19 @@ export class EnvironmentLogsProvider {
     EnvironmentLogsProvider.environmentLogsOutputChannel.show();
     let previousStatus;
 
-    const deployment = await apiClient.getDeployment(deploymentId);
+    const deployment = await apiClient.getDeployment(
+      deploymentId,
+      this.abortController
+    );
     if (deployment.status === "QUEUED") {
       this.log(`Deployment is queued! Waiting for it to start...`);
     }
 
     while (true && !this.isAborted) {
-      const { type, status } = await apiClient.getDeployment(deploymentId);
+      const { type, status } = await apiClient.getDeployment(
+        deploymentId,
+        this.abortController
+      );
 
       if (status === "QUEUED" && previousStatus === "QUEUED") {
         this.log(
@@ -60,9 +70,7 @@ export class EnvironmentLogsProvider {
         );
       }
 
-      stepsAlreadyLogged.push(
-        ...(await this.processDeploymentSteps(deploymentId, stepsAlreadyLogged))
-      );
+      await this.processDeploymentSteps(deploymentId);
 
       if (!pollableStatuses.includes(status)) {
         if (status === "WAITING_FOR_USER") {
@@ -78,52 +86,61 @@ export class EnvironmentLogsProvider {
     }
   }
 
-  private async writeDeploymentStepLog(
-    deploymentLogId: string,
-    stepName: string
-  ) {
-    const pollInProgressStepLogInterval = 10000; // 10 seconds
-    let shouldPoll = false;
-    let startTime;
-
-    do {
-      const steps = await withRetry(() =>
-        this.getDeploymentSteps(deploymentLogId)
-      );
-      const { status } = steps.find((step) => step.name === stepName);
-      const stepInProgress = status === "IN_PROGRESS";
-
-      const { events, nextStartTime, hasMoreLogs } = await withRetry(() =>
-        this.getDeploymentStepLog(deploymentLogId, stepName, startTime)
-      );
-
-      events.forEach((event) => logger.info(event.message));
-
-      if (nextStartTime) startTime = nextStartTime;
-      if (stepInProgress) await apiClient.sleep(pollInProgressStepLogInterval);
-
-      shouldPoll = hasMoreLogs || stepInProgress;
-    } while (shouldPoll);
-  }
-
-  async processDeploymentSteps(deploymentId: string, stepsToSkip) {
-    const doneSteps = [];
-
-    const steps = await apiClient.getDeploymentSteps(deploymentId);
+  private async processDeploymentSteps(deploymentId: string) {
+    const steps = await apiClient.getDeploymentSteps(
+      deploymentId,
+      this.abortController
+    );
 
     for (const step of steps) {
-      const alreadyLogged = stepsToSkip.includes(step.name);
+      const alreadyLogged = this.stepsAlreadyLogged.includes(step.name);
 
       if (!alreadyLogged && step.status !== "NOT_STARTED") {
         this.log(`$$$ ${step.name}`);
         this.log("#".repeat(100));
         await this.writeDeploymentStepLog(deploymentId, step.name);
 
-        doneSteps.push(step.name);
+        this.stepsAlreadyLogged.push(step.name);
       }
     }
+  }
 
-    return doneSteps;
+  private async writeDeploymentStepLog(
+    deploymentLogId: string,
+    stepName: string
+  ) {
+    let shouldPoll = false;
+    let startTime: number | string;
+
+    do {
+      const steps = await apiClient.getDeploymentSteps(
+        deploymentLogId,
+        this.abortController
+      );
+
+      const { status } = steps.find((step) => step.name === stepName) || {};
+      const stepInProgress = status === "IN_PROGRESS";
+
+      const { events, nextStartTime, hasMoreLogs } =
+        await apiClient.getDeploymentStepLogs(
+          deploymentLogId,
+          stepName,
+          startTime!,
+          this.abortController
+        );
+
+      events.forEach((event) => this.log(stripAnsi(event.message)));
+
+      if (nextStartTime) {
+        startTime = nextStartTime;
+      }
+
+      if (stepInProgress) {
+        await sleep(pollStepLogsInterval);
+      }
+
+      shouldPoll = hasMoreLogs || stepInProgress;
+    } while (shouldPoll);
   }
 
   static initEnvironmentOutputChannel() {
