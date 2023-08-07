@@ -2,10 +2,11 @@ import * as vscode from "vscode";
 import { Environment } from "./env0-environments-provider";
 import { apiClient } from "./api-client";
 import stripAnsi from "strip-ansi";
+import { DeploymentStatus, DeploymentStepStatus } from "./types";
+import axios from "axios";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const pollStepLogsInterval = 1000;
-const pollableStatuses = ["IN_PROGRESS", "QUEUED"];
 
 export class EnvironmentLogsProvider {
   private static environmentLogsOutputChannel: vscode.OutputChannel;
@@ -43,30 +44,37 @@ export class EnvironmentLogsProvider {
   }
 
   private async logDeployment(deploymentId: string) {
-    EnvironmentLogsProvider.environmentLogsOutputChannel.show();
     let previousStatus;
+    EnvironmentLogsProvider.environmentLogsOutputChannel.show();
 
     const deployment = await apiClient.getDeployment(
       deploymentId,
       this.abortController
     );
-    if (deployment.status === "QUEUED") {
+
+    if (deployment.status === DeploymentStatus.QUEUED) {
       this.log(`Deployment is queued! Waiting for it to start...`);
     }
 
-    while (true && !this.isAborted) {
+    while (!this.isAborted) {
       const { type, status } = await apiClient.getDeployment(
         deploymentId,
         this.abortController
       );
 
-      if (status === "QUEUED" && previousStatus === "QUEUED") {
+      if (
+        status === DeploymentStatus.QUEUED &&
+        previousStatus === DeploymentStatus.QUEUED
+      ) {
         this.log(
           "Queued deployment is still waiting for earlier deployments to finish..."
         );
       }
 
-      if (status === "IN_PROGRESS" && previousStatus === "QUEUED") {
+      if (
+        status === DeploymentStatus.IN_PROGRESS &&
+        previousStatus === DeploymentStatus.QUEUED
+      ) {
         this.log(
           `Deployment reached its turn! ${
             type === "deploy" ? "Deploying" : "Destroying"
@@ -76,12 +84,17 @@ export class EnvironmentLogsProvider {
 
       await this.processDeploymentSteps(deploymentId);
 
-      if (!pollableStatuses.includes(status)) {
+      if (
+        ![DeploymentStatus.QUEUED, DeploymentStatus.IN_PROGRESS].includes(
+          status
+        )
+      ) {
         if (status === "WAITING_FOR_USER") {
           this.log(
             "Deployment is waiting for an approval. Run 'env0 approve' or 'env0 cancel' to continue."
           );
         }
+
         return status;
       }
 
@@ -99,11 +112,10 @@ export class EnvironmentLogsProvider {
     for (const step of steps) {
       const alreadyLogged = this.stepsAlreadyLogged.includes(step.name);
 
-      if (!alreadyLogged && step.status !== "NOT_STARTED") {
+      if (!alreadyLogged && step.status !== DeploymentStepStatus.NOT_STARTED) {
         this.log(`$$$ ${step.name}`);
         this.log("#".repeat(100));
         await this.writeDeploymentStepLog(deploymentId, step.name);
-
         this.stepsAlreadyLogged.push(step.name);
       }
     }
@@ -123,7 +135,7 @@ export class EnvironmentLogsProvider {
       );
 
       const { status } = steps.find((step) => step.name === stepName) || {};
-      const stepInProgress = status === "IN_PROGRESS";
+      const isStepInProgress = status === DeploymentStatus.IN_PROGRESS;
 
       const { events, nextStartTime, hasMoreLogs } =
         await apiClient.getDeploymentStepLogs(
@@ -139,11 +151,11 @@ export class EnvironmentLogsProvider {
         startTime = nextStartTime;
       }
 
-      if (stepInProgress) {
+      if (isStepInProgress) {
         await sleep(pollStepLogsInterval);
       }
 
-      shouldPoll = hasMoreLogs || stepInProgress;
+      shouldPoll = hasMoreLogs || isStepInProgress;
     } while (shouldPoll);
   }
 
