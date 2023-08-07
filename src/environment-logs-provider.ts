@@ -13,7 +13,11 @@ export class EnvironmentLogsProvider {
   private _isAborted = false;
   private readonly stepsAlreadyLogged: string[] = [];
   constructor(private readonly env: Environment) {
-    this.logDeployment(this.env.latestDeploymentLogId);
+    this.logDeployment(this.env.latestDeploymentLogId).catch((e) => {
+      if (!axios.isCancel(e)) {
+        throw e;
+      }
+    });
   }
 
   abort() {
