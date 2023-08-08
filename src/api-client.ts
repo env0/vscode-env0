@@ -1,6 +1,5 @@
-import { AuthService } from "./auth";
 import axios, { AxiosInstance } from "axios";
-import { ENV0_API_URL, ENV0_WEB_URL } from "./common";
+import { ENV0_API_URL } from "./common";
 import { EnvironmentModel } from "./get-environments";
 import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
 
@@ -47,27 +46,27 @@ class ApiClient {
   }
 
   public async getEnvironments(organizationId: string) {
-    const res = await this.instance.get<EnvironmentModel[]>(`/environments`, {
+    const response = await this.instance.get<EnvironmentModel[]>(`/environments`, {
       params: { organizationId },
     });
 
-    return res.data;
+    return response.data;
   }
 
   public async getOrganizations() {
-    const res = await this.instance.get(`/organizations`);
-    return res.data;
+    const response = await this.instance.get(`/organizations`);
+    return response.data;
   }
 
   public async getDeployment(
     deploymentLogId: string,
     abortController?: AbortController
   ) {
-    const res = await this.instance.get(
+    const response = await this.instance.get(
       `environments/deployments/${deploymentLogId}`,
       { signal: abortController?.signal }
     );
-    return res.data;
+    return response.data;
   }
 
   public async getDeploymentSteps(
