@@ -46,9 +46,12 @@ class ApiClient {
   }
 
   public async getEnvironments(organizationId: string) {
-    const response = await this.instance.get<EnvironmentModel[]>(`/environments`, {
-      params: { organizationId },
-    });
+    const response = await this.instance.get<EnvironmentModel[]>(
+      `/environments`,
+      {
+        params: { organizationId },
+      }
+    );
 
     return response.data;
   }
