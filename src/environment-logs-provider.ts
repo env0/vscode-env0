@@ -47,28 +47,22 @@ export class EnvironmentLogsProvider {
     let previousStatus;
     EnvironmentLogsProvider.environmentLogsOutputChannel.show();
 
-    const deployment = await apiClient.getDeployment(
-      deploymentId,
-      this.abortController
-    );
-
-    if (deployment.status === DeploymentStatus.QUEUED) {
-      this.log(`Deployment is queued! Waiting for it to start...`);
-    }
-
     while (!this.isAborted) {
       const { type, status } = await apiClient.getDeployment(
         deploymentId,
         this.abortController
       );
 
-      if (
-        status === DeploymentStatus.QUEUED &&
-        previousStatus === DeploymentStatus.QUEUED
-      ) {
-        this.log(
-          "Queued deployment is still waiting for earlier deployments to finish..."
-        );
+      if (status === DeploymentStatus.QUEUED) {
+        if (previousStatus === DeploymentStatus.QUEUED) {
+          this.log(
+            "Queued deployment is still waiting for earlier deployments to finish..."
+          );
+        } else {
+          this.log("Deployment is queued! Waiting for it to start...");
+        }
+        await sleep(pollStepLogsInterval);
+        continue;
       }
 
       if (
