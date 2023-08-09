@@ -2,7 +2,11 @@ import * as vscode from "vscode";
 import { Environment } from "./env0-environments-provider";
 import { apiClient } from "./api-client";
 import stripAnsi from "strip-ansi";
-import { DeploymentStatus, DeploymentStepStatus } from "./types";
+import {
+  DeploymentStatus,
+  DeploymentStepLog,
+  DeploymentStepStatus,
+} from "./types";
 import axios from "axios";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -44,8 +48,60 @@ export class EnvironmentLogsProvider {
   }
 
   private async logDeployment(deploymentId: string) {
-    let previousStatus;
     EnvironmentLogsProvider.environmentLogsOutputChannel.show();
+
+    const { status } = await apiClient.getDeployment(
+      deploymentId,
+      this.abortController
+    );
+    if (
+      ![DeploymentStatus.QUEUED, DeploymentStatus.IN_PROGRESS].includes(status)
+    ) {
+      return this.logCompletedDeployment(deploymentId);
+    }
+    return this.logInProgressDeployment(deploymentId);
+  }
+
+  private async logCompletedDeployment(deploymentId: string) {
+    const steps = await apiClient.getDeploymentSteps(
+      deploymentId,
+      this.abortController
+    );
+
+    const stepsEvents = steps.map(async (step) => ({
+      name: step.name,
+      events: await this.getStepLogs(deploymentId, step.name),
+    }));
+
+    for await (const step of stepsEvents) {
+      this.log(`$$$ ${step.name}`);
+      this.log("#".repeat(100));
+      step.events.forEach((event) => this.log(stripAnsi(event.message)));
+    }
+  }
+
+  private async getStepLogs(
+    deploymentId: string,
+    stepName: string,
+    startTime?: string | number
+  ): Promise<DeploymentStepLog[]> {
+    const { events, nextStartTime, hasMoreLogs } =
+      await apiClient.getDeploymentStepLogs(
+        deploymentId,
+        stepName,
+        startTime,
+        this.abortController
+      );
+    if (hasMoreLogs && nextStartTime) {
+      events.concat(
+        await this.getStepLogs(deploymentId, stepName, nextStartTime)
+      );
+    }
+    return events;
+  }
+
+  private async logInProgressDeployment(deploymentId: string) {
+    let previousStatus;
 
     while (!this.isAborted) {
       const { type, status } = await apiClient.getDeployment(
