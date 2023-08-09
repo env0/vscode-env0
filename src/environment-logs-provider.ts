@@ -69,11 +69,7 @@ export class EnvironmentLogsProvider {
         status === DeploymentStatus.IN_PROGRESS &&
         previousStatus === DeploymentStatus.QUEUED
       ) {
-        this.log(
-          `Deployment reached its turn! ${
-            type === "deploy" ? "Deploying" : "Destroying"
-          } environment...`
-        );
+        this.log(`Deployment reached its turn! ${type} is starting...`);
       }
 
       await this.processDeploymentSteps(deploymentId);
