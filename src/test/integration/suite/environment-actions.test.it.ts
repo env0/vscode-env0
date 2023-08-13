@@ -14,6 +14,7 @@ import { Env0EnvironmentsProvider } from "../../../env0-environments-provider";
 import { afterEach } from "mocha";
 import expect from "expect";
 import * as vscode from "vscode";
+
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
 const initTest = async (environments: EnvironmentModel[]) => {
@@ -33,6 +34,13 @@ const getFirstEnvIconPath = () => {
     extension.environmentsDataProvider as Env0EnvironmentsProvider;
   const environments = environmentsDataProvider.getChildren();
   return environments[0].iconPath;
+};
+
+const getFirstEnvStatus = () => {
+  const environmentsDataProvider =
+    extension.environmentsDataProvider as Env0EnvironmentsProvider;
+  const environments = environmentsDataProvider.getChildren();
+  return environments[0].status;
 };
 
 const activeEnvironmentIconPath = "favicon-16x16.png";
@@ -68,7 +76,7 @@ suite("environment actions", function () {
     await waitFor(() => expect(onRedeployCalled.callCount).toBe(1));
   });
 
-  test("should update environment icon when redeploy", async () => {
+  test("should update environment icon and status when redeploy", async () => {
     const envName = "my env";
     const environmentMock = getEnvironmentMock(
       "main",
@@ -91,11 +99,11 @@ suite("environment actions", function () {
       updatedAt: Date.now().toString(),
     };
     mockGetEnvironment(orgId, [inProgressEnvironment], auth);
-
     // wait for the auto polling that will update the environment status icon
     await waitFor(() =>
       expect(getFirstEnvIconPath()).toContain(inProgressIconPath)
     );
+    expect(getFirstEnvStatus()).toBe("DEPLOY_IN_PROGRESS");
 
     const successfullyDeployedEnvironment: EnvironmentModel = {
       ...inProgressEnvironment,
@@ -106,6 +114,7 @@ suite("environment actions", function () {
     await waitFor(() =>
       expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
     );
+    expect(getFirstEnvStatus()).toBe("ACTIVE");
   });
 
   test("should show information message when redeploy", async () => {
