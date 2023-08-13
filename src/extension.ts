@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import stripAnsi from "strip-ansi";
 import { AuthService } from "./auth";
 import {
   Env0EnvironmentsProvider,
@@ -51,11 +50,11 @@ export const loadEnvironments = async (
   environmentsTree.message = undefined;
 };
 
-const restartLogs = async (env: Environment) => {
+const restartLogs = async (env: Environment, deploymentId?: string) => {
   if (environmentLogsProvider) {
     environmentLogsProvider.abort();
   }
-  environmentLogsProvider = new EnvironmentLogsProvider(env);
+  environmentLogsProvider = new EnvironmentLogsProvider(env, deploymentId);
 };
 
 const init = async (
@@ -69,7 +68,7 @@ const init = async (
     const env = e.selection[0];
 
     if (env) {
-    restartLogs(env);
+      restartLogs(env);
     }
   });
 

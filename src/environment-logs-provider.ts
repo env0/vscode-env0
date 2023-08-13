@@ -17,12 +17,24 @@ export class EnvironmentLogsProvider {
   private readonly abortController = new AbortController();
   private _isAborted = false;
   private readonly stepsAlreadyLogged: string[] = [];
-  constructor(private readonly env: Environment) {
-    this.logDeployment(this.env.latestDeploymentLogId).catch((e) => {
-      if (!axios.isCancel(e)) {
-        throw e;
-      }
-    });
+  constructor(
+    private readonly env: Environment,
+    private readonly deploymentId?: string
+  ) {
+    this.log("Loading logs...");
+    if (this.deploymentId) {
+      this.logDeployment(this.deploymentId).catch((e) => {
+        if (!axios.isCancel(e)) {
+          throw e;
+        }
+      });
+    } else {
+      this.logDeployment(this.env.latestDeploymentLogId).catch((e) => {
+        if (!axios.isCancel(e)) {
+          throw e;
+        }
+      });
+    }
   }
 
   abort() {
@@ -137,9 +149,7 @@ export class EnvironmentLogsProvider {
         )
       ) {
         if (status === "WAITING_FOR_USER") {
-          this.log(
-            "Deployment is waiting for an approval. Run 'env0 approve' or 'env0 cancel' to continue."
-          );
+          this.log("Deployment is waiting for an approval.");
         }
 
         return status;

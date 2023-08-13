@@ -21,28 +21,41 @@ class ApiClient {
   }
 
   public async abortDeployment(deploymentId: string) {
-    return this.instance.post(
+    const response = await this.instance.post<null>(
       `/environments/deployments/${deploymentId}/abort`,
       {}
     );
+    return response.data;
   }
 
   public async redeployEnvironment(envId: string) {
-    return this.instance.post(`/environments/${envId}/deployments`, {});
+    const response = await this.instance.post<{ id: string }>(
+      `/environments/${envId}/deployments`,
+      {}
+    );
+    return response.data;
   }
 
   public async cancelDeployment(deploymentId: string) {
-    return this.instance.put(
+    const response = await this.instance.put<{ id: string }>(
       `/environments/deployments/${deploymentId}/cancel`
     );
+    return response.data;
   }
 
   public async resumeDeployment(deploymentId: string) {
-    return this.instance.put(`/environments/deployments/${deploymentId}`);
+    const response = await this.instance.put<{ id: string }>(
+      `/environments/deployments/${deploymentId}`
+    );
+    return response.data;
   }
 
   public async destroyEnvironment(deploymentId: string) {
-    this.instance.post(`/environments/${deploymentId}/destroy`, {});
+    const response = await this.instance.post<{ id: string }>(
+      `/environments/${deploymentId}/destroy`,
+      {}
+    );
+    return response.data;
   }
 
   public async getEnvironments(organizationId: string) {
