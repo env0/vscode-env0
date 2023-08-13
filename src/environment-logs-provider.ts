@@ -117,6 +117,7 @@ export class EnvironmentLogsProvider {
         } else {
           this.log("Deployment is queued! Waiting for it to start...");
         }
+        previousStatus = status;
         await sleep(pollStepLogsInterval);
         continue;
       }
