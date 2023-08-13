@@ -1,23 +1,14 @@
-import axios from "axios";
 import * as vscode from "vscode";
 import stripAnsi from "strip-ansi";
-import {
-  abortEnvironmentDeploy,
-  cancelDeployment,
-  destroyEnvironment,
-  openEnvironmentInBrowser,
-  redeployEnvironment,
-  resumeDeployment,
-} from "./actions";
 import { AuthService } from "./auth";
 import {
   Env0EnvironmentsProvider,
   Environment,
 } from "./env0-environments-provider";
-import { getEnvironmentsForBranch } from "./get-environments";
 import { getCurrentBranchWithRetry } from "./utils/git";
 import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
+import { registerEnvironmentActions } from "./actions";
 
 let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
@@ -81,61 +72,9 @@ const init = async (
     restartLogs(env);
   });
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand("env0.openInEnv0", (env) => {
-      openEnvironmentInBrowser(env);
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("env0.redeploy", (env) => {
-      redeployEnvironment(env);
-      environmentsDataProvider.refresh();
-      restartLogs(env);
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("env0.abort", (env) => {
-      abortEnvironmentDeploy(env);
-      environmentsDataProvider.refresh();
-      restartLogs(env);
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("env0.destroy", (env) => {
-      destroyEnvironment(env);
-      environmentsDataProvider.refresh();
-      restartLogs(env);
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("env0.approve", (env) => {
-      resumeDeployment(env);
-      environmentsDataProvider.refresh();
-      restartLogs(env);
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand("env0.cancel", (env) => {
-      cancelDeployment(env);
-      environmentsDataProvider.refresh();
-      restartLogs(env);
-    })
-  );
-
+  registerEnvironmentActions(context, environmentsDataProvider, restartLogs);
   environmentPollingInstance = setInterval(async () => {
-    const fetchedEnvironments = await getEnvironmentsForBranch();
-
-    if (
-      fetchedEnvironments &&
-      environmentsDataProvider.shouldUpdate(fetchedEnvironments)
-    ) {
-      environmentsDataProvider.refresh();
-    }
+    environmentsDataProvider.refresh();
   }, 3000);
 };
 

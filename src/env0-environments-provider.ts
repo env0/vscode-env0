@@ -42,6 +42,7 @@ export class Env0EnvironmentsProvider
   implements vscode.TreeDataProvider<Environment>
 {
   private environments: EnvironmentModel[] = [];
+  private isRefreshing = false;
 
   getTreeItem(element: Environment): vscode.TreeItem {
     return element;
@@ -61,7 +62,7 @@ export class Env0EnvironmentsProvider
     );
   }
 
-  public shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
+  private shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
     if (environmentsToCompareTo.length !== this.environments.length) {
       return true;
     }
@@ -79,38 +80,6 @@ export class Env0EnvironmentsProvider
         this.environments[envIndex].updatedAt !== newEnvironment.updatedAt &&
         this.environments[envIndex].status !== newEnvironment.status
       ) {
-        if (newEnvironment.status === "DEPLOY_IN_PROGRESS") {
-          showInProgressMessage({
-            environmentId: newEnvironment.id,
-            projectId: newEnvironment.projectId,
-            environmentName: newEnvironment.name,
-          });
-        }
-
-        if (newEnvironment.status === "FAILED") {
-          showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {
-            environmentId: newEnvironment.id,
-            projectId: newEnvironment.projectId,
-            environmentName: newEnvironment.name,
-          });
-        }
-
-        if (newEnvironment.status === "WAITING_FOR_USER") {
-          showWaitingForApproval({
-            environmentId: newEnvironment.id,
-            projectId: newEnvironment.projectId,
-            environmentName: newEnvironment.name,
-          });
-        }
-
-        if (newEnvironment.status === "ACTIVE") {
-          showSuccessMessage({
-            environmentId: newEnvironment.id,
-            projectId: newEnvironment.projectId,
-            environmentName: newEnvironment.name,
-          });
-        }
-
         return true;
       }
     }
@@ -127,8 +96,80 @@ export class Env0EnvironmentsProvider
   > = this._onDidChangeTreeData.event;
 
   async refresh(): Promise<void> {
-    this.environments = await getEnvironmentsForBranch();
-    this._onDidChangeTreeData.fire();
+    if (this.isRefreshing) {
+      return;
+    }
+    this.isRefreshing = true;
+    try {
+      const newEnvironments = await getEnvironmentsForBranch();
+      if (this.shouldUpdate(newEnvironments)) {
+        showEnvironmentStatusChangedNotification(
+          this.environments,
+          newEnvironments
+        );
+        this.environments = newEnvironments;
+        this._onDidChangeTreeData.fire();
+      }
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+}
+
+function showEnvironmentStatusChangedNotification(
+  oldEnvironments: EnvironmentModel[],
+  newEnvironments: EnvironmentModel[]
+) {
+  for (const newEnvironment of newEnvironments) {
+    const envIndex: number = oldEnvironments.findIndex(
+      (env) => env.id === newEnvironment.id
+    );
+
+    if (envIndex === -1) {
+      continue;
+    }
+
+    if (
+      oldEnvironments[envIndex].updatedAt !== newEnvironment.updatedAt &&
+      oldEnvironments[envIndex].status !== newEnvironment.status
+    ) {
+      switch (newEnvironment.status) {
+        case "DEPLOY_IN_PROGRESS":
+          showInProgressMessage({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
+
+        case "FAILED":
+          showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
+
+        case "WAITING_FOR_USER":
+          showWaitingForApproval({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
+
+        case "ACTIVE":
+          showSuccessMessage({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
+
+        default:
+          break;
+      }
+    }
   }
 }
 
