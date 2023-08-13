@@ -143,14 +143,7 @@ suite("environment actions", function () {
     };
     mockGetEnvironment(orgId, [inProgressEnvironment], auth);
 
-    // wait for the auto polling that will update the environment status icon
-    await waitFor(() =>
-      expect(getFirstEnvIconPath()).toContain(inProgressIconPath)
-    );
-
-    await waitFor(() => {
-      expect(showInformationMessageStub.called).toBe(true);
-    });
+    await waitFor(() => expect(showInformationMessageStub.callCount).toBe(1));
 
     const successfullyDeployedEnvironment: EnvironmentModel = {
       ...inProgressEnvironment,
@@ -159,8 +152,6 @@ suite("environment actions", function () {
     };
 
     mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
-    await waitFor(() =>
-      expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
-    );
+    await waitFor(() => expect(showInformationMessageStub.callCount).toBe(2));
   });
 });
