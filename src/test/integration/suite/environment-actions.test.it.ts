@@ -1,7 +1,6 @@
 import { getEnvironmentMock, login, logout, waitFor } from "./test-utils";
 // @ts-ignore
 import * as extension from "../../../../dist/extension.js";
-import sinon from "sinon";
 import {
   mockGetDeploymentSteps,
   mockGetEnvironment,
@@ -14,6 +13,8 @@ import { Env0EnvironmentsProvider } from "../../../env0-environments-provider";
 import { afterEach } from "mocha";
 import expect from "expect";
 import * as vscode from "vscode";
+import * as jestMock from "jest-mock";
+import sinon from "sinon";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
@@ -26,7 +27,25 @@ const initTest = async (environments: EnvironmentModel[]) => {
 };
 
 const stubShowInformationMessage = () => {
-  return sinon.stub(vscode.window, "showInformationMessage").resolves();
+  const mockOpenExternal = jestMock.spyOn(vscode.env, "openExternal");
+  const mockUriParse = jestMock
+    .spyOn(vscode.Uri, "parse")
+    .mockImplementation((url) => url as any);
+  mockOpenExternal.mockResolvedValue(true);
+  const mockShowMessage = jestMock.spyOn(
+    vscode.window,
+    "showInformationMessage"
+  );
+  mockShowMessage.mockResolvedValue("More info" as any);
+  return async function assertShowInformationMessageCalled(message: string) {
+    // wait for setInterval to invoke refresh
+    await waitFor(() => expect(mockShowMessage).toHaveBeenCalled());
+    expect(mockShowMessage).toHaveBeenCalledWith(message, "More info");
+    await waitFor(() => expect(mockOpenExternal).toHaveBeenCalled());
+    mockOpenExternal.mockReset();
+    mockShowMessage.mockReset();
+    mockUriParse.mockReset();
+  };
 };
 
 const getFirstEnvIconPath = () => {
@@ -69,11 +88,11 @@ suite("environment actions", function () {
     await waitFor(() =>
       expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
     );
-    const onRedeployCalled = sinon.spy();
+    const onRedeployCalled = jestMock.fn();
     mockRedeploy(environmentMock.id, auth, onRedeployCalled);
 
     vscode.commands.executeCommand("env0.redeploy", environmentMock);
-    await waitFor(() => expect(onRedeployCalled.callCount).toBe(1));
+    await waitFor(() => expect(onRedeployCalled).toHaveBeenCalled());
   });
 
   test("should update environment icon and status when redeploy", async () => {
@@ -118,7 +137,7 @@ suite("environment actions", function () {
   });
 
   test("should show information message when redeploy", async () => {
-    const showInformationMessageStub = stubShowInformationMessage();
+    let assertShowInformationMessageCalled = stubShowInformationMessage();
 
     const envName = "my env";
     const environmentMock = getEnvironmentMock(
@@ -143,15 +162,19 @@ suite("environment actions", function () {
     };
     mockGetEnvironment(orgId, [inProgressEnvironment], auth);
 
-    await waitFor(() => expect(showInformationMessageStub.callCount).toBe(1));
-
+    await assertShowInformationMessageCalled(
+      `Environment ${envName} is in progress...`
+    );
     const successfullyDeployedEnvironment: EnvironmentModel = {
       ...inProgressEnvironment,
       status: "ACTIVE",
       updatedAt: Date.now().toString(),
     };
+    assertShowInformationMessageCalled = stubShowInformationMessage();
 
     mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
-    await waitFor(() => expect(showInformationMessageStub.callCount).toBe(2));
+    await assertShowInformationMessageCalled(
+      `Environment ${envName} is ACTIVE!`
+    );
   });
 });
