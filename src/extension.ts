@@ -66,9 +66,11 @@ const init = async (
   await loadEnvironments(environmentsDataProvider, environmentsTree);
 
   environmentsTree.onDidChangeSelection(async (e) => {
-    const env = e.selection[0] ?? e.selection;
+    const env = e.selection[0];
 
+    if (env) {
     restartLogs(env);
+    }
   });
 
   registerEnvironmentActions(context, environmentsDataProvider, restartLogs);
