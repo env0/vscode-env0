@@ -133,36 +133,41 @@ function showEnvironmentStatusChangedNotification(
       oldEnvironments[envIndex].updatedAt !== newEnvironment.updatedAt &&
       oldEnvironments[envIndex].status !== newEnvironment.status
     ) {
-      if (newEnvironment.status === "DEPLOY_IN_PROGRESS") {
-        showInProgressMessage({
-          environmentId: newEnvironment.id,
-          projectId: newEnvironment.projectId,
-          environmentName: newEnvironment.name,
-        });
-      }
+      switch (newEnvironment.status) {
+        case "DEPLOY_IN_PROGRESS":
+          showInProgressMessage({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
 
-      if (newEnvironment.status === "FAILED") {
-        showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {
-          environmentId: newEnvironment.id,
-          projectId: newEnvironment.projectId,
-          environmentName: newEnvironment.name,
-        });
-      }
+        case "FAILED":
+          showErrorMessage(newEnvironment.latestDeploymentLog?.error?.message, {
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
 
-      if (newEnvironment.status === "WAITING_FOR_USER") {
-        showWaitingForApproval({
-          environmentId: newEnvironment.id,
-          projectId: newEnvironment.projectId,
-          environmentName: newEnvironment.name,
-        });
-      }
+        case "WAITING_FOR_USER":
+          showWaitingForApproval({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
 
-      if (newEnvironment.status === "ACTIVE") {
-        showSuccessMessage({
-          environmentId: newEnvironment.id,
-          projectId: newEnvironment.projectId,
-          environmentName: newEnvironment.name,
-        });
+        case "ACTIVE":
+          showSuccessMessage({
+            environmentId: newEnvironment.id,
+            projectId: newEnvironment.projectId,
+            environmentName: newEnvironment.name,
+          });
+          break;
+
+        default:
+          break;
       }
     }
   }
