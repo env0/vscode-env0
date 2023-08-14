@@ -62,6 +62,10 @@ export class Env0EnvironmentsProvider
     );
   }
 
+  getParent(element: Environment): vscode.ProviderResult<Environment> {
+    return null;
+  }
+
   private shouldUpdate(environmentsToCompareTo: EnvironmentModel[]): boolean {
     if (environmentsToCompareTo.length !== this.environments.length) {
       return true;

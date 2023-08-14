@@ -73,6 +73,7 @@ const actions: Record<
 
 export const registerEnvironmentActions = (
   context: vscode.ExtensionContext,
+  environmentsTree: vscode.TreeView<Environment>,
   environmentsDataProvider: Env0EnvironmentsProvider,
   restartLogs: (env: Environment, deploymentId?: string) => any
 ) => {
@@ -94,6 +95,10 @@ export const registerEnvironmentActions = (
             async () => {
               let actionResponse;
               try {
+                await environmentsTree.reveal(env, {
+                  select: true,
+                  focus: true,
+                });
                 actionResponse = await actions[actionCommand](env);
               } finally {
                 environmentsDataProvider.refresh();

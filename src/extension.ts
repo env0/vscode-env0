@@ -72,7 +72,12 @@ const init = async (
     }
   });
 
-  registerEnvironmentActions(context, environmentsDataProvider, restartLogs);
+  registerEnvironmentActions(
+    context,
+    environmentsTree,
+    environmentsDataProvider,
+    restartLogs
+  );
   environmentPollingInstance = setInterval(async () => {
     environmentsDataProvider.refresh();
   }, 3000);
