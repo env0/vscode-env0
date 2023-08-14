@@ -24,20 +24,25 @@ const initTest = async (environments: EnvironmentModel[]) => {
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
   mockGetDeploymentSteps();
   await login(auth);
+  await waitFor(() =>
+    expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
+  );
 };
+enum MessageType {
+  INFORMATION = "showInformationMessage",
+  ERROR = "showErrorMessage",
+  WARNING = "showWarningMessage",
+}
 
-const stubShowInformationMessage = () => {
+const stubShowMessage = (messageType: MessageType) => {
   const openExternalMock = jestMock.spyOn(vscode.env, "openExternal");
   const mockUriParse = jestMock
     .spyOn(vscode.Uri, "parse")
     .mockImplementation((url) => url as any);
   openExternalMock.mockResolvedValue(true);
-  const showMessageMock = jestMock.spyOn(
-    vscode.window,
-    "showInformationMessage"
-  );
+  const showMessageMock = jestMock.spyOn(vscode.window, messageType);
   showMessageMock.mockResolvedValue("More info" as any);
-  return async function assertShowInformationMessageCalled(
+  return async function assertShowMessageCalled(
     message: string,
     projectId: string,
     envId: string
@@ -92,9 +97,6 @@ suite("environment actions", function () {
 
     await initTest([environmentMock]);
 
-    await waitFor(() =>
-      expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
-    );
     const onRedeployCalled = jestMock.fn();
     mockRedeploy(environmentMock.id, auth, onRedeployCalled);
 
@@ -113,9 +115,6 @@ suite("environment actions", function () {
     );
 
     await initTest([environmentMock]);
-    await waitFor(() =>
-      expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
-    );
     mockRedeploy(environmentMock.id, auth);
     vscode.commands.executeCommand("env0.redeploy", environmentMock);
 
@@ -144,7 +143,9 @@ suite("environment actions", function () {
   });
 
   test("should show information message when redeploy", async () => {
-    let assertShowInformationMessageCalled = stubShowInformationMessage();
+    let assertShowInformationMessageCalled = stubShowMessage(
+      MessageType.INFORMATION
+    );
 
     const envName = "my env";
     const environmentMock = getEnvironmentMock(
@@ -156,9 +157,6 @@ suite("environment actions", function () {
     );
 
     await initTest([environmentMock]);
-    await waitFor(() =>
-      expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
-    );
     mockRedeploy(environmentMock.id, auth);
     vscode.commands.executeCommand("env0.redeploy", environmentMock);
 
@@ -179,11 +177,48 @@ suite("environment actions", function () {
       status: "ACTIVE",
       updatedAt: Date.now().toString(),
     };
-    assertShowInformationMessageCalled = stubShowInformationMessage();
+
+    assertShowInformationMessageCalled = stubShowMessage(
+      MessageType.INFORMATION
+    );
 
     mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
     await assertShowInformationMessageCalled(
       `Environment ${envName} is ACTIVE!`,
+      environmentMock.projectId,
+      environmentMock.id
+    );
+  });
+
+  test("should show error message when redeploy fail", async () => {
+    const assertShowErrorMessageCalled = stubShowMessage(MessageType.ERROR);
+
+    const envName = "my env";
+    const environmentMock = getEnvironmentMock(
+      "main",
+      "https://github.com/user/repo",
+      {
+        name: envName,
+      }
+    );
+
+    await initTest([environmentMock]);
+    mockRedeploy(environmentMock.id, auth);
+    vscode.commands.executeCommand("env0.redeploy", environmentMock);
+    const errorMessage = "some error";
+    const failedEnvironment: EnvironmentModel = {
+      ...environmentMock,
+      status: "FAILED",
+      updatedAt: Date.now().toString(),
+      latestDeploymentLog: {
+        ...environmentMock.latestDeploymentLog,
+        error: { message: errorMessage },
+      },
+    };
+    mockGetEnvironment(orgId, [failedEnvironment], auth);
+
+    await assertShowErrorMessageCalled(
+      `Deployment has failed for environment ${envName}. Error: ${errorMessage}`,
       environmentMock.projectId,
       environmentMock.id
     );
