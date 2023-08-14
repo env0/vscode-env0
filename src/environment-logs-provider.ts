@@ -8,6 +8,7 @@ import {
   DeploymentStepStatus,
 } from "./types";
 import axios from "axios";
+import { setMaxListeners } from "events";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const pollStepLogsInterval = 1000;
@@ -21,6 +22,8 @@ export class EnvironmentLogsProvider {
     private readonly env: Environment,
     private readonly deploymentId?: string
   ) {
+    // @ts-ignore
+    setMaxListeners(20, this.abortController.signal);
     this.log("Loading logs...");
     if (this.deploymentId) {
       this.logDeployment(this.deploymentId).catch((e) => {
