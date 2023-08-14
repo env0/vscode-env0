@@ -27,23 +27,30 @@ const initTest = async (environments: EnvironmentModel[]) => {
 };
 
 const stubShowInformationMessage = () => {
-  const mockOpenExternal = jestMock.spyOn(vscode.env, "openExternal");
+  const openExternalMock = jestMock.spyOn(vscode.env, "openExternal");
   const mockUriParse = jestMock
     .spyOn(vscode.Uri, "parse")
     .mockImplementation((url) => url as any);
-  mockOpenExternal.mockResolvedValue(true);
-  const mockShowMessage = jestMock.spyOn(
+  openExternalMock.mockResolvedValue(true);
+  const showMessageMock = jestMock.spyOn(
     vscode.window,
     "showInformationMessage"
   );
-  mockShowMessage.mockResolvedValue("More info" as any);
-  return async function assertShowInformationMessageCalled(message: string) {
+  showMessageMock.mockResolvedValue("More info" as any);
+  return async function assertShowInformationMessageCalled(
+    message: string,
+    projectId: string,
+    envId: string
+  ) {
     // wait for setInterval to invoke refresh
-    await waitFor(() => expect(mockShowMessage).toHaveBeenCalled());
-    expect(mockShowMessage).toHaveBeenCalledWith(message, "More info");
-    await waitFor(() => expect(mockOpenExternal).toHaveBeenCalled());
-    mockOpenExternal.mockReset();
-    mockShowMessage.mockReset();
+    await waitFor(() => expect(showMessageMock).toHaveBeenCalled());
+    expect(showMessageMock).toHaveBeenCalledWith(message, "More info");
+    await waitFor(() => expect(openExternalMock).toHaveBeenCalled());
+    expect(openExternalMock).toHaveBeenCalledWith(
+      expect.stringContaining(`/p/${projectId}/environments/${envId}`)
+    );
+    openExternalMock.mockReset();
+    showMessageMock.mockReset();
     mockUriParse.mockReset();
   };
 };
@@ -163,7 +170,9 @@ suite("environment actions", function () {
     mockGetEnvironment(orgId, [inProgressEnvironment], auth);
 
     await assertShowInformationMessageCalled(
-      `Environment ${envName} is in progress...`
+      `Environment ${envName} is in progress...`,
+      environmentMock.projectId,
+      environmentMock.id
     );
     const successfullyDeployedEnvironment: EnvironmentModel = {
       ...inProgressEnvironment,
@@ -174,7 +183,9 @@ suite("environment actions", function () {
 
     mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
     await assertShowInformationMessageCalled(
-      `Environment ${envName} is ACTIVE!`
+      `Environment ${envName} is ACTIVE!`,
+      environmentMock.projectId,
+      environmentMock.id
     );
   });
 });
