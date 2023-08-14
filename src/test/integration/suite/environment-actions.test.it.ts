@@ -12,7 +12,7 @@ import {
 import { mockGitRepoAndBranch } from "../mocks/git";
 import { EnvironmentModel } from "../../../get-environments";
 import { Env0EnvironmentsProvider } from "../../../env0-environments-provider";
-import { afterEach } from "mocha";
+import { afterEach, beforeEach } from "mocha";
 import expect from "expect";
 import * as vscode from "vscode";
 import * as jestMock from "jest-mock";
@@ -77,9 +77,27 @@ const getFirstEnvStatus = () => getFirstEnvironment().status;
 const activeEnvironmentIconPath = "favicon-16x16.png";
 const inProgressIconPath = "in_progress.png";
 const waitingForUserIconPath = "waiting_for_user.png";
-
+const envName = "my env";
+let environmentMock = getEnvironmentMock(
+  "main",
+  "https://github.com/user/repo",
+  {
+    name: envName,
+  }
+);
 suite("environment actions", function () {
   this.timeout(1000 * 10);
+
+  beforeEach(async () => {
+    environmentMock = getEnvironmentMock(
+      "main",
+      "https://github.com/user/repo",
+      {
+        name: envName,
+      }
+    );
+  });
+
   afterEach(async () => {
     sinon.restore();
     await logout();
@@ -88,15 +106,6 @@ suite("environment actions", function () {
 
   suite("redeploy", () => {
     test("should redeploy when user redeploy", async () => {
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
-      );
-
       await initTest([environmentMock]);
 
       const onRedeployCalled = jestMock.fn();
@@ -107,15 +116,6 @@ suite("environment actions", function () {
     });
 
     test("should update environment icon and status when redeploy", async () => {
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
-      );
-
       await initTest([environmentMock]);
       mockRedeploy(environmentMock.id, auth);
       vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
@@ -147,15 +147,6 @@ suite("environment actions", function () {
     test("should show information message when redeploy", async () => {
       let assertShowInformationMessageCalled = stubShowMessage(
         MessageType.INFORMATION
-      );
-
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
       );
 
       await initTest([environmentMock]);
@@ -195,15 +186,6 @@ suite("environment actions", function () {
     test("should show error message when redeploy fail", async () => {
       const assertShowErrorMessageCalled = stubShowMessage(MessageType.ERROR);
 
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
-      );
-
       await initTest([environmentMock]);
       mockRedeploy(environmentMock.id, auth);
       vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
@@ -229,15 +211,6 @@ suite("environment actions", function () {
 
   suite("approval flow", () => {
     test("should show waiting for user status and icon when env waiting for user", async () => {
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
-      );
-
       await initTest([environmentMock]);
 
       mockRedeploy(environmentMock.id, auth);
@@ -261,15 +234,6 @@ suite("environment actions", function () {
         MessageType.WARNING
       );
 
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
-      );
-
       await initTest([environmentMock]);
 
       mockRedeploy(environmentMock.id, auth);
@@ -291,15 +255,6 @@ suite("environment actions", function () {
     });
 
     test("should approve when user approve", async () => {
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
-      );
-
       await initTest([environmentMock]);
 
       mockRedeploy(environmentMock.id, auth);
@@ -326,15 +281,6 @@ suite("environment actions", function () {
     });
 
     test("should cancel when user cancel", async () => {
-      const envName = "my env";
-      const environmentMock = getEnvironmentMock(
-        "main",
-        "https://github.com/user/repo",
-        {
-          name: envName,
-        }
-      );
-
       await initTest([environmentMock]);
 
       mockRedeploy(environmentMock.id, auth);
