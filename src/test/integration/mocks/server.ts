@@ -87,6 +87,43 @@ export const mockRedeploy = (
   );
 };
 
+export const mockApprove = (
+  deploymentId: string,
+  credentials: Credentials,
+  onSuccess?: () => any
+) => {
+  server.use(
+    rest.put(
+      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+export const mockCancel = (
+  deploymentId: string,
+  credentials: Credentials,
+  onSuccess?: () => any
+) => {
+  server.use(
+    rest.put(
+      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/cancel`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
 before(() => {
   server.listen();
 });

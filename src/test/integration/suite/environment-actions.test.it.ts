@@ -2,6 +2,8 @@ import { getEnvironmentMock, login, logout, waitFor } from "./test-utils";
 // @ts-ignore
 import * as extension from "../../../../dist/extension.js";
 import {
+  mockApprove,
+  mockCancel,
   mockGetDeploymentSteps,
   mockGetEnvironment,
   mockGetOrganization,
@@ -60,22 +62,21 @@ const stubShowMessage = (messageType: MessageType) => {
   };
 };
 
-const getFirstEnvIconPath = () => {
-  const environmentsDataProvider =
-    extension.environmentsDataProvider as Env0EnvironmentsProvider;
-  const environments = environmentsDataProvider.getChildren();
-  return environments[0].iconPath;
+const getEnvironmentDataProvider = () => {
+  return extension.environmentsDataProvider as Env0EnvironmentsProvider;
 };
 
-const getFirstEnvStatus = () => {
-  const environmentsDataProvider =
-    extension.environmentsDataProvider as Env0EnvironmentsProvider;
-  const environments = environmentsDataProvider.getChildren();
-  return environments[0].status;
+const getFirstEnvironment = () => {
+  const environmentsDataProvider = getEnvironmentDataProvider();
+  return environmentsDataProvider.getChildren()[0];
 };
+
+const getFirstEnvIconPath = () => getFirstEnvironment().iconPath;
+const getFirstEnvStatus = () => getFirstEnvironment().status;
 
 const activeEnvironmentIconPath = "favicon-16x16.png";
 const inProgressIconPath = "in_progress.png";
+const waitingForUserIconPath = "waiting_for_user.png";
 
 suite("environment actions", function () {
   this.timeout(1000 * 10);
@@ -85,142 +86,278 @@ suite("environment actions", function () {
     await extension._reset();
   });
 
-  test("should redeploy when user redeploy", async () => {
-    const envName = "my env";
-    const environmentMock = getEnvironmentMock(
-      "main",
-      "https://github.com/user/repo",
-      {
-        name: envName,
-      }
-    );
+  suite("redeploy", () => {
+    test("should redeploy when user redeploy", async () => {
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
 
-    await initTest([environmentMock]);
+      await initTest([environmentMock]);
 
-    const onRedeployCalled = jestMock.fn();
-    mockRedeploy(environmentMock.id, auth, onRedeployCalled);
+      const onRedeployCalled = jestMock.fn();
+      mockRedeploy(environmentMock.id, auth, onRedeployCalled);
 
-    vscode.commands.executeCommand("env0.redeploy", environmentMock);
-    await waitFor(() => expect(onRedeployCalled).toHaveBeenCalled());
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
+      await waitFor(() => expect(onRedeployCalled).toHaveBeenCalled());
+    });
+
+    test("should update environment icon and status when redeploy", async () => {
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
+
+      await initTest([environmentMock]);
+      mockRedeploy(environmentMock.id, auth);
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
+
+      const inProgressEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "DEPLOY_IN_PROGRESS",
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [inProgressEnvironment], auth);
+      // wait for the auto polling that will update the environment status icon
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(inProgressIconPath)
+      );
+      expect(getFirstEnvStatus()).toBe("DEPLOY_IN_PROGRESS");
+
+      const successfullyDeployedEnvironment: EnvironmentModel = {
+        ...inProgressEnvironment,
+        status: "ACTIVE",
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
+      );
+      expect(getFirstEnvStatus()).toBe("ACTIVE");
+    });
+
+    test("should show information message when redeploy", async () => {
+      let assertShowInformationMessageCalled = stubShowMessage(
+        MessageType.INFORMATION
+      );
+
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
+
+      await initTest([environmentMock]);
+      mockRedeploy(environmentMock.id, auth);
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
+
+      const inProgressEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "DEPLOY_IN_PROGRESS",
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [inProgressEnvironment], auth);
+
+      await assertShowInformationMessageCalled(
+        `Environment ${envName} is in progress...`,
+        environmentMock.projectId,
+        environmentMock.id
+      );
+      const successfullyDeployedEnvironment: EnvironmentModel = {
+        ...inProgressEnvironment,
+        status: "ACTIVE",
+        updatedAt: Date.now().toString(),
+      };
+
+      assertShowInformationMessageCalled = stubShowMessage(
+        MessageType.INFORMATION
+      );
+
+      mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
+      await assertShowInformationMessageCalled(
+        `Environment ${envName} is ACTIVE!`,
+        environmentMock.projectId,
+        environmentMock.id
+      );
+    });
+
+    test("should show error message when redeploy fail", async () => {
+      const assertShowErrorMessageCalled = stubShowMessage(MessageType.ERROR);
+
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
+
+      await initTest([environmentMock]);
+      mockRedeploy(environmentMock.id, auth);
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
+      const errorMessage = "some error";
+      const failedEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "FAILED",
+        updatedAt: Date.now().toString(),
+        latestDeploymentLog: {
+          ...environmentMock.latestDeploymentLog,
+          error: { message: errorMessage },
+        },
+      };
+      mockGetEnvironment(orgId, [failedEnvironment], auth);
+
+      await assertShowErrorMessageCalled(
+        `Deployment has failed for environment ${envName}. Error: ${errorMessage}`,
+        environmentMock.projectId,
+        environmentMock.id
+      );
+    });
   });
 
-  test("should update environment icon and status when redeploy", async () => {
-    const envName = "my env";
-    const environmentMock = getEnvironmentMock(
-      "main",
-      "https://github.com/user/repo",
-      {
-        name: envName,
-      }
-    );
+  suite("approval flow", () => {
+    test("should show waiting for user status and icon when env waiting for user", async () => {
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
 
-    await initTest([environmentMock]);
-    mockRedeploy(environmentMock.id, auth);
-    vscode.commands.executeCommand("env0.redeploy", environmentMock);
+      await initTest([environmentMock]);
 
-    const inProgressEnvironment: EnvironmentModel = {
-      ...environmentMock,
-      status: "DEPLOY_IN_PROGRESS",
-      updatedAt: Date.now().toString(),
-    };
-    mockGetEnvironment(orgId, [inProgressEnvironment], auth);
-    // wait for the auto polling that will update the environment status icon
-    await waitFor(() =>
-      expect(getFirstEnvIconPath()).toContain(inProgressIconPath)
-    );
-    expect(getFirstEnvStatus()).toBe("DEPLOY_IN_PROGRESS");
+      mockRedeploy(environmentMock.id, auth);
 
-    const successfullyDeployedEnvironment: EnvironmentModel = {
-      ...inProgressEnvironment,
-      status: "ACTIVE",
-      updatedAt: Date.now().toString(),
-    };
-    mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
-    await waitFor(() =>
-      expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
-    );
-    expect(getFirstEnvStatus()).toBe("ACTIVE");
-  });
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
 
-  test("should show information message when redeploy", async () => {
-    let assertShowInformationMessageCalled = stubShowMessage(
-      MessageType.INFORMATION
-    );
+      const waitingForUserEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "WAITING_FOR_USER",
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [waitingForUserEnvironment], auth);
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
+      );
+      expect(getFirstEnvStatus()).toBe("WAITING_FOR_USER");
+    });
 
-    const envName = "my env";
-    const environmentMock = getEnvironmentMock(
-      "main",
-      "https://github.com/user/repo",
-      {
-        name: envName,
-      }
-    );
+    test("should show waiting for user notification when deployment waiting for user", async () => {
+      const assertShowWarningMessageCalled = stubShowMessage(
+        MessageType.WARNING
+      );
 
-    await initTest([environmentMock]);
-    mockRedeploy(environmentMock.id, auth);
-    vscode.commands.executeCommand("env0.redeploy", environmentMock);
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
 
-    const inProgressEnvironment: EnvironmentModel = {
-      ...environmentMock,
-      status: "DEPLOY_IN_PROGRESS",
-      updatedAt: Date.now().toString(),
-    };
-    mockGetEnvironment(orgId, [inProgressEnvironment], auth);
+      await initTest([environmentMock]);
 
-    await assertShowInformationMessageCalled(
-      `Environment ${envName} is in progress...`,
-      environmentMock.projectId,
-      environmentMock.id
-    );
-    const successfullyDeployedEnvironment: EnvironmentModel = {
-      ...inProgressEnvironment,
-      status: "ACTIVE",
-      updatedAt: Date.now().toString(),
-    };
+      mockRedeploy(environmentMock.id, auth);
 
-    assertShowInformationMessageCalled = stubShowMessage(
-      MessageType.INFORMATION
-    );
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
 
-    mockGetEnvironment(orgId, [successfullyDeployedEnvironment], auth);
-    await assertShowInformationMessageCalled(
-      `Environment ${envName} is ACTIVE!`,
-      environmentMock.projectId,
-      environmentMock.id
-    );
-  });
+      const waitingForUserEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "WAITING_FOR_USER",
+        updatedAt: Date.now().toString(),
+      };
 
-  test("should show error message when redeploy fail", async () => {
-    const assertShowErrorMessageCalled = stubShowMessage(MessageType.ERROR);
+      mockGetEnvironment(orgId, [waitingForUserEnvironment], auth);
+      await assertShowWarningMessageCalled(
+        `Environment ${envName} is waiting for approval`,
+        environmentMock.projectId,
+        environmentMock.id
+      );
+    });
 
-    const envName = "my env";
-    const environmentMock = getEnvironmentMock(
-      "main",
-      "https://github.com/user/repo",
-      {
-        name: envName,
-      }
-    );
+    test("should approve when user approve", async () => {
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
 
-    await initTest([environmentMock]);
-    mockRedeploy(environmentMock.id, auth);
-    vscode.commands.executeCommand("env0.redeploy", environmentMock);
-    const errorMessage = "some error";
-    const failedEnvironment: EnvironmentModel = {
-      ...environmentMock,
-      status: "FAILED",
-      updatedAt: Date.now().toString(),
-      latestDeploymentLog: {
-        ...environmentMock.latestDeploymentLog,
-        error: { message: errorMessage },
-      },
-    };
-    mockGetEnvironment(orgId, [failedEnvironment], auth);
+      await initTest([environmentMock]);
 
-    await assertShowErrorMessageCalled(
-      `Deployment has failed for environment ${envName}. Error: ${errorMessage}`,
-      environmentMock.projectId,
-      environmentMock.id
-    );
+      mockRedeploy(environmentMock.id, auth);
+
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
+
+      const waitingForUserEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "WAITING_FOR_USER",
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [waitingForUserEnvironment], auth);
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
+      );
+      const onApprove = jestMock.fn();
+      mockApprove(
+        waitingForUserEnvironment.latestDeploymentLog.id,
+        auth,
+        onApprove
+      );
+      vscode.commands.executeCommand("env0.approve", getFirstEnvironment());
+      await waitFor(() => expect(onApprove).toHaveBeenCalled());
+    });
+
+    test("should cancel when user cancel", async () => {
+      const envName = "my env";
+      const environmentMock = getEnvironmentMock(
+        "main",
+        "https://github.com/user/repo",
+        {
+          name: envName,
+        }
+      );
+
+      await initTest([environmentMock]);
+
+      mockRedeploy(environmentMock.id, auth);
+
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
+
+      const waitingForUserEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "WAITING_FOR_USER",
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [waitingForUserEnvironment], auth);
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
+      );
+      const onCancel = jestMock.fn();
+      mockCancel(
+        waitingForUserEnvironment.latestDeploymentLog.id,
+        auth,
+        onCancel
+      );
+      vscode.commands.executeCommand("env0.cancel", getFirstEnvironment());
+      await waitFor(() => expect(onCancel).toHaveBeenCalled());
+    });
   });
 });
