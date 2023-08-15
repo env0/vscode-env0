@@ -39,3 +39,27 @@ export interface Credentials {
   keyId: string;
   secret: string;
 }
+
+export enum DeploymentStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  FAILURE = "FAILURE",
+  SUCCESS = "SUCCESS",
+  TIMEOUT = "TIMEOUT",
+  INTERNAL_FAILURE = "INTERNAL_FAILURE",
+  CANCELLED = "CANCELLED",
+  ABORTED = "ABORTED",
+  ABORTING = "ABORTING",
+  QUEUED = "QUEUED",
+  SKIPPED = "SKIPPED",
+}
+
+export enum DeploymentStepStatus {
+  NOT_STARTED = "NOT_STARTED",
+  IN_PROGRESS = "IN_PROGRESS",
+  WAITING_FOR_USER = "WAITING_FOR_USER",
+  FAIL = "FAIL",
+  SUCCESS = "SUCCESS",
+  CANCELLED = "CANCELLED",
+  TIMEOUT = "TIMEOUT",
+  SKIPPED = "SKIPPED",
+}

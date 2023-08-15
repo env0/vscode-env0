@@ -1,6 +1,5 @@
-import { AuthService } from "./auth";
 import axios, { AxiosInstance } from "axios";
-import { ENV0_API_URL, ENV0_WEB_URL } from "./common";
+import { ENV0_API_URL } from "./common";
 import { EnvironmentModel } from "./get-environments";
 import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
 
@@ -22,46 +21,77 @@ class ApiClient {
   }
 
   public async abortDeployment(deploymentId: string) {
-    return this.instance.post(
+    const response = await this.instance.post<null>(
       `/environments/deployments/${deploymentId}/abort`,
       {}
     );
+    return response.data;
   }
 
   public async redeployEnvironment(envId: string) {
-    return this.instance.post(`/environments/${envId}/deployments`, {});
+    const response = await this.instance.post<{ id: string }>(
+      `/environments/${envId}/deployments`,
+      {}
+    );
+    return response.data;
   }
 
   public async cancelDeployment(deploymentId: string) {
-    return this.instance.put(
+    const response = await this.instance.put<{ id: string }>(
       `/environments/deployments/${deploymentId}/cancel`
     );
+    return response.data;
   }
 
   public async resumeDeployment(deploymentId: string) {
-    return this.instance.put(`/environments/deployments/${deploymentId}`);
+    const response = await this.instance.put<{ id: string }>(
+      `/environments/deployments/${deploymentId}`
+    );
+    return response.data;
   }
 
   public async destroyEnvironment(deploymentId: string) {
-    this.instance.post(`/environments/${deploymentId}/destroy`, {});
+    const response = await this.instance.post<{ id: string }>(
+      `/environments/${deploymentId}/destroy`,
+      {}
+    );
+    return response.data;
   }
 
   public async getEnvironments(organizationId: string) {
-    const res = await this.instance.get<EnvironmentModel[]>(`/environments`, {
-      params: { organizationId },
-    });
+    const response = await this.instance.get<EnvironmentModel[]>(
+      `/environments`,
+      {
+        params: { organizationId },
+      }
+    );
 
-    return res.data;
+    return response.data;
   }
 
   public async getOrganizations() {
-    const res = await this.instance.get(`/organizations`);
-    return res.data;
+    const response = await this.instance.get(`/organizations`);
+    return response.data;
   }
 
-  public async getDeploymentSteps(deploymentLogId: string) {
+  public async getDeployment(
+    deploymentLogId: string,
+    abortController?: AbortController
+  ) {
+    const response = await this.instance.get(
+      `environments/deployments/${deploymentLogId}`,
+      { signal: abortController?.signal }
+    );
+    return response.data;
+  }
+
+  public async getDeploymentSteps(
+    deploymentLogId: string,
+    abortController?: AbortController
+  ) {
     const response = await this.instance.get<DeploymentStepResponse>(
-      `/deployments/${deploymentLogId}/steps`
+      `/deployments/${deploymentLogId}/steps`,
+      { signal: abortController?.signal }
     );
     return response.data;
   }
@@ -69,12 +99,14 @@ class ApiClient {
   public async getDeploymentStepLogs(
     deploymentLogId: string,
     stepName: string,
-    stepStartTime?: string | number
+    stepStartTime?: string | number,
+    abortController?: AbortController
   ) {
     const response = await this.instance.get<DeploymentStepLogsResponse>(
       `/deployments/${deploymentLogId}/steps/${stepName}/log?startTime=${
         stepStartTime ?? ""
-      }`
+      }`,
+      { signal: abortController?.signal }
     );
     return response.data;
   }

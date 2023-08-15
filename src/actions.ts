@@ -34,7 +34,7 @@ const cancelDeployment = async (env: Environment) => {
     return;
   }
 
-  await apiClient.cancelDeployment(id);
+  return await apiClient.cancelDeployment(id);
 };
 
 const resumeDeployment = async (env: Environment) => {
@@ -43,24 +43,27 @@ const resumeDeployment = async (env: Environment) => {
   if (!id) {
     return;
   }
-  await apiClient.resumeDeployment(id);
+  return await apiClient.resumeDeployment(id);
 };
 
 const redeployEnvironment = async (env: Environment) => {
   if (!env.id) {
     return;
   }
-  await apiClient.redeployEnvironment(env.id);
+  return await apiClient.redeployEnvironment(env.id);
 };
 
 const destroyEnvironment = async (env: Environment) => {
   if (!env.id) {
     return;
   }
-  await apiClient.destroyEnvironment(env.id);
+  return await apiClient.destroyEnvironment(env.id);
 };
 
-const actions: Record<string, (env: Environment) => Promise<void>> = {
+const actions: Record<
+  string,
+  (env: Environment) => Promise<{ id: string } | void>
+> = {
   "env0.redeploy": redeployEnvironment,
   "env0.abort": abortEnvironmentDeploy,
   "env0.destroy": destroyEnvironment,
@@ -70,8 +73,9 @@ const actions: Record<string, (env: Environment) => Promise<void>> = {
 
 export const registerEnvironmentActions = (
   context: vscode.ExtensionContext,
+  environmentsTree: vscode.TreeView<Environment>,
   environmentsDataProvider: Env0EnvironmentsProvider,
-  restartLogs: (env: Environment) => any
+  restartLogs: (env: Environment, deploymentId?: string) => any
 ) => {
   context.subscriptions.push(
     vscode.commands.registerCommand("env0.openInEnv0", (env) => {
@@ -89,11 +93,16 @@ export const registerEnvironmentActions = (
               location: { viewId: ENV0_ENVIRONMENTS_VIEW_ID },
             },
             async () => {
+              let actionResponse;
               try {
-                await actions[actionCommand](env);
+                await environmentsTree.reveal(env, {
+                  select: true,
+                  focus: true,
+                });
+                actionResponse = await actions[actionCommand](env);
               } finally {
                 environmentsDataProvider.refresh();
-                restartLogs(env);
+                restartLogs(env, actionResponse?.id);
               }
             }
           );
