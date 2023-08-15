@@ -19,7 +19,7 @@ import expect from "expect";
 import * as vscode from "vscode";
 import * as jestMock from "jest-mock";
 import sinon from "sinon";
-import { Credentials } from "../../../types";
+import { Credentials, EnvironmentStatus } from "../../../types";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
@@ -80,7 +80,7 @@ const redeploy = async ({
   vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
   const inProgressEnvironment: EnvironmentModel = {
     ...environment,
-    status: "DEPLOY_IN_PROGRESS",
+    status: EnvironmentStatus.DEPLOY_IN_PROGRESS,
     updatedAt: Date.now().toString(),
     latestDeploymentLog: {
       ...environment.latestDeploymentLog,
@@ -107,6 +107,9 @@ const getFirstEnvStatus = () => getFirstEnvironment().status;
 const activeEnvironmentIconPath = "favicon-16x16.png";
 const inProgressIconPath = "in_progress.png";
 const waitingForUserIconPath = "waiting_for_user.png";
+const inactiveIconPath = "inactive.png";
+const failedIconPath = "failed.png";
+
 const envName = "my env";
 let environmentMock = getEnvironmentMock(
   "main",
@@ -314,7 +317,7 @@ suite("environment actions", function () {
       });
       const waitingForUserEnvironment: EnvironmentModel = {
         ...inProgressEnvironment,
-        status: "WAITING_FOR_USER",
+        status: EnvironmentStatus.WAITING_FOR_USER,
         updatedAt: Date.now().toString(),
       };
       mockGetEnvironment(orgId, [waitingForUserEnvironment], auth);
@@ -345,6 +348,35 @@ suite("environment actions", function () {
       vscode.commands.executeCommand("env0.abort", getFirstEnvironment());
 
       await waitFor(() => expect(onAbort).toHaveBeenCalled());
+    });
+
+    test("should update environment status and icon when user abort deployment", async () => {
+      await initTest([environmentMock]);
+      const inProgressEnvironment = await redeploy({
+        environment: environmentMock,
+        auth,
+      });
+
+      mockAbort(inProgressEnvironment.latestDeploymentLog.id, auth);
+      vscode.commands.executeCommand("env0.abort", getFirstEnvironment());
+      const abortingEnvironment: EnvironmentModel = {
+        ...inProgressEnvironment,
+        status: EnvironmentStatus.ABORTING,
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [abortingEnvironment], auth);
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(inactiveIconPath)
+      );
+      expect(getFirstEnvStatus()).toBe("ABORTING");
+      const abortedEnvironment: EnvironmentModel = {
+        ...inProgressEnvironment,
+        status: EnvironmentStatus.ABORTED,
+        updatedAt: Date.now().toString(),
+      };
+      mockGetEnvironment(orgId, [abortedEnvironment], auth);
+      await waitFor(() => expect(getFirstEnvStatus()).toBe("ABORTED"));
+      expect(getFirstEnvIconPath()).toContain(failedIconPath);
     });
   });
 
