@@ -1,6 +1,16 @@
-import { getEnvironmentMock, login, logout, waitFor } from "./test-utils";
-// @ts-ignore
-import * as extension from "../../../../dist/extension.js";
+import {
+  MessageType,
+  getEnvironmentMock,
+  getFirstEnvIconPath,
+  getFirstEnvStatus,
+  getFirstEnvironment,
+  login,
+  logout,
+  redeploy,
+  resetExtension,
+  stubShowMessage,
+  waitFor,
+} from "./test-utils";
 import {
   mockAbort,
   mockApprove,
@@ -13,13 +23,12 @@ import {
 } from "../mocks/server";
 import { mockGitRepoAndBranch } from "../mocks/git";
 import { EnvironmentModel } from "../../../get-environments";
-import { Env0EnvironmentsProvider } from "../../../env0-environments-provider";
 import { afterEach, beforeEach } from "mocha";
 import expect from "expect";
 import * as vscode from "vscode";
 import * as jestMock from "jest-mock";
 import sinon from "sinon";
-import { Credentials, EnvironmentStatus } from "../../../types";
+import { EnvironmentStatus } from "../../../types";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
@@ -34,75 +43,6 @@ const initTest = async (environments: EnvironmentModel[]) => {
     expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
   );
 };
-
-enum MessageType {
-  INFORMATION = "showInformationMessage",
-  ERROR = "showErrorMessage",
-  WARNING = "showWarningMessage",
-}
-
-const stubShowMessage = (messageType: MessageType) => {
-  const openExternalMock = jestMock.spyOn(vscode.env, "openExternal");
-  const mockUriParse = jestMock
-    .spyOn(vscode.Uri, "parse")
-    .mockImplementation((url) => url as any);
-  openExternalMock.mockResolvedValue(true);
-  const showMessageMock = jestMock.spyOn(vscode.window, messageType);
-  showMessageMock.mockResolvedValue("More info" as any);
-  return async function assertShowMessageCalled(
-    message: string,
-    projectId: string,
-    envId: string
-  ) {
-    // wait for setInterval to invoke refresh
-    await waitFor(() => expect(showMessageMock).toHaveBeenCalled());
-    expect(showMessageMock).toHaveBeenCalledWith(message, "More info");
-    await waitFor(() => expect(openExternalMock).toHaveBeenCalled());
-    expect(openExternalMock).toHaveBeenCalledWith(
-      expect.stringContaining(`/p/${projectId}/environments/${envId}`)
-    );
-    openExternalMock.mockReset();
-    showMessageMock.mockReset();
-    mockUriParse.mockReset();
-  };
-};
-
-const redeploy = async ({
-  environment,
-  auth,
-  onRedeployApiRequest,
-}: {
-  environment: EnvironmentModel;
-  auth: Credentials;
-  onRedeployApiRequest?: typeof jestMock.fn;
-}) => {
-  mockRedeploy(environment.id, auth, onRedeployApiRequest);
-  vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
-  const inProgressEnvironment: EnvironmentModel = {
-    ...environment,
-    status: EnvironmentStatus.DEPLOY_IN_PROGRESS,
-    updatedAt: Date.now().toString(),
-    latestDeploymentLog: {
-      ...environment.latestDeploymentLog,
-      id: "new-deployment-id",
-    },
-  };
-  mockGetEnvironment(orgId, [inProgressEnvironment], auth);
-  await waitFor(() => expect(getFirstEnvStatus()).toBe("DEPLOY_IN_PROGRESS"));
-  return inProgressEnvironment;
-};
-
-const getEnvironmentDataProvider = () => {
-  return extension.environmentsDataProvider as Env0EnvironmentsProvider;
-};
-
-const getFirstEnvironment = () => {
-  const environmentsDataProvider = getEnvironmentDataProvider();
-  return environmentsDataProvider.getChildren()[0];
-};
-
-const getFirstEnvIconPath = () => getFirstEnvironment().iconPath;
-const getFirstEnvStatus = () => getFirstEnvironment().status;
 
 const activeEnvironmentIconPath = "favicon-16x16.png";
 const inProgressIconPath = "in_progress.png";
@@ -135,7 +75,7 @@ suite("environment actions", function () {
   afterEach(async () => {
     sinon.restore();
     await logout();
-    await extension._reset();
+    await resetExtension();
   });
 
   suite("redeploy", () => {
@@ -154,6 +94,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
 
       expect(getFirstEnvIconPath()).toContain(inProgressIconPath);
@@ -181,6 +122,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
 
       await assertShowInformationMessageCalled(
@@ -214,6 +156,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
 
       const errorMessage = "some error";
@@ -242,6 +185,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
 
       const waitingForUserEnvironment: EnvironmentModel = {
@@ -267,6 +211,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
 
       const waitingForUserEnvironment: EnvironmentModel = {
@@ -289,6 +234,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
       const waitingForUserEnvironment: EnvironmentModel = {
         ...inProgressEnvironment,
@@ -314,6 +260,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
       const waitingForUserEnvironment: EnvironmentModel = {
         ...inProgressEnvironment,
@@ -341,6 +288,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
       const onAbort = jestMock.fn();
 
@@ -355,6 +303,7 @@ suite("environment actions", function () {
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
+        orgId,
       });
 
       mockAbort(inProgressEnvironment.latestDeploymentLog.id, auth);
