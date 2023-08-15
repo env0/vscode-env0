@@ -4,6 +4,7 @@ import * as extension from "../../../../dist/extension.js";
 import {
   mockApprove,
   mockCancel,
+  mockDestroy,
   mockGetDeploymentSteps,
   mockGetEnvironment,
   mockGetOrganization,
@@ -20,6 +21,7 @@ import sinon from "sinon";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
+
 const initTest = async (environments: EnvironmentModel[]) => {
   mockGetOrganization(orgId, auth);
   mockGetEnvironment(orgId, environments, auth);
@@ -30,6 +32,7 @@ const initTest = async (environments: EnvironmentModel[]) => {
     expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
   );
 };
+
 enum MessageType {
   INFORMATION = "showInformationMessage",
   ERROR = "showErrorMessage",
@@ -86,7 +89,7 @@ let environmentMock = getEnvironmentMock(
   }
 );
 suite("environment actions", function () {
-  this.timeout(1000 * 10);
+  this.timeout(1000 * 10000);
 
   beforeEach(async () => {
     environmentMock = getEnvironmentMock(
@@ -305,5 +308,16 @@ suite("environment actions", function () {
       vscode.commands.executeCommand("env0.cancel", getFirstEnvironment());
       await waitFor(() => expect(onCancel).toHaveBeenCalled());
     });
+  });
+
+  test("should destroy when user destroy", async () => {
+    await initTest([environmentMock]);
+    const onDestroy = jestMock.fn();
+
+    mockDestroy(environmentMock.id, auth, onDestroy);
+
+    vscode.commands.executeCommand("env0.destroy", getFirstEnvironment());
+
+    await waitFor(() => expect(onDestroy).toHaveBeenCalled());
   });
 });

@@ -42,8 +42,8 @@ class ApiClient {
     return this.instance.put(`/environments/deployments/${deploymentId}`);
   }
 
-  public async destroyEnvironment(deploymentId: string) {
-    this.instance.post(`/environments/${deploymentId}/destroy`, {});
+  public async destroyEnvironment(envId: string) {
+    this.instance.post(`/environments/${envId}/destroy`, {});
   }
 
   public async getEnvironments(organizationId: string) {

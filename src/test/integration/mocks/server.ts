@@ -87,6 +87,25 @@ export const mockRedeploy = (
   );
 };
 
+export const mockDestroy = (
+  envId: string,
+  credentials: Credentials,
+  onSuccess?: () => any
+) => {
+  server.use(
+    rest.post(
+      `https://${ENV0_API_URL}/environments/${envId}/destroy`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
 export const mockApprove = (
   deploymentId: string,
   credentials: Credentials,
