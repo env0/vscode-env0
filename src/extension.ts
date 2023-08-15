@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import stripAnsi from "strip-ansi";
 import { AuthService } from "./auth";
 import {
   Env0EnvironmentsProvider,
@@ -8,6 +7,7 @@ import {
 import { getCurrentBranchWithRetry } from "./utils/git";
 import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
+import { EnvironmentLogsProvider } from "./environment-logs-provider";
 import { registerEnvironmentActions } from "./actions";
 
 let logPoller: NodeJS.Timeout;
@@ -15,6 +15,7 @@ let environmentPollingInstance: NodeJS.Timer;
 let _context: vscode.ExtensionContext;
 export let environmentsTree: vscode.TreeView<Environment>;
 export let environmentsDataProvider: Env0EnvironmentsProvider;
+let environmentLogsProvider: EnvironmentLogsProvider;
 // this function used by tests in order to reset the extension state after each test
 export const _reset = async () => {
   deactivate();
@@ -49,30 +50,34 @@ export const loadEnvironments = async (
   environmentsTree.message = undefined;
 };
 
+const restartLogs = async (env: Environment, deploymentId?: string) => {
+  if (environmentLogsProvider) {
+    environmentLogsProvider.abort();
+  }
+  environmentLogsProvider = new EnvironmentLogsProvider(env, deploymentId);
+};
+
 const init = async (
   context: vscode.ExtensionContext,
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>
 ) => {
   await loadEnvironments(environmentsDataProvider, environmentsTree);
-  const logChannels: Record<string, LogChannel> = {};
-
-  async function restartLogs(env: Environment) {
-    Object.values(logChannels).forEach((l) => l.channel.dispose());
-    Object.keys(logChannels).forEach((key) => delete logChannels[key]);
-    clearInterval(logPoller);
-    if (env.id) {
-      logPoller = await pollForEnvironmentLogs(env, logChannels);
-    }
-  }
 
   environmentsTree.onDidChangeSelection(async (e) => {
-    const env = e.selection[0] ?? e.selection;
+    const env = e.selection[0];
 
-    restartLogs(env);
+    if (env) {
+      restartLogs(env);
+    }
   });
 
-  registerEnvironmentActions(context, environmentsDataProvider, restartLogs);
+  registerEnvironmentActions(
+    context,
+    environmentsTree,
+    environmentsDataProvider,
+    restartLogs
+  );
   environmentPollingInstance = setInterval(async () => {
     environmentsDataProvider.refresh();
   }, 3000);
@@ -80,6 +85,7 @@ const init = async (
 
 export async function activate(context: vscode.ExtensionContext) {
   _context = context;
+  EnvironmentLogsProvider.initEnvironmentOutputChannel();
   const authService = new AuthService(context);
   authService.registerLoginCommand();
   authService.registerLogoutCommand();
@@ -105,51 +111,4 @@ export async function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
   clearInterval(logPoller);
   clearInterval(environmentPollingInstance);
-}
-
-async function pollForEnvironmentLogs(
-  env: Environment,
-  logChannels: Record<string, LogChannel>
-) {
-  const logPoller = setInterval(async () => {
-    const steps = await apiClient.getDeploymentSteps(env.latestDeploymentLogId);
-
-    steps.forEach(async (step) => {
-      let stepLog = logChannels[step.name];
-      if (!stepLog) {
-        logChannels[step.name] = {
-          channel: vscode.window.createOutputChannel(
-            `(env0) ${step.name}`,
-            "ansi"
-          ),
-        };
-        stepLog = logChannels[step.name];
-      }
-
-      if (stepLog.hasMoreLogs !== false) {
-        try {
-          const logs = await apiClient.getDeploymentStepLogs(
-            env.latestDeploymentLogId,
-            step.name,
-            stepLog.startTime
-          );
-
-          logs.events.forEach((event) => {
-            (logChannels[step.name].channel as vscode.OutputChannel).appendLine(
-              stripAnsi(event.message)
-            );
-          });
-          stepLog.startTime = logs.nextStartTime;
-          stepLog.hasMoreLogs = logs.hasMoreLogs;
-          if (step.status === "IN_PROGRESS") {
-            stepLog.channel.show();
-          }
-        } catch (e) {
-          console.error("oh no", { e });
-        }
-      }
-    });
-  }, 1000);
-
-  return logPoller;
 }
