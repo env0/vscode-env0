@@ -124,6 +124,26 @@ export const mockApprove = (
     )
   );
 };
+
+export const mockAbort = (
+  deploymentId: string,
+  credentials: Credentials,
+  onSuccess?: () => any
+) => {
+  server.use(
+    rest.post(
+      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/abort`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
 export const mockCancel = (
   deploymentId: string,
   credentials: Credentials,

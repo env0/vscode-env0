@@ -2,6 +2,7 @@ import { getEnvironmentMock, login, logout, waitFor } from "./test-utils";
 // @ts-ignore
 import * as extension from "../../../../dist/extension.js";
 import {
+  mockAbort,
   mockApprove,
   mockCancel,
   mockDestroy,
@@ -307,6 +308,34 @@ suite("environment actions", function () {
       );
       vscode.commands.executeCommand("env0.cancel", getFirstEnvironment());
       await waitFor(() => expect(onCancel).toHaveBeenCalled());
+    });
+  });
+
+  suite("abort", () => {
+    test("should abort when user abort", async () => {
+      await initTest([environmentMock]);
+      mockRedeploy(environmentMock.id, auth);
+      vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
+      const inProgressEnvironment: EnvironmentModel = {
+        ...environmentMock,
+        status: "DEPLOY_IN_PROGRESS",
+        updatedAt: Date.now().toString(),
+        latestDeploymentLog: {
+          ...environmentMock.latestDeploymentLog,
+          id: "new-deployment-id",
+        },
+      };
+      mockGetEnvironment(orgId, [inProgressEnvironment], auth);
+      await waitFor(() =>
+        expect(getFirstEnvStatus()).toBe("DEPLOY_IN_PROGRESS")
+      );
+
+      const onAbort = jestMock.fn();
+
+      mockAbort(inProgressEnvironment.latestDeploymentLog.id, auth, onAbort);
+      vscode.commands.executeCommand("env0.abort", getFirstEnvironment());
+
+      await waitFor(() => expect(onAbort).toHaveBeenCalled());
     });
   });
 
