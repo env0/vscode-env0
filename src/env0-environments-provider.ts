@@ -99,6 +99,12 @@ export class Env0EnvironmentsProvider
     Environment | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
+  clear(): void {
+    this.isRefreshing = false;
+    this.environments = [];
+    this._onDidChangeTreeData.fire();
+  }
+
   async refresh(): Promise<void> {
     if (this.isRefreshing) {
       return;
@@ -106,7 +112,7 @@ export class Env0EnvironmentsProvider
     this.isRefreshing = true;
     try {
       const newEnvironments = await getEnvironmentsForBranch();
-      if (this.shouldUpdate(newEnvironments)) {
+      if (this.shouldUpdate(newEnvironments) && this.isRefreshing) {
         showEnvironmentStatusChangedNotification(
           this.environments,
           newEnvironments

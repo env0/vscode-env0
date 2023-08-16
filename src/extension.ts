@@ -10,12 +10,12 @@ import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 import { EnvironmentLogsProvider } from "./environment-logs-provider";
 import { registerEnvironmentActions } from "./actions";
 
-let logPoller: NodeJS.Timeout;
 let environmentPollingInstance: NodeJS.Timer;
 let _context: vscode.ExtensionContext;
+let environmentLogsProvider: EnvironmentLogsProvider;
 export let environmentsTree: vscode.TreeView<Environment>;
 export let environmentsDataProvider: Env0EnvironmentsProvider;
-let environmentLogsProvider: EnvironmentLogsProvider;
+
 // this function used by tests in order to reset the extension state after each test
 export const _reset = async () => {
   deactivate();
@@ -24,12 +24,6 @@ export const _reset = async () => {
   }
   await activate(_context);
 };
-
-export interface LogChannel {
-  channel: vscode.OutputChannel;
-  startTime?: number | string;
-  hasMoreLogs?: boolean;
-}
 
 export const setContextShowLoginMessage = async (value: boolean) => {
   await vscode.commands.executeCommand(
@@ -58,11 +52,43 @@ const restartLogs = async (env: Environment, deploymentId?: string) => {
 };
 
 const init = async (
-  context: vscode.ExtensionContext,
   environmentsDataProvider: Env0EnvironmentsProvider,
-  environmentsTree: vscode.TreeView<Environment>
+  environmentsTree: vscode.TreeView<Environment>,
+  authService: AuthService
 ) => {
+  apiClient.init(await authService.getApiKeyCredentials());
+
   await loadEnvironments(environmentsDataProvider, environmentsTree);
+
+  environmentPollingInstance = setInterval(async () => {
+    environmentsDataProvider.refresh();
+  }, 3000);
+};
+
+const onLogOut = async () => {
+  if (environmentLogsProvider) {
+    environmentLogsProvider.abort();
+  }
+  stopEnvironmentPolling();
+  environmentsDataProvider.clear();
+  apiClient.clearCredentials();
+  environmentsTree.message = undefined;
+  await setContextShowLoginMessage(true);
+};
+
+export async function activate(context: vscode.ExtensionContext) {
+  _context = context;
+  EnvironmentLogsProvider.initEnvironmentOutputChannel();
+  const authService = new AuthService(context);
+  authService.registerLoginCommand(async () => {
+    await init(environmentsDataProvider, environmentsTree, authService);
+    await setContextShowLoginMessage(false);
+  });
+  authService.registerLogoutCommand(onLogOut);
+  environmentsDataProvider = new Env0EnvironmentsProvider();
+  environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
+    treeDataProvider: environmentsDataProvider,
+  });
 
   environmentsTree.onDidChangeSelection(async (e) => {
     const env = e.selection[0];
@@ -78,37 +104,19 @@ const init = async (
     environmentsDataProvider,
     restartLogs
   );
-  environmentPollingInstance = setInterval(async () => {
-    environmentsDataProvider.refresh();
-  }, 3000);
-};
 
-export async function activate(context: vscode.ExtensionContext) {
-  _context = context;
-  EnvironmentLogsProvider.initEnvironmentOutputChannel();
-  const authService = new AuthService(context);
-  authService.registerLoginCommand();
-  authService.registerLogoutCommand();
-  environmentsDataProvider = new Env0EnvironmentsProvider();
-  environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
-    treeDataProvider: environmentsDataProvider,
-  });
   const isLoggedIn = await authService.isLoggedIn();
 
   if (isLoggedIn) {
-    apiClient.init(await authService.getApiKeyCredentials());
-    await init(context, environmentsDataProvider, environmentsTree);
+    await init(environmentsDataProvider, environmentsTree, authService);
   } else {
-    authService.onAuth = async () => {
-      apiClient.init(await authService.getApiKeyCredentials());
-      await init(context, environmentsDataProvider, environmentsTree);
-      await setContextShowLoginMessage(false);
-    };
     await setContextShowLoginMessage(true);
   }
 }
+const stopEnvironmentPolling = () => {
+  clearInterval(environmentPollingInstance);
+};
 
 export function deactivate() {
-  clearInterval(logPoller);
-  clearInterval(environmentPollingInstance);
+  stopEnvironmentPolling();
 }

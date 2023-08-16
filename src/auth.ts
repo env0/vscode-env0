@@ -10,12 +10,12 @@ const env0KeyIdKey = "env0.keyId";
 const env0SecretKey = "env0.secret";
 
 export class AuthService {
-  public onAuth?: () => any = undefined;
   constructor(private readonly context: vscode.ExtensionContext) {}
-  public registerLoginCommand() {
+  public registerLoginCommand(onLogin: () => any) {
     const disposable = vscode.commands.registerCommand(
       "env0.login",
       async () => {
+        // todo check that user is not logged in
         const keyId = await vscode.window.showInputBox({
           ignoreFocusOut: true,
           placeHolder: "API Key ID",
@@ -43,18 +43,18 @@ export class AuthService {
         });
         if (await this.validateUserCredentials(keyId!, secret!)) {
           await this.storeAuthData(keyId!, secret!);
-          this.onAuth?.();
-          this.onAuth = undefined;
+          await onLogin();
         }
       }
     );
     this.context.subscriptions.push(disposable);
   }
 
-  public registerLogoutCommand() {
+  public registerLogoutCommand(onLogOut: () => any) {
     const disposable = vscode.commands.registerCommand(
       "env0.logout",
       async () => {
+        await onLogOut();
         this.clearAuthData();
       }
     );

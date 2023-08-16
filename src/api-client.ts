@@ -20,6 +20,10 @@ class ApiClient {
     this.credentials = credentials;
   }
 
+  public clearCredentials() {
+    this.credentials = undefined;
+  }
+
   public async abortDeployment(deploymentId: string) {
     const response = await this.instance.post<null>(
       `/environments/deployments/${deploymentId}/abort`,
