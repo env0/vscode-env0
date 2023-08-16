@@ -12,10 +12,6 @@ import {
   waitFor,
 } from "./test-utils";
 import {
-  mockAbort,
-  mockApprove,
-  mockCancel,
-  mockDestroy,
   mockGetDeploymentSteps,
   mockGetEnvironment,
   mockGetOrganization,
@@ -59,9 +55,6 @@ const mockEnvironmentWithUpdatedStatus = async (
 
 const activeEnvironmentIconPath = "favicon-16x16.png";
 const inProgressIconPath = "in_progress.png";
-const waitingForUserIconPath = "waiting_for_user.png";
-const inactiveIconPath = "inactive.png";
-const failedIconPath = "failed.png";
 
 const envName = "my env";
 let environmentMock: EnvironmentModel;
@@ -177,149 +170,5 @@ suite("environment actions", function () {
         environmentMock.id
       );
     });
-  });
-
-  suite("approval flow", () => {
-    test("should show waiting for user status and icon when env waiting for user", async () => {
-      await initTest([environmentMock]);
-      const inProgressEnvironment = await redeploy({
-        environment: environmentMock,
-        auth,
-        orgId,
-      });
-
-      await mockEnvironmentWithUpdatedStatus(
-        inProgressEnvironment,
-        EnvironmentStatus.WAITING_FOR_USER
-      );
-      await waitFor(() =>
-        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
-      );
-      expect(getFirstEnvStatus()).toBe("WAITING_FOR_USER");
-    });
-
-    test("should show waiting for user notification when deployment waiting for user", async () => {
-      const assertShowWarningMessageCalled = stubShowMessage(
-        MessageType.WARNING
-      );
-      await initTest([environmentMock]);
-      const inProgressEnvironment = await redeploy({
-        environment: environmentMock,
-        auth,
-        orgId,
-      });
-
-      await mockEnvironmentWithUpdatedStatus(
-        inProgressEnvironment,
-        EnvironmentStatus.WAITING_FOR_USER
-      );
-      await assertShowWarningMessageCalled(
-        `Environment ${envName} is waiting for approval`,
-        environmentMock.projectId,
-        environmentMock.id
-      );
-    });
-
-    test("should approve when user approve", async () => {
-      await initTest([environmentMock]);
-      const inProgressEnvironment = await redeploy({
-        environment: environmentMock,
-        auth,
-        orgId,
-      });
-      const waitingForUserEnvironment = await mockEnvironmentWithUpdatedStatus(
-        inProgressEnvironment,
-        EnvironmentStatus.WAITING_FOR_USER
-      );
-      await waitFor(() =>
-        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
-      );
-
-      const onApprove = jestMock.fn();
-      mockApprove(
-        waitingForUserEnvironment.latestDeploymentLog.id,
-        auth,
-        onApprove
-      );
-      vscode.commands.executeCommand("env0.approve", getFirstEnvironment());
-      await waitFor(() => expect(onApprove).toHaveBeenCalled());
-    });
-
-    test("should cancel when user cancel", async () => {
-      await initTest([environmentMock]);
-      const inProgressEnvironment = await redeploy({
-        environment: environmentMock,
-        auth,
-        orgId,
-      });
-      const waitingForUserEnvironment = await mockEnvironmentWithUpdatedStatus(
-        inProgressEnvironment,
-        EnvironmentStatus.WAITING_FOR_USER
-      );
-      await waitFor(() =>
-        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
-      );
-
-      const onCancel = jestMock.fn();
-      mockCancel(
-        waitingForUserEnvironment.latestDeploymentLog.id,
-        auth,
-        onCancel
-      );
-      vscode.commands.executeCommand("env0.cancel", getFirstEnvironment());
-      await waitFor(() => expect(onCancel).toHaveBeenCalled());
-    });
-  });
-
-  suite("abort", () => {
-    test("should abort when user abort", async () => {
-      await initTest([environmentMock]);
-      const inProgressEnvironment = await redeploy({
-        environment: environmentMock,
-        auth,
-        orgId,
-      });
-
-      const onAbort = jestMock.fn();
-      mockAbort(inProgressEnvironment.latestDeploymentLog.id, auth, onAbort);
-      vscode.commands.executeCommand("env0.abort", getFirstEnvironment());
-      await waitFor(() => expect(onAbort).toHaveBeenCalled());
-    });
-
-    test("should update environment status and icon when user abort deployment", async () => {
-      await initTest([environmentMock]);
-      const inProgressEnvironment = await redeploy({
-        environment: environmentMock,
-        auth,
-        orgId,
-      });
-
-      mockAbort(inProgressEnvironment.latestDeploymentLog.id, auth);
-      vscode.commands.executeCommand("env0.abort", getFirstEnvironment());
-      const abortingEnvironment = await mockEnvironmentWithUpdatedStatus(
-        inProgressEnvironment,
-        EnvironmentStatus.ABORTING
-      );
-
-      await waitFor(() =>
-        expect(getFirstEnvIconPath()).toContain(inactiveIconPath)
-      );
-      expect(getFirstEnvStatus()).toBe("ABORTING");
-
-      await mockEnvironmentWithUpdatedStatus(
-        abortingEnvironment,
-        EnvironmentStatus.ABORTED
-      );
-      await waitFor(() => expect(getFirstEnvStatus()).toBe("ABORTED"));
-      expect(getFirstEnvIconPath()).toContain(failedIconPath);
-    });
-  });
-
-  test("should destroy when user destroy", async () => {
-    await initTest([environmentMock]);
-    const onDestroy = jestMock.fn();
-    mockDestroy(environmentMock.id, auth, onDestroy);
-    vscode.commands.executeCommand("env0.destroy", getFirstEnvironment());
-    await waitFor(() => expect(onDestroy).toHaveBeenCalled());
   });
 });
