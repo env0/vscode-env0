@@ -5,7 +5,8 @@
   "description": "",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.71.0"
+    "vscode": "^1.71.0",
+    "pnpm": "6.35.1"
   },
   "categories": [
     "Other"
