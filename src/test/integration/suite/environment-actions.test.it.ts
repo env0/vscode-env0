@@ -22,7 +22,6 @@ import { afterEach, beforeEach } from "mocha";
 import expect from "expect";
 import * as vscode from "vscode";
 import * as jestMock from "jest-mock";
-import sinon from "sinon";
 import { EnvironmentStatus } from "../../../types";
 import {
   assertOpenEnvironmentInBrowserWhenMoreInfoClicked,
@@ -100,7 +99,6 @@ suite("environment actions", function () {
   });
 
   afterEach(async () => {
-    sinon.restore();
     await logout();
     await resetExtension();
     resetOpenExternalSpy();

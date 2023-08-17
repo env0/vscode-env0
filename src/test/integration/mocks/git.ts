@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import sinon from "sinon";
+import * as jestMock from "jest-mock";
 
 export const mockGitRepoAndBranch = (branchName: string, repoUrl: string) => {
   const gitExtensionMock = {
-    getAPI: sinon.stub().returns({
+    getAPI: jestMock.fn().mockReturnValue({
       repositories: [
         {
           state: {
@@ -23,8 +23,10 @@ export const mockGitRepoAndBranch = (branchName: string, repoUrl: string) => {
     }),
   };
 
-  const getExtensionStub = sinon.stub(vscode.extensions, "getExtension");
-  getExtensionStub
-    .withArgs("vscode.git")
-    .returns({ exports: gitExtensionMock } as any);
+  const getExtensionMock = jestMock.spyOn(vscode.extensions, "getExtension");
+  getExtensionMock.mockImplementation((arg) => {
+    if (arg === "vscode.git") {
+      return { exports: gitExtensionMock } as any;
+    }
+  });
 };

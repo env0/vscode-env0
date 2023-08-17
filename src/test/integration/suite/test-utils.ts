@@ -1,7 +1,6 @@
 import retry from "async-retry";
 import { EnvironmentModel } from "../../../get-environments";
 import * as vscode from "vscode";
-import sinon from "sinon";
 import { Credentials, EnvironmentStatus } from "../../../types";
 import { mockGetEnvironment, mockRedeployApiResponse } from "../mocks/server";
 import * as jestMock from "jest-mock";
@@ -19,10 +18,13 @@ export const waitFor = <T>(
 };
 
 export const login = async (auth: Credentials) => {
-  const inputStub = sinon.stub(vscode.window, "showInputBox");
-  inputStub.onFirstCall().resolves(auth.keyId);
-  inputStub.onSecondCall().resolves(auth.secret);
+  const inputMock = jestMock.spyOn(vscode.window, "showInputBox");
+  inputMock
+    .mockResolvedValueOnce(auth.keyId)
+    .mockResolvedValueOnce(auth.secret);
+
   await vscode.commands.executeCommand("env0.login");
+  inputMock.mockRestore();
 };
 
 export const logout = async () => {

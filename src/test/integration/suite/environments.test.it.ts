@@ -5,7 +5,6 @@ import * as extension from "../../../../dist/extension.js";
 import { Env0EnvironmentsProvider } from "../../../env0-environments-provider";
 import { getEnvironmentMock, login, logout, waitFor } from "./test-utils";
 import { afterEach } from "mocha";
-import sinon from "sinon";
 import { EnvironmentModel } from "../../../get-environments";
 import expect from "expect";
 
@@ -20,7 +19,6 @@ const initTest = async (environments: EnvironmentModel[]) => {
 
 suite("environments", function () {
   afterEach(async () => {
-    sinon.restore();
     await logout();
     await extension._reset();
   });
