@@ -8,7 +8,6 @@ import {
   logout,
   redeploy,
   resetExtension,
-  stubShowMessage,
   waitFor,
 } from "./test-utils";
 import {
@@ -25,6 +24,17 @@ import * as vscode from "vscode";
 import * as jestMock from "jest-mock";
 import sinon from "sinon";
 import { EnvironmentStatus } from "../../../types";
+import {
+  assertOpenEnvironmentInBrowserWhenMoreInfoClicked,
+  assertErrorMessageDisplayed,
+  assertInfoMessageDisplayed,
+  simulateErrorMessageMoreInfoButtonClicked,
+  simulateInfoMessageMoreInfoButtonClicked,
+  resetOpenExternalSpy,
+  resetShowMessageSpies,
+  spyOnOpenExternal,
+  spyOnShowMessage,
+} from "../mocks/notification-message";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
@@ -34,6 +44,8 @@ const initTest = async (environments: EnvironmentModel[]) => {
   mockGetEnvironment(orgId, environments, auth);
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
   mockGetDeploymentSteps();
+  spyOnShowMessage();
+  spyOnOpenExternal();
   await login(auth);
   await waitFor(() =>
     expect(getFirstEnvIconPath()).toContain(activeEnvironmentIconPath)
@@ -51,6 +63,22 @@ const mockEnvironmentWithUpdatedStatus = async (
   };
   mockGetEnvironment(orgId, [updatedEnvironment], auth);
   return updatedEnvironment;
+};
+
+const mockFailedEnvironment = async (
+  environment: EnvironmentModel,
+  errorMessage: string
+) => {
+  const failedEnvironment: EnvironmentModel = {
+    ...environment,
+    status: "FAILED",
+    updatedAt: Date.now().toString(),
+    latestDeploymentLog: {
+      ...environment.latestDeploymentLog,
+      error: { message: errorMessage },
+    },
+  };
+  mockGetEnvironment(orgId, [failedEnvironment], auth);
 };
 
 const activeEnvironmentIconPath = "favicon-16x16.png";
@@ -75,6 +103,8 @@ suite("environment actions", function () {
     sinon.restore();
     await logout();
     await resetExtension();
+    resetOpenExternalSpy();
+    resetShowMessageSpies();
   });
 
   suite("redeploy", () => {
@@ -110,64 +140,58 @@ suite("environment actions", function () {
     });
 
     test("should show information message when redeploy", async () => {
-      let assertShowInformationMessageCalled = stubShowMessage(
-        MessageType.INFORMATION
-      );
-
       await initTest([environmentMock]);
+      simulateErrorMessageMoreInfoButtonClicked();
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
         orgId,
       });
 
-      await assertShowInformationMessageCalled(
-        `Environment ${envName} is in progress...`,
-        environmentMock.projectId,
-        environmentMock.id
+      await assertInfoMessageDisplayed(
+        `Environment ${envName} is in progress...`
       );
 
-      assertShowInformationMessageCalled = stubShowMessage(
-        MessageType.INFORMATION
+      await assertOpenEnvironmentInBrowserWhenMoreInfoClicked(
+        inProgressEnvironment.id,
+        inProgressEnvironment.projectId
       );
+
+      resetShowMessageSpies(); // reset spies to not count the previous calls
+      resetOpenExternalSpy(); // reset spies to not count the previous calls
+      simulateInfoMessageMoreInfoButtonClicked();
 
       await mockEnvironmentWithUpdatedStatus(
         inProgressEnvironment,
         EnvironmentStatus.ACTIVE
       );
-      await assertShowInformationMessageCalled(
-        `Environment ${envName} is ACTIVE!`,
-        environmentMock.projectId,
-        environmentMock.id
+
+      await assertInfoMessageDisplayed(`Environment ${envName} is ACTIVE!`);
+
+      await assertOpenEnvironmentInBrowserWhenMoreInfoClicked(
+        inProgressEnvironment.id,
+        inProgressEnvironment.projectId
       );
     });
 
     test("should show error message when redeploy fail", async () => {
-      const assertShowErrorMessageCalled = stubShowMessage(MessageType.ERROR);
-
       await initTest([environmentMock]);
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
         orgId,
       });
+      simulateErrorMessageMoreInfoButtonClicked();
+      const errorMessage = "error message";
+      await mockFailedEnvironment(inProgressEnvironment, errorMessage);
 
-      const errorMessage = "some error";
-      const failedEnvironment: EnvironmentModel = {
-        ...inProgressEnvironment,
-        status: "FAILED",
-        updatedAt: Date.now().toString(),
-        latestDeploymentLog: {
-          ...inProgressEnvironment.latestDeploymentLog,
-          error: { message: errorMessage },
-        },
-      };
-      mockGetEnvironment(orgId, [failedEnvironment], auth);
+      await assertErrorMessageDisplayed(
+        `Deployment has failed for environment ${envName}. Error: ${errorMessage}`
+      );
 
-      await assertShowErrorMessageCalled(
-        `Deployment has failed for environment ${envName}. Error: ${errorMessage}`,
-        environmentMock.projectId,
-        environmentMock.id
+      await assertOpenEnvironmentInBrowserWhenMoreInfoClicked(
+        inProgressEnvironment.id,
+        inProgressEnvironment.projectId
       );
     });
   });

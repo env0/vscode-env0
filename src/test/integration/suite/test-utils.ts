@@ -53,32 +53,6 @@ export enum MessageType {
   WARNING = "showWarningMessage",
 }
 
-export const stubShowMessage = (messageType: MessageType) => {
-  const openExternalMock = jestMock.spyOn(vscode.env, "openExternal");
-  const mockUriParse = jestMock
-    .spyOn(vscode.Uri, "parse")
-    .mockImplementation((url) => url as any);
-  openExternalMock.mockResolvedValue(true);
-  const showMessageMock = jestMock.spyOn(vscode.window, messageType);
-  showMessageMock.mockResolvedValue("More info" as any);
-  return async function assertShowMessageCalled(
-    message: string,
-    projectId: string,
-    envId: string
-  ) {
-    // wait for setInterval to invoke refresh
-    await waitFor(() => expect(showMessageMock).toHaveBeenCalled());
-    expect(showMessageMock).toHaveBeenCalledWith(message, "More info");
-    await waitFor(() => expect(openExternalMock).toHaveBeenCalled());
-    expect(openExternalMock).toHaveBeenCalledWith(
-      expect.stringContaining(`/p/${projectId}/environments/${envId}`)
-    );
-    openExternalMock.mockReset();
-    showMessageMock.mockReset();
-    mockUriParse.mockReset();
-  };
-};
-
 export const redeploy = async ({
   environment,
   auth,
