@@ -187,5 +187,8 @@
     "async-retry": "^1.3.3",
     "axios": "^0.27.2",
     "strip-ansi": "^7.0.1"
+  },
+  "engines": {
+    "pnpm": "6.35.1"
   }
 }
