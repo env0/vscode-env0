@@ -15,7 +15,7 @@ import {
   mockGetDeploymentSteps,
   mockGetEnvironment,
   mockGetOrganization,
-  mockRedeploy,
+  mockRedeployApiResponse,
 } from "../mocks/server";
 import { mockGitRepoAndBranch } from "../mocks/git";
 import { EnvironmentModel } from "../../../get-environments";
@@ -82,7 +82,7 @@ suite("environment actions", function () {
       await initTest([environmentMock]);
 
       const onRedeployCalled = jestMock.fn();
-      mockRedeploy(environmentMock.id, auth, onRedeployCalled);
+      mockRedeployApiResponse(environmentMock.id, auth, onRedeployCalled);
 
       vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
       await waitFor(() => expect(onRedeployCalled).toHaveBeenCalled());

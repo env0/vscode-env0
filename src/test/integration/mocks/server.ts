@@ -68,7 +68,7 @@ export const mockGetDeploymentSteps = () => {
   );
 };
 
-export const mockRedeploy = (
+export const mockRedeployApiResponse = (
   envId: string,
   credentials: Credentials,
   onSuccess?: () => any

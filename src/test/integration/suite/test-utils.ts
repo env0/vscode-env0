@@ -3,7 +3,7 @@ import { EnvironmentModel } from "../../../get-environments";
 import * as vscode from "vscode";
 import sinon from "sinon";
 import { Credentials, EnvironmentStatus } from "../../../types";
-import { mockGetEnvironment, mockRedeploy } from "../mocks/server";
+import { mockGetEnvironment, mockRedeployApiResponse } from "../mocks/server";
 import * as jestMock from "jest-mock";
 import expect from "expect";
 // Importing the compiled extension file to interface with its functionalities (e.g., environment provider) during testing.
@@ -90,7 +90,7 @@ export const redeploy = async ({
   orgId: string;
   onRedeployApiRequest?: typeof jestMock.fn;
 }) => {
-  mockRedeploy(environment.id, auth, onRedeployApiRequest);
+  mockRedeployApiResponse(environment.id, auth, onRedeployApiRequest);
   vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
   const inProgressEnvironment: EnvironmentModel = {
     ...environment,
