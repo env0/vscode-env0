@@ -141,7 +141,7 @@ suite("environment actions", function () {
 
     test("should show information message when redeploy", async () => {
       await initTest([environmentMock]);
-      simulateErrorMessageMoreInfoButtonClicked();
+      simulateInfoMessageMoreInfoButtonClicked();
       const inProgressEnvironment = await redeploy({
         environment: environmentMock,
         auth,
