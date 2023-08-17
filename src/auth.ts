@@ -15,7 +15,12 @@ export class AuthService {
     const disposable = vscode.commands.registerCommand(
       "env0.login",
       async () => {
-        // todo check that user is not logged in
+        if (await this.isLoggedIn()) {
+          await vscode.window.showInformationMessage(
+            "You are already logged in."
+          );
+          return;
+        }
         const keyId = await vscode.window.showInputBox({
           ignoreFocusOut: true,
           placeHolder: "API Key ID",
