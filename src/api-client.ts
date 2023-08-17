@@ -50,9 +50,9 @@ class ApiClient {
     return response.data;
   }
 
-  public async destroyEnvironment(deploymentId: string) {
+  public async destroyEnvironment(envId: string) {
     const response = await this.instance.post<{ id: string }>(
-      `/environments/${deploymentId}/destroy`,
+      `/environments/${envId}/destroy`,
       {}
     );
     return response.data;
