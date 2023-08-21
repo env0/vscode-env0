@@ -125,6 +125,44 @@ export const mockCancelApiResponse = (
   );
 };
 
+export const mockAbortApiResponse = (
+  deploymentId: string,
+  credentials: Credentials,
+  onSuccess?: () => unknown
+) => {
+  server.use(
+    rest.post(
+      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/abort`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
+export const mockDestroyApiResponse = (
+  envId: string,
+  credentials: Credentials,
+  onSuccess?: () => unknown
+) => {
+  server.use(
+    rest.post(
+      `https://${ENV0_API_URL}/environments/${envId}/destroy`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
 before(() => {
   server.listen();
 });
