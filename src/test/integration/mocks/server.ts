@@ -35,6 +35,7 @@ export const mockGetOrganization = (
     })
   );
 };
+
 export const mockGetEnvironment = (
   organizationId: string,
   environments: EnvironmentModel[],
@@ -55,6 +56,37 @@ export const mockGetEnvironment = (
     })
   );
 };
+
+export const mockGetDeploymentSteps = () => {
+  server.use(
+    rest.get(
+      `https://${ENV0_API_URL}/deployments/:deploymentLogId/steps`,
+      (req, res, ctx) => {
+        return res(ctx.json([]));
+      }
+    )
+  );
+};
+
+export const mockRedeployApiResponse = (
+  envId: string,
+  credentials: Credentials,
+  onSuccess?: () => any
+) => {
+  server.use(
+    rest.post(
+      `https://${ENV0_API_URL}/environments/${envId}/deployments`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
 before(() => {
   server.listen();
 });
