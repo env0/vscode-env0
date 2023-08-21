@@ -10,8 +10,10 @@ import {
   waitFor,
 } from "./test-utils";
 import {
+  mockAbortApiResponse,
   mockApproveApiResponse,
   mockCancelApiResponse,
+  mockDestroyApiResponse,
   mockGetDeploymentSteps,
   mockGetEnvironment,
   mockGetOrganization,
@@ -85,6 +87,8 @@ const mockFailedEnvironment = async (
 
 const activeEnvironmentIconPath = "favicon-16x16.png";
 const inProgressIconPath = "in_progress.png";
+const inactiveIconPath = "inactive.png";
+const failedIconPath = "failed.png";
 const waitingForUserIconPath = "waiting_for_user.png";
 
 const envName = "my env";
@@ -196,6 +200,62 @@ suite("environment actions", function () {
         inProgressEnvironment.projectId
       );
     });
+  });
+
+  suite("abort", () => {
+    test("should abort when user abort", async () => {
+      await initTest([environmentMock]);
+      const inProgressEnvironment = await redeploy({
+        environment: environmentMock,
+        auth,
+        orgId,
+      });
+
+      const onAbort = jestMock.fn();
+      mockAbortApiResponse(
+        inProgressEnvironment.latestDeploymentLog.id,
+        auth,
+        onAbort
+      );
+      vscode.commands.executeCommand("env0.abort", getFirstEnvironment());
+      await waitFor(() => expect(onAbort).toHaveBeenCalled());
+    });
+
+    test("should update environment status and icon when user abort deployment", async () => {
+      await initTest([environmentMock]);
+      const inProgressEnvironment = await redeploy({
+        environment: environmentMock,
+        auth,
+        orgId,
+      });
+
+      mockAbortApiResponse(inProgressEnvironment.latestDeploymentLog.id, auth);
+      vscode.commands.executeCommand("env0.abort", getFirstEnvironment());
+      const abortingEnvironment = await mockEnvironmentWithUpdatedStatus(
+        inProgressEnvironment,
+        EnvironmentStatus.ABORTING
+      );
+
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(inactiveIconPath)
+      );
+      expect(getFirstEnvStatus()).toBe("ABORTING");
+
+      await mockEnvironmentWithUpdatedStatus(
+        abortingEnvironment,
+        EnvironmentStatus.ABORTED
+      );
+      await waitFor(() => expect(getFirstEnvStatus()).toBe("ABORTED"));
+      expect(getFirstEnvIconPath()).toContain(failedIconPath);
+    });
+  });
+
+  test("should destroy when user destroy", async () => {
+    await initTest([environmentMock]);
+    const onDestroy = jestMock.fn();
+    mockDestroyApiResponse(environmentMock.id, auth, onDestroy);
+    vscode.commands.executeCommand("env0.destroy", getFirstEnvironment());
+    await waitFor(() => expect(onDestroy).toHaveBeenCalled());
   });
 
   suite("approval flow", () => {
