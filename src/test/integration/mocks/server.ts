@@ -47,7 +47,7 @@ export const mockGetEnvironment = (
         assertAuth(credentials, req.headers.get("Authorization"));
       }
       if (
-        new URL(req.url as any).searchParams.get("organizationId") ===
+        new URL(req.url.toString()).searchParams.get("organizationId") ===
         organizationId
       ) {
         return res(ctx.json(environments));
@@ -71,11 +71,49 @@ export const mockGetDeploymentSteps = () => {
 export const mockRedeployApiResponse = (
   envId: string,
   credentials: Credentials,
-  onSuccess?: () => any
+  onSuccess?: () => unknown
 ) => {
   server.use(
     rest.post(
       `https://${ENV0_API_URL}/environments/${envId}/deployments`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
+export const mockApproveApiResponse = (
+  deploymentId: string,
+  credentials: Credentials,
+  onSuccess?: () => unknown
+) => {
+  server.use(
+    rest.put(
+      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json({}));
+      }
+    )
+  );
+};
+
+export const mockCancelApiResponse = (
+  deploymentId: string,
+  credentials: Credentials,
+  onSuccess?: () => unknown
+) => {
+  server.use(
+    rest.put(
+      `https://${ENV0_API_URL}/environments/deployments/${deploymentId}/cancel`,
       (req, res, ctx) => {
         if (credentials) {
           assertAuth(credentials, req.headers.get("Authorization"));

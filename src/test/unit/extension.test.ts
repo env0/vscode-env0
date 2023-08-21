@@ -23,7 +23,7 @@ describe("extension", () => {
   beforeEach(() => {
     environmentsDataProvider = {
       refresh: jest.fn(),
-    } as any as Env0EnvironmentsProvider;
+    } as unknown as Env0EnvironmentsProvider;
 
     environmentsTree = {} as vscode.TreeView<Environment>;
   });
