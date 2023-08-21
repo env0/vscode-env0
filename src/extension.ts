@@ -72,23 +72,24 @@ const onLogOut = async () => {
   stopEnvironmentPolling();
   environmentsDataProvider.clear();
   apiClient.clearCredentials();
-  environmentsTree.message = undefined;
-  await setContextShowLoginMessage(true);
+  environmentsTree.message =
+    "you are logged out. in order to log in, run the command 'env0.login'";
 };
 
 export async function activate(context: vscode.ExtensionContext) {
   _context = context;
-  EnvironmentLogsProvider.initEnvironmentOutputChannel();
-  const authService = new AuthService(context);
-  authService.registerLoginCommand(async () => {
-    await init(environmentsDataProvider, environmentsTree, authService);
-    await setContextShowLoginMessage(false);
-  });
-  authService.registerLogoutCommand(onLogOut);
   environmentsDataProvider = new Env0EnvironmentsProvider();
   environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
     treeDataProvider: environmentsDataProvider,
   });
+  EnvironmentLogsProvider.initEnvironmentOutputChannel();
+  const authService = new AuthService(context);
+  authService.registerLoginCommand(async () => {
+    environmentsTree.message = undefined;
+    await init(environmentsDataProvider, environmentsTree, authService);
+    await setContextShowLoginMessage(false);
+  });
+  authService.registerLogoutCommand(onLogOut);
 
   environmentsTree.onDidChangeSelection(async (e) => {
     const env = e.selection[0];
