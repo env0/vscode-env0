@@ -11,7 +11,7 @@ import * as extension from "../../../../dist/extension.js";
 import { Env0EnvironmentsProvider } from "../../../env0-environments-provider";
 
 export const waitFor = <T>(
-  callback: (...args: any[]) => T,
+  callback: (...args: unknown[]) => T,
   retries = 5
 ): Promise<T> => {
   return retry(callback, { retries, minTimeout: 300, maxTimeout: 1000 });

@@ -1,5 +1,4 @@
 import {
-  MessageType,
   getEnvironmentMock,
   getFirstEnvIconPath,
   getFirstEnvStatus,
@@ -35,6 +34,8 @@ import {
   resetShowMessageSpies,
   spyOnOpenExternal,
   spyOnShowMessage,
+  assertWarningMessageDisplayed,
+  simulateWarningMessageMoreInfoButtonClicked,
 } from "../mocks/notification-message";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
@@ -86,6 +87,7 @@ const activeEnvironmentIconPath = "favicon-16x16.png";
 const inProgressIconPath = "in_progress.png";
 const inactiveIconPath = "inactive.png";
 const failedIconPath = "failed.png";
+const waitingForUserIconPath = "waiting_for_user.png";
 
 const envName = "my env";
 let environmentMock: EnvironmentModel;
@@ -252,5 +254,96 @@ suite("environment actions", function () {
     mockDestroyApiResponse(environmentMock.id, auth, onDestroy);
     vscode.commands.executeCommand("env0.destroy", getFirstEnvironment());
     await waitFor(() => expect(onDestroy).toHaveBeenCalled());
+  });
+
+  suite("approval flow", () => {
+    test("should show waiting for user status and icon when env waiting for user", async () => {
+      await initTest([environmentMock]);
+      const inProgressEnvironment = await redeploy({
+        environment: environmentMock,
+        auth,
+        orgId,
+      });
+
+      await mockEnvironmentWithUpdatedStatus(
+        inProgressEnvironment,
+        EnvironmentStatus.WAITING_FOR_USER
+      );
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
+      );
+      expect(getFirstEnvStatus()).toBe("WAITING_FOR_USER");
+    });
+
+    test("should show waiting for user notification when deployment waiting for user", async () => {
+      await initTest([environmentMock]);
+      const inProgressEnvironment = await redeploy({
+        environment: environmentMock,
+        auth,
+        orgId,
+      });
+      simulateWarningMessageMoreInfoButtonClicked();
+      await mockEnvironmentWithUpdatedStatus(
+        inProgressEnvironment,
+        EnvironmentStatus.WAITING_FOR_USER
+      );
+      await assertWarningMessageDisplayed(
+        `Environment ${envName} is waiting for approval`
+      );
+      assertOpenEnvironmentInBrowserWhenMoreInfoClicked(
+        environmentMock.id,
+        environmentMock.projectId
+      );
+    });
+
+    test("should approve when user approve", async () => {
+      await initTest([environmentMock]);
+      const inProgressEnvironment = await redeploy({
+        environment: environmentMock,
+        auth,
+        orgId,
+      });
+      const waitingForUserEnvironment = await mockEnvironmentWithUpdatedStatus(
+        inProgressEnvironment,
+        EnvironmentStatus.WAITING_FOR_USER
+      );
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
+      );
+
+      const onApprove = jestMock.fn();
+      mockApproveApiResponse(
+        waitingForUserEnvironment.latestDeploymentLog.id,
+        auth,
+        onApprove
+      );
+      vscode.commands.executeCommand("env0.approve", getFirstEnvironment());
+      await waitFor(() => expect(onApprove).toHaveBeenCalled());
+    });
+
+    test("should cancel when user cancel", async () => {
+      await initTest([environmentMock]);
+      const inProgressEnvironment = await redeploy({
+        environment: environmentMock,
+        auth,
+        orgId,
+      });
+      const waitingForUserEnvironment = await mockEnvironmentWithUpdatedStatus(
+        inProgressEnvironment,
+        EnvironmentStatus.WAITING_FOR_USER
+      );
+      await waitFor(() =>
+        expect(getFirstEnvIconPath()).toContain(waitingForUserIconPath)
+      );
+
+      const onCancel = jestMock.fn();
+      mockCancelApiResponse(
+        waitingForUserEnvironment.latestDeploymentLog.id,
+        auth,
+        onCancel
+      );
+      vscode.commands.executeCommand("env0.cancel", getFirstEnvironment());
+      await waitFor(() => expect(onCancel).toHaveBeenCalled());
+    });
   });
 });
