@@ -128,7 +128,7 @@ export const mockCancelApiResponse = (
 export const mockAbortApiResponse = (
   deploymentId: string,
   credentials: Credentials,
-  onSuccess?: () => any
+  onSuccess?: () => unknown
 ) => {
   server.use(
     rest.post(
@@ -147,7 +147,7 @@ export const mockAbortApiResponse = (
 export const mockDestroyApiResponse = (
   envId: string,
   credentials: Credentials,
-  onSuccess?: () => any
+  onSuccess?: () => unknown
 ) => {
   server.use(
     rest.post(
