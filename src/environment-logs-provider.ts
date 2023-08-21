@@ -186,7 +186,7 @@ export class EnvironmentLogsProvider {
     stepName: string
   ) {
     let shouldPoll = false;
-    let startTime: number | string;
+    let startTime: number | string | undefined;
 
     do {
       const steps = await apiClient.getDeploymentSteps(
@@ -201,7 +201,7 @@ export class EnvironmentLogsProvider {
         await apiClient.getDeploymentStepLogs(
           deploymentLogId,
           stepName,
-          startTime!,
+          startTime,
           this.abortController
         );
 

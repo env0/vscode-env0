@@ -47,7 +47,7 @@ export const mockGetEnvironment = (
         assertAuth(credentials, req.headers.get("Authorization"));
       }
       if (
-        new URL(req.url as any).searchParams.get("organizationId") ===
+        new URL(req.url.toString()).searchParams.get("organizationId") ===
         organizationId
       ) {
         return res(ctx.json(environments));
@@ -71,7 +71,7 @@ export const mockGetDeploymentSteps = () => {
 export const mockRedeployApiResponse = (
   envId: string,
   credentials: Credentials,
-  onSuccess?: () => any
+  onSuccess?: () => unknown
 ) => {
   server.use(
     rest.post(
@@ -90,7 +90,7 @@ export const mockRedeployApiResponse = (
 export const mockApproveApiResponse = (
   deploymentId: string,
   credentials: Credentials,
-  onSuccess?: () => any
+  onSuccess?: () => unknown
 ) => {
   server.use(
     rest.put(
@@ -109,7 +109,7 @@ export const mockApproveApiResponse = (
 export const mockCancelApiResponse = (
   deploymentId: string,
   credentials: Credentials,
-  onSuccess?: () => any
+  onSuccess?: () => unknown
 ) => {
   server.use(
     rest.put(

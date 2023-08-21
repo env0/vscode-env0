@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import * as vscode from "vscode";
 import { ENV0_API_URL, ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 import {
@@ -10,7 +10,7 @@ const env0KeyIdKey = "env0.keyId";
 const env0SecretKey = "env0.secret";
 
 export class AuthService {
-  public onAuth?: () => any = undefined;
+  public onAuth?: () => unknown = undefined;
   constructor(private readonly context: vscode.ExtensionContext) {}
   public registerLoginCommand() {
     const disposable = vscode.commands.registerCommand(
@@ -41,7 +41,10 @@ export class AuthService {
             return null;
           },
         });
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (await this.validateUserCredentials(keyId!, secret!)) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           await this.storeAuthData(keyId!, secret!);
           this.onAuth?.();
           this.onAuth = undefined;
@@ -94,7 +97,8 @@ export class AuthService {
             },
           });
           return true;
-        } catch (e: any | AxiosError) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
           if (e?.response?.status >= 400 && e?.response?.status < 500) {
             showInvalidCredentialsMessage();
           } else {

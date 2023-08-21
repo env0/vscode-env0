@@ -1,5 +1,4 @@
 import {
-  MessageType,
   getEnvironmentMock,
   getFirstEnvIconPath,
   getFirstEnvStatus,
@@ -38,7 +37,6 @@ import {
   assertWarningMessageDisplayed,
   simulateWarningMessageMoreInfoButtonClicked,
 } from "../mocks/notification-message";
-import { assert } from "console";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";

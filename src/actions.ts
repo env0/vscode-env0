@@ -75,7 +75,7 @@ export const registerEnvironmentActions = (
   context: vscode.ExtensionContext,
   environmentsTree: vscode.TreeView<Environment>,
   environmentsDataProvider: Env0EnvironmentsProvider,
-  restartLogs: (env: Environment, deploymentId?: string) => any
+  restartLogs: (env: Environment, deploymentId?: string) => unknown
 ) => {
   context.subscriptions.push(
     vscode.commands.registerCommand("env0.openInEnv0", (env) => {

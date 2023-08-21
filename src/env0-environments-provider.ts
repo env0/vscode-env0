@@ -62,7 +62,7 @@ export class Env0EnvironmentsProvider
     );
   }
 
-  getParent(element: Environment): vscode.ProviderResult<Environment> {
+  getParent(): vscode.ProviderResult<Environment> {
     return null;
   }
 

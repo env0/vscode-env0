@@ -56,6 +56,7 @@ export const assertWarningMessageDisplayed = async (message: string) => {
  * the clicked button.
  */
 export const simulateInfoMessageMoreInfoButtonClicked = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showInformationMessageSpy.mockResolvedValue("More info" as any);
 };
 
@@ -66,6 +67,7 @@ export const simulateInfoMessageMoreInfoButtonClicked = () => {
  * the clicked button.
  */
 export const simulateErrorMessageMoreInfoButtonClicked = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showErrorMessageSpy.mockResolvedValue("More info" as any);
 };
 
@@ -76,12 +78,14 @@ export const simulateErrorMessageMoreInfoButtonClicked = () => {
  * the clicked button.
  */
 export const simulateWarningMessageMoreInfoButtonClicked = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showWarningMessageSpy.mockResolvedValue("More info" as any);
 };
 
 // since in the tests we don't have a real uri, we need to mock it
 const spyOnParseUri = () => {
   const uriParseSpy = jestMock.spyOn(vscode.Uri, "parse");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   uriParseSpy.mockImplementation((url) => url as any);
 };
 
