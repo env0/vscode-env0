@@ -26,7 +26,8 @@ export const mockGitRepoAndBranch = (branchName: string, repoUrl: string) => {
   const getExtensionMock = jestMock.spyOn(vscode.extensions, "getExtension");
   getExtensionMock.mockImplementation((arg) => {
     if (arg === "vscode.git") {
-      return { exports: gitExtensionMock } as any;
+      return { exports: gitExtensionMock } as vscode.Extension<unknown>;
     }
+    return {} as vscode.Extension<unknown>;
   });
 };
