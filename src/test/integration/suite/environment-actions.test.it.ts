@@ -11,6 +11,8 @@ import {
 } from "./test-utils";
 import {
   mockAbortApiResponse,
+  mockApproveApiResponse,
+  mockCancelApiResponse,
   mockDestroyApiResponse,
   mockGetDeploymentSteps,
   mockGetEnvironment,
