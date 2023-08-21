@@ -12,7 +12,7 @@ const env0SecretKey = "env0.secret";
 export class AuthService {
   public onAuth?: () => unknown = undefined;
   constructor(private readonly context: vscode.ExtensionContext) {}
-  public registerLoginCommand(onLogin: () => any) {
+  public registerLoginCommand(onLogin: () => unknown) {
     const disposable = vscode.commands.registerCommand(
       "env0.login",
       async () => {
@@ -59,7 +59,7 @@ export class AuthService {
     this.context.subscriptions.push(disposable);
   }
 
-  public registerLogoutCommand(onLogOut: () => any) {
+  public registerLogoutCommand(onLogOut: () => unknown) {
     const disposable = vscode.commands.registerCommand(
       "env0.logout",
       async () => {
