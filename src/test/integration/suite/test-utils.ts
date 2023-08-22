@@ -88,6 +88,10 @@ export const getEnvironmentDataProvider = () => {
   return extension.environmentsDataProvider as Env0EnvironmentsProvider;
 };
 
+export const getEnvironmentsView = () => {
+  return extension.environmentsTree;
+};
+
 export const getFirstEnvironment = () => {
   const environmentsDataProvider = getEnvironmentDataProvider();
   return environmentsDataProvider.getChildren()[0];
