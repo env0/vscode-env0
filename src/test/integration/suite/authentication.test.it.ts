@@ -1,6 +1,6 @@
 import { mockGitRepoAndBranch } from "../mocks/git";
 import {
-  mockGetDeploymentSteps,
+  mockGetDeploymentStepsApiResponse,
   mockGetEnvironment,
   mockGetOrganization,
   mockRedeployApiResponse,
@@ -37,7 +37,7 @@ suite("authentication", function () {
     mockGetOrganization(orgId, auth);
     mockGetEnvironment(orgId, [environmentMock], auth);
     mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
-    mockGetDeploymentSteps();
+    mockGetDeploymentStepsApiResponse();
 
     await login(auth);
     await waitFor(() => expect(getFirstEnvStatus()).toContain("ACTIVE"));
