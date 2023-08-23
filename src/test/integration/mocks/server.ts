@@ -78,7 +78,8 @@ export const mockGetDeploymentStepsApiResponse = (
 export const mockRedeployApiResponse = (
   envId: string,
   credentials: Credentials,
-  onSuccess?: () => unknown
+  onSuccess?: () => unknown,
+  newDeploymentId?: string
 ) => {
   server.use(
     rest.post(
@@ -88,7 +89,7 @@ export const mockRedeployApiResponse = (
           assertAuth(credentials, req.headers.get("Authorization"));
         }
         onSuccess?.();
-        return res(ctx.json({}));
+        return res(ctx.json({ id: newDeploymentId || "new-deployment-id" }));
       }
     )
   );

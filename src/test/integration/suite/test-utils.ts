@@ -68,7 +68,13 @@ export const redeploy = async ({
   onRedeployApiRequest?: typeof jestMock.fn;
   newDeploymentId?: string;
 }) => {
-  mockRedeployApiResponse(environment.id, auth, onRedeployApiRequest);
+  const deploymentId = newDeploymentId || "new-deployment-id";
+  mockRedeployApiResponse(
+    environment.id,
+    auth,
+    onRedeployApiRequest,
+    newDeploymentId
+  );
   vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
   const inProgressEnvironment: EnvironmentModel = {
     ...environment,
@@ -76,7 +82,7 @@ export const redeploy = async ({
     updatedAt: Date.now().toString(),
     latestDeploymentLog: {
       ...environment.latestDeploymentLog,
-      id: newDeploymentId || "new-deployment-id",
+      id: deploymentId,
     },
   };
   mockGetEnvironment(orgId, [inProgressEnvironment], auth);

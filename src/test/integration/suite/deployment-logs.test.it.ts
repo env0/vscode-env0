@@ -130,7 +130,6 @@ suite("deployment logs", function () {
       steps,
       DeploymentStatus.IN_PROGRESS
     );
-    // todo make sure redeploy request return the new deployment id
     await redeploy({
       environment: firstEnvironmentMock,
       auth,
