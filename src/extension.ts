@@ -4,7 +4,7 @@ import {
   Env0EnvironmentsProvider,
   Environment,
 } from "./env0-environments-provider";
-import { getCurrentBranchWithRetry } from "./utils/git";
+import { getCurrentBranchWithRetry, getGitRepoAndBranch } from "./utils/git";
 import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 import { EnvironmentLogsProvider } from "./environment-logs-provider";
@@ -33,15 +33,33 @@ export const setContextShowLoginMessage = async (value: boolean) => {
   );
 };
 
+const showNoEnvironmentsMessage = () => {
+  try {
+    const { currentBranch } = getGitRepoAndBranch();
+    environmentsTree.message = `couldn’t find environments associated with ${currentBranch}, please create one`;
+  } catch (e) {
+    environmentsTree.message = `couldn’t find environments associated with current branch, please create one`;
+  }
+};
+
+const clearViewMessage = () => {
+  environmentsTree.message = undefined;
+};
+
 export const loadEnvironments = async (
   environmentsDataProvider: Env0EnvironmentsProvider,
   environmentsTree: vscode.TreeView<Environment>
 ) => {
   environmentsTree.message = `loading environments...`;
-  const currentBranch = await getCurrentBranchWithRetry();
+  let currentBranch: string;
+  try {
+    currentBranch = await getCurrentBranchWithRetry();
+  } catch (e) {
+    environmentsTree.message = "Could not find current git branch.";
+    return;
+  }
   environmentsTree.message = `loading environments from branch ${currentBranch}...`;
   await environmentsDataProvider.refresh();
-  environmentsTree.message = undefined;
 };
 
 const restartLogs = async (env: Environment, deploymentId?: string) => {
@@ -57,7 +75,7 @@ const init = async (
   authService: AuthService
 ) => {
   apiClient.init(await authService.getApiKeyCredentials());
-
+  environmentsDataProvider.onLogin();
   await loadEnvironments(environmentsDataProvider, environmentsTree);
 
   environmentPollingInstance = setInterval(async () => {
@@ -70,7 +88,7 @@ const onLogOut = async () => {
     environmentLogsProvider.abort();
   }
   stopEnvironmentPolling();
-  environmentsDataProvider.clear();
+  environmentsDataProvider.onLogout();
   apiClient.clearCredentials();
   environmentsTree.message =
     "you are logged out. in order to log in, run the command 'env0.login'";
@@ -78,14 +96,17 @@ const onLogOut = async () => {
 
 export async function activate(context: vscode.ExtensionContext) {
   _context = context;
-  environmentsDataProvider = new Env0EnvironmentsProvider();
+  environmentsDataProvider = new Env0EnvironmentsProvider(
+    showNoEnvironmentsMessage,
+    clearViewMessage
+  );
   environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
     treeDataProvider: environmentsDataProvider,
   });
   EnvironmentLogsProvider.initEnvironmentOutputChannel();
   const authService = new AuthService(context);
   authService.registerLoginCommand(async () => {
-    environmentsTree.message = undefined;
+    clearViewMessage();
     await init(environmentsDataProvider, environmentsTree, authService);
     await setContextShowLoginMessage(false);
   });

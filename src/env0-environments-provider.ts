@@ -43,6 +43,11 @@ export class Env0EnvironmentsProvider
 {
   private environments: EnvironmentModel[] = [];
   private isRefreshing = false;
+  private isLoggedIn = false;
+  constructor(
+    private readonly showNoEnvironmentsMessage: () => unknown,
+    private readonly clearViewMessage: () => unknown
+  ) {}
 
   getTreeItem(element: Environment): vscode.TreeItem {
     return element;
@@ -99,20 +104,34 @@ export class Env0EnvironmentsProvider
     Environment | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
-  clear(): void {
+  onLogout(): void {
     this.isRefreshing = false;
+    this.isLoggedIn = false;
     this.environments = [];
     this._onDidChangeTreeData.fire();
   }
 
+  onLogin(): void {
+    this.isLoggedIn = true;
+  }
+
   async refresh(): Promise<void> {
-    if (this.isRefreshing) {
+    if (this.isRefreshing || !this.isLoggedIn) {
       return;
     }
     this.isRefreshing = true;
     try {
       const newEnvironments = await getEnvironmentsForBranch();
-      if (this.shouldUpdate(newEnvironments) && this.isRefreshing) {
+      // we need to avoid taking any action in case user logged out while we were waiting for the response
+      if (!this.isLoggedIn) {
+        return;
+      }
+      if (newEnvironments.length === 0) {
+        this.showNoEnvironmentsMessage();
+      } else {
+        this.clearViewMessage();
+      }
+      if (this.shouldUpdate(newEnvironments)) {
         showEnvironmentStatusChangedNotification(
           this.environments,
           newEnvironments
