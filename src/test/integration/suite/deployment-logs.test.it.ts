@@ -33,7 +33,6 @@ const secondEnvName = "my env 2";
 
 let firstEnvironmentMock: EnvironmentModel;
 let secondEnvironmentMock: EnvironmentModel;
-// todo add on selection env to context subscription
 
 suite("deployment logs", function () {
   this.timeout(1000 * 15);
