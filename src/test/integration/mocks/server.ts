@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import assert from "assert";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
