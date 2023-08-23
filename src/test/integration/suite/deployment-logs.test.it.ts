@@ -35,7 +35,7 @@ let firstEnvironmentMock: EnvironmentModel;
 let secondEnvironmentMock: EnvironmentModel;
 
 suite("deployment logs", function () {
-  this.timeout(1000 * 15);
+  this.timeout(1000 * 10);
 
   beforeEach(async () => {
     firstEnvironmentMock = getEnvironmentMock(
