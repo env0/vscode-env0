@@ -90,7 +90,9 @@ export const mockRedeployApiResponse = (
           assertAuth(credentials, req.headers.get("Authorization"));
         }
         onSuccess?.();
-        return res(ctx.json({ id: newDeploymentId || "new-deployment-id" }));
+        return res(
+          ctx.json({ id: newDeploymentId || "redeploy-new-deployment-id" })
+        );
       }
     )
   );

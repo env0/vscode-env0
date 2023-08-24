@@ -122,7 +122,7 @@ suite("deployment logs", function () {
       "git:clone": ["Cloning into 'repo'..."],
       "state:get": ["Retrieving persisted state for environment..."],
     };
-    const newDeploymentId = "new-deployment-id";
+    const newDeploymentId = "my-new-deployment-id";
     mockDeploymentLogsResponses(
       newDeploymentId,
       auth,
