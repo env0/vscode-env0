@@ -8,6 +8,7 @@ import {
 } from "../mocks/output-channel";
 import {
   mockDeploymentLogsResponses,
+  mockGetDeploymentApiResponse,
   mockGetEnvironment,
   mockGetOrganization,
 } from "../mocks/server";
@@ -35,9 +36,10 @@ let firstEnvironmentMock: EnvironmentModel;
 let secondEnvironmentMock: EnvironmentModel;
 
 suite("deployment logs", function () {
-  this.timeout(1000 * 10);
+  this.timeout(1000 * 13);
 
   beforeEach(async () => {
+    mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
     firstEnvironmentMock = getEnvironmentMock(
       "main",
       "https://github.com/user/repo",
@@ -62,7 +64,6 @@ suite("deployment logs", function () {
     const environments = [firstEnvironmentMock, secondEnvironmentMock];
     mockGetOrganization(orgId, auth);
     mockGetEnvironment(orgId, environments, auth);
-    mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
     await login(auth);
     await waitFor(() => expect(getFirstEnvStatus()).toBe("ACTIVE"));
   });
@@ -148,6 +149,53 @@ suite("deployment logs", function () {
           "Retrieving persisted state for environment...",
         ])
       )
+    );
+  });
+
+  test("should log deployment queued when deployment queued", async () => {
+    const steps = {
+      "git:clone": ["Cloning into 'repo'...", "Clone done"],
+      "state:get": ["Retrieving persisted state for environment..."],
+    };
+    const newDeploymentId = "my-new-deployment-id";
+    mockGetDeploymentApiResponse(newDeploymentId, auth, {
+      status: DeploymentStatus.QUEUED,
+    });
+    await redeploy({
+      environment: firstEnvironmentMock,
+      auth,
+      orgId,
+      newDeploymentId,
+    });
+    await waitFor(() => expect(outputChannelMock.show).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(getOutputChannelLogs()).toEqual(
+        expect.arrayContaining([
+          "Deployment is queued! Waiting for it to start...",
+        ])
+      )
+    );
+
+    mockDeploymentLogsResponses(
+      newDeploymentId,
+      auth,
+      steps,
+      DeploymentStatus.IN_PROGRESS
+    );
+
+    await waitFor(
+      () =>
+        expect(getOutputChannelLogs()).toEqual(
+          expect.arrayContaining([
+            "Loading logs...",
+            "$$$ git:clone",
+            "Cloning into 'repo'...",
+            "Clone done",
+            "$$$ state:get",
+            "Retrieving persisted state for environment...",
+          ])
+        ),
+      10
     );
   });
 });
