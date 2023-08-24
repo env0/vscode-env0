@@ -75,7 +75,7 @@ suite("deployment logs", function () {
 
   test("should show deployment logs when click on environment", async () => {
     const steps = {
-      "git:clone": ["Cloning into 'repo'..."],
+      "git:clone": ["Cloning into 'repo'...", "Clone done"],
       "state:get": ["Retrieving persisted state for environment..."],
     };
     mockDeploymentLogsResponses(
@@ -92,6 +92,7 @@ suite("deployment logs", function () {
           "Loading logs...",
           "$$$ git:clone",
           "Cloning into 'repo'...",
+          "Clone done",
           "$$$ state:get",
           "Retrieving persisted state for environment...",
         ])
@@ -101,7 +102,7 @@ suite("deployment logs", function () {
 
   test("should clear log channel when switch between selected environments", async () => {
     const steps = {
-      "git:clone": ["Cloning into 'repo'..."],
+      "git:clone": ["Cloning into 'repo'...", "Clone done"],
       "state:get": ["Retrieving persisted state for environment..."],
     };
     mockDeploymentLogsResponses(
@@ -119,7 +120,7 @@ suite("deployment logs", function () {
 
   test("should show deployment logs when redeploy", async () => {
     const steps = {
-      "git:clone": ["Cloning into 'repo'..."],
+      "git:clone": ["Cloning into 'repo'...", "Clone done"],
       "state:get": ["Retrieving persisted state for environment..."],
     };
     const newDeploymentId = "my-new-deployment-id";
@@ -142,6 +143,7 @@ suite("deployment logs", function () {
           "Loading logs...",
           "$$$ git:clone",
           "Cloning into 'repo'...",
+          "Clone done",
           "$$$ state:get",
           "Retrieving persisted state for environment...",
         ])

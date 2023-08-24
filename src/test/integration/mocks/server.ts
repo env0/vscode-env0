@@ -157,30 +157,31 @@ export const mockGetDeploymentApiResponse = (
 
 export const mockGetDeploymentLogApiResponse = ({
   deploymentLogId,
-  deploymentLog,
+  deploymentLogs,
   stepName,
-  stepStartTime,
   credentials,
-  onSuccess,
 }: {
   deploymentLogId: string;
-  deploymentLog: DeploymentStepLogsResponse;
+  deploymentLogs: [DeploymentStepLogsResponse, DeploymentStepLogsResponse];
   stepName: string;
   stepStartTime?: string;
   credentials?: Credentials;
-  onSuccess?: () => unknown;
 }) => {
   server.use(
     rest.get(
-      `https://${ENV0_API_URL}/deployments/${deploymentLogId}/steps/${stepName}/log?startTime=${
-        stepStartTime ?? ""
-      }`,
+      `https://${ENV0_API_URL}/deployments/${deploymentLogId}/steps/${stepName}/log`,
       (req, res, ctx) => {
         if (credentials) {
           assertAuth(credentials, req.headers.get("Authorization"));
         }
-        onSuccess?.();
-        return res(ctx.json(deploymentLog));
+        const startTimeParam = req.url.searchParams.get("startTime");
+        if (!startTimeParam) {
+          return res(ctx.json(deploymentLogs[0]));
+        }
+        if (startTimeParam === deploymentLogs[0].nextStartTime?.toString()) {
+          return res(ctx.json(deploymentLogs[1]));
+        }
+        return res(ctx.json({}));
       }
     )
   );
@@ -202,14 +203,23 @@ export const mockDeploymentLogsResponses = async (
   mockGetDeploymentStepsApiResponse(stepNames.map((name) => ({ name } as any)));
 
   for (const [stepName, messages] of Object.entries(steps)) {
+    const [firstMessage, ...restMessages] = messages;
+    const nextStartTime = Date.now();
     mockGetDeploymentLogApiResponse({
       deploymentLogId: deploymentId,
       credentials: auth,
       stepName,
-      deploymentLog: {
-        events: messages.map((message) => ({ message } as any)),
-        hasMoreLogs: false,
-      },
+      deploymentLogs: [
+        {
+          events: [{ message: firstMessage } as any],
+          hasMoreLogs: true,
+          nextStartTime,
+        },
+        {
+          events: restMessages.map((message) => ({ message } as any)),
+          hasMoreLogs: false,
+        },
+      ],
     });
   }
 };
