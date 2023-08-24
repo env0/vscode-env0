@@ -13,8 +13,8 @@ import {
   mockAbortApiResponse,
   mockApproveApiResponse,
   mockCancelApiResponse,
+  mockGetDeploymentStepsApiResponse,
   mockDestroyApiResponse,
-  mockGetDeploymentSteps,
   mockGetEnvironment,
   mockGetOrganization,
   mockRedeployApiResponse,
@@ -47,7 +47,7 @@ const initTest = async (environments: EnvironmentModel[]) => {
   mockGetOrganization(orgId, auth);
   mockGetEnvironment(orgId, environments, auth);
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
-  mockGetDeploymentSteps();
+  mockGetDeploymentStepsApiResponse();
   spyOnShowMessage();
   spyOnOpenExternal();
   await login(auth);

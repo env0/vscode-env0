@@ -60,13 +60,21 @@ export const redeploy = async ({
   auth,
   onRedeployApiRequest,
   orgId,
+  newDeploymentId,
 }: {
   environment: EnvironmentModel;
   auth: Credentials;
   orgId: string;
   onRedeployApiRequest?: typeof jestMock.fn;
+  newDeploymentId?: string;
 }) => {
-  mockRedeployApiResponse(environment.id, auth, onRedeployApiRequest);
+  const deploymentId = newDeploymentId || "new-deployment-id";
+  mockRedeployApiResponse(
+    environment.id,
+    auth,
+    onRedeployApiRequest,
+    newDeploymentId
+  );
   vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
   const inProgressEnvironment: EnvironmentModel = {
     ...environment,
@@ -74,7 +82,7 @@ export const redeploy = async ({
     updatedAt: Date.now().toString(),
     latestDeploymentLog: {
       ...environment.latestDeploymentLog,
-      id: "new-deployment-id",
+      id: deploymentId,
     },
   };
   mockGetEnvironment(orgId, [inProgressEnvironment], auth);
@@ -94,10 +102,30 @@ export const getFirstEnvironment = () => {
   const environmentsDataProvider = getEnvironmentDataProvider();
   return environmentsDataProvider.getChildren()[0];
 };
+export const getEnvironmentByName = (name: string) => {
+  const environmentsDataProvider = getEnvironmentDataProvider();
+  return environmentsDataProvider
+    .getChildren()
+    .find((env) => env.name === name);
+};
 
 export const getFirstEnvIconPath = () => getFirstEnvironment().iconPath;
 export const getFirstEnvStatus = () => getFirstEnvironment().status;
 
 export const resetExtension = async () => {
   await extension._reset();
+};
+
+export const clickOnFirstEnvironment = async () => {
+  await extension.environmentsTree.reveal(getFirstEnvironment(), {
+    select: true,
+    focus: true,
+  });
+};
+
+export const clickOnEnvironmentByName = async (name: string) => {
+  await extension.environmentsTree.reveal(getEnvironmentByName(name), {
+    select: true,
+    focus: true,
+  });
 };
