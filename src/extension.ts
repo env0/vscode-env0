@@ -4,7 +4,7 @@ import {
   Env0EnvironmentsProvider,
   Environment,
 } from "./env0-environments-provider";
-import { getCurrentBranchWithRetry, getGitRepoAndBranch } from "./utils/git";
+import { getCurrentBranchWithRetry } from "./utils/git";
 import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 import { EnvironmentLogsProvider } from "./environment-logs-provider";
@@ -76,7 +76,7 @@ const onLogOut = async () => {
     environmentLogsProvider.abort();
   }
   stopEnvironmentPolling();
-  environmentsDataProvider.onLogout();
+  environmentsDataProvider.clear();
   apiClient.clearCredentials();
   stateManager.setLoggedIn(false);
 };

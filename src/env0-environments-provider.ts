@@ -100,7 +100,7 @@ export class Env0EnvironmentsProvider
     Environment | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
-  onLogout(): void {
+  clear(): void {
     this.isRefreshing = false;
     this.environments = [];
     this._onDidChangeTreeData.fire();
