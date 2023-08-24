@@ -91,13 +91,15 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   authService.registerLogoutCommand(onLogOut);
 
-  environmentsTree.onDidChangeSelection(async (e) => {
-    const env = e.selection[0];
+  context.subscriptions.push(
+    environmentsTree.onDidChangeSelection(async (e) => {
+      const env = e.selection[0];
 
-    if (env) {
-      restartLogs(env);
-    }
-  });
+      if (env) {
+        restartLogs(env);
+      }
+    })
+  );
 
   registerEnvironmentActions(
     context,

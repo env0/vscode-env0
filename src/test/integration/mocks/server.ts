@@ -1,10 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import assert from "assert";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
 import { before, after, afterEach } from "mocha";
 import { ENV0_API_URL } from "../../../common";
 import { EnvironmentModel } from "../../../get-environments";
-import { Credentials } from "../../../types";
+import {
+  Credentials,
+  DeploymentStatus,
+  DeploymentStepLogsResponse,
+  DeploymentStepResponse,
+} from "../../../types";
 
 const server = setupServer(
   rest.all(`*`, (_req, res, ctx) => {
@@ -57,12 +63,14 @@ export const mockGetEnvironment = (
   );
 };
 
-export const mockGetDeploymentSteps = () => {
+export const mockGetDeploymentStepsApiResponse = (
+  steps: DeploymentStepResponse = []
+) => {
   server.use(
     rest.get(
       `https://${ENV0_API_URL}/deployments/:deploymentLogId/steps`,
       (req, res, ctx) => {
-        return res(ctx.json([]));
+        return res(ctx.json(steps));
       }
     )
   );
@@ -71,7 +79,8 @@ export const mockGetDeploymentSteps = () => {
 export const mockRedeployApiResponse = (
   envId: string,
   credentials: Credentials,
-  onSuccess?: () => unknown
+  onSuccess?: () => unknown,
+  newDeploymentId?: string
 ) => {
   server.use(
     rest.post(
@@ -81,7 +90,9 @@ export const mockRedeployApiResponse = (
           assertAuth(credentials, req.headers.get("Authorization"));
         }
         onSuccess?.();
-        return res(ctx.json({}));
+        return res(
+          ctx.json({ id: newDeploymentId || "redeploy-new-deployment-id" })
+        );
       }
     )
   );
@@ -123,6 +134,84 @@ export const mockCancelApiResponse = (
       }
     )
   );
+};
+export const mockGetDeploymentApiResponse = (
+  deploymentLogId: string,
+  credentials: Credentials,
+  deployment: { status: string },
+  onSuccess?: () => unknown
+) => {
+  server.use(
+    rest.get(
+      `https://${ENV0_API_URL}/environments/deployments/${deploymentLogId}`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json(deployment));
+      }
+    )
+  );
+};
+
+export const mockGetDeploymentLogApiResponse = ({
+  deploymentLogId,
+  deploymentLog,
+  stepName,
+  stepStartTime,
+  credentials,
+  onSuccess,
+}: {
+  deploymentLogId: string;
+  deploymentLog: DeploymentStepLogsResponse;
+  stepName: string;
+  stepStartTime?: string;
+  credentials?: Credentials;
+  onSuccess?: () => unknown;
+}) => {
+  server.use(
+    rest.get(
+      `https://${ENV0_API_URL}/deployments/${deploymentLogId}/steps/${stepName}/log?startTime=${
+        stepStartTime ?? ""
+      }`,
+      (req, res, ctx) => {
+        if (credentials) {
+          assertAuth(credentials, req.headers.get("Authorization"));
+        }
+        onSuccess?.();
+        return res(ctx.json(deploymentLog));
+      }
+    )
+  );
+};
+
+export const mockDeploymentLogsResponses = async (
+  deploymentId: string,
+  auth: Credentials,
+  steps: {
+    [stepName: string]: string[];
+  },
+  deploymentStatus: DeploymentStatus = DeploymentStatus.SUCCESS
+) => {
+  mockGetDeploymentApiResponse(deploymentId, auth, {
+    status: deploymentStatus,
+  });
+
+  const stepNames = Object.keys(steps);
+  mockGetDeploymentStepsApiResponse(stepNames.map((name) => ({ name } as any)));
+
+  for (const [stepName, messages] of Object.entries(steps)) {
+    mockGetDeploymentLogApiResponse({
+      deploymentLogId: deploymentId,
+      credentials: auth,
+      stepName,
+      deploymentLog: {
+        events: messages.map((message) => ({ message } as any)),
+        hasMoreLogs: false,
+      },
+    });
+  }
 };
 
 export const mockAbortApiResponse = (
