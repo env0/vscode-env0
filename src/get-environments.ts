@@ -1,5 +1,6 @@
 import { getGitRepoAndBranch } from "./utils/git";
 import { apiClient } from "./api-client";
+import { stateManager } from "./state-manager";
 
 export type EnvironmentModel = {
   id: string;
@@ -45,6 +46,12 @@ export async function getEnvironmentsForBranch() {
 
   if (environments.length > 0) {
     const { currentBranch, repository } = getGitRepoAndBranch();
+    if (!currentBranch || !repository) {
+      stateManager.onFailedToGetBranch();
+      return [];
+    } else {
+      stateManager.setCurrentBranch(currentBranch);
+    }
     environments = environments
       .filter(
         (environment) =>

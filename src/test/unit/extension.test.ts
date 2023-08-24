@@ -31,8 +31,7 @@ describe("extension", () => {
     it("should display simple loading message when branch name is yet to load", async () => {
       mockGetCurrentBranchWithRetry(branchName);
       const loadEnvironmentsPromise = myExtension.loadEnvironments(
-        environmentsDataProvider,
-        environmentsTree
+        environmentsDataProvider
       );
       expect(environmentsTree.message).toBe("loading environments...");
       await loadEnvironmentsPromise;
@@ -41,8 +40,7 @@ describe("extension", () => {
     it("should display 'loading from branch' message when branch name is loaded", async () => {
       const getCurrentBranchPromise = mockGetCurrentBranchWithRetry(branchName);
       const loadEnvironmentsPromise = myExtension.loadEnvironments(
-        environmentsDataProvider,
-        environmentsTree
+        environmentsDataProvider
       );
       await getCurrentBranchPromise;
       expect(environmentsTree.message).toBe(
@@ -54,8 +52,7 @@ describe("extension", () => {
     it("should not display loading message when done fetching environments", async () => {
       mockGetCurrentBranchWithRetry(branchName);
       const loadEnvironmentsPromise = myExtension.loadEnvironments(
-        environmentsDataProvider,
-        environmentsTree
+        environmentsDataProvider
       );
       await loadEnvironmentsPromise;
       expect(environmentsTree.message).toBe(undefined);
