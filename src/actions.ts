@@ -95,6 +95,7 @@ export const registerEnvironmentActions = (
             async () => {
               let actionResponse;
               try {
+                env.setIgnoreLogRestartOnSelect(true);
                 await environmentsTree.reveal(env, {
                   select: true,
                   focus: true,
@@ -103,6 +104,7 @@ export const registerEnvironmentActions = (
               } finally {
                 environmentsDataProvider.refresh();
                 restartLogs(env, actionResponse?.id);
+                env.setIgnoreLogRestartOnSelect(false);
               }
             }
           );

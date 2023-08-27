@@ -36,6 +36,20 @@ export class Environment extends vscode.TreeItem {
       this.contextValue = "WAITING_FOR_USER";
     }
   }
+
+  setIgnoreLogRestartOnSelect(value: boolean) {
+    if (value) {
+      Environment.ignoreRestartLogsOnSelect[this.id] = value;
+    } else {
+      delete Environment.ignoreRestartLogsOnSelect[this.id];
+    }
+  }
+
+  shouldIgnoreRestartLogsOnSelect() {
+    return Environment.ignoreRestartLogsOnSelect[this.id];
+  }
+
+  static ignoreRestartLogsOnSelect: Record<string, boolean> = {};
 }
 
 export class Env0EnvironmentsProvider

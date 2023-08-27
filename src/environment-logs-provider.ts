@@ -107,12 +107,13 @@ export class EnvironmentLogsProvider {
         startTime,
         this.abortController
       );
+    let result = [...events];
     if (hasMoreLogs && nextStartTime) {
-      events.concat(
+      result = result.concat(
         await this.getStepLogs(deploymentId, stepName, nextStartTime)
       );
     }
-    return events;
+    return result;
   }
 
   private async logInProgressDeployment(deploymentId: string) {

@@ -93,9 +93,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     environmentsTree.onDidChangeSelection(async (e) => {
-      const env = e.selection[0];
+      const env = e.selection[0] as Environment;
 
-      if (env) {
+      if (env && !env.shouldIgnoreRestartLogsOnSelect()) {
         restartLogs(env);
       }
     })
