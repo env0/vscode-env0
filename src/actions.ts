@@ -5,6 +5,7 @@ import {
 } from "./env0-environments-provider";
 import { ENV0_ENVIRONMENTS_VIEW_ID, ENV0_WEB_URL } from "./common";
 import { apiClient } from "./api-client";
+import { onActionExecutionError } from "./errors";
 
 const openEnvironmentInBrowser = ({ id, projectId }: Environment) => {
   if (!id || !projectId) {
@@ -70,6 +71,13 @@ const actions: Record<
   "env0.approve": resumeDeployment,
   "env0.cancel": cancelDeployment,
 };
+const actionsNames: Record<string, string> = {
+  "env0.redeploy": "redeploy",
+  "env0.abort": "abort",
+  "env0.destroy": "destroy",
+  "env0.approve": "approve",
+  "env0.cancel": "cancel",
+};
 
 export const registerEnvironmentActions = (
   context: vscode.ExtensionContext,
@@ -101,6 +109,8 @@ export const registerEnvironmentActions = (
                   focus: true,
                 });
                 actionResponse = await actions[actionCommand](env);
+              } catch (e) {
+                onActionExecutionError(actionsNames[actionCommand], e);
               } finally {
                 environmentsDataProvider.refresh();
                 restartLogs(env, actionResponse?.id);
