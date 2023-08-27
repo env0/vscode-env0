@@ -38,7 +38,11 @@ export class Environment extends vscode.TreeItem {
   }
 
   setIgnoreLogRestartOnSelect(value: boolean) {
-    Environment.ignoreRestartLogsOnSelect[this.id] = value;
+    if (value) {
+      Environment.ignoreRestartLogsOnSelect[this.id] = value;
+    } else {
+      delete Environment.ignoreRestartLogsOnSelect[this.id];
+    }
   }
 
   shouldIgnoreRestartLogsOnSelect() {
