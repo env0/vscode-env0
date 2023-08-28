@@ -71,11 +71,9 @@ export class StateManager {
         currentBranch ? ` "${currentBranch}"` : ""
       }`;
     } else if (this._isLoading) {
-      if (this._currentBranch) {
-        this.environmentsView.message = `loading environments for ${this._currentBranch}...`;
-      } else {
-        this.environmentsView.message = "loading environments...";
-      }
+      this.environmentsView.message = `loading environments${
+        currentBranch ? ` for branch ${currentBranch}` : ""
+      }...`;
     } else {
       this.environmentsView.message = undefined;
     }
