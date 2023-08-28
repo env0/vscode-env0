@@ -60,17 +60,16 @@ export class StateManager {
     if (!this.environmentsView) {
       return;
     }
+    const currentBranch = this._currentBranch;
     if (!this._isLoggedIn) {
       this.environmentsView.message =
         "you are logged out. in order to log in, run the command 'env0.login'";
     } else if (this._failedToGetBranch) {
       this.environmentsView.message = "Could not find current git branch.";
     } else if (this._noEnvironment) {
-      if (this._currentBranch) {
-        this.environmentsView.message = `couldn’t find environments associated with current branch "${this._currentBranch}"`;
-      } else {
-        this.environmentsView.message = `couldn’t find environments associated with current branch`;
-      }
+      this.environmentsView.message = `couldn’t find environments associated with current branch${
+        currentBranch ? ` "${currentBranch}"` : ""
+      }`;
     } else if (this._isLoading) {
       if (this._currentBranch) {
         this.environmentsView.message = `loading environments for ${this._currentBranch}...`;
