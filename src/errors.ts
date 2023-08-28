@@ -1,36 +1,47 @@
 import axios from "axios";
 import * as vscode from "vscode";
 import { stopEnvironmentPolling } from "./extension";
+const reLoginButtonText = "Re-Login";
+const onReLoginClicked = async (buttonText?: string) => {
+  if (buttonText === reLoginButtonText) {
+    await vscode.commands.executeCommand("env0.logout");
+    await vscode.commands.executeCommand("env0.login");
+  }
+};
 
-export const onPullingEnvironmentError = (error: any) => {
+export const onPullingEnvironmentError = async (error: any) => {
+  stopEnvironmentPolling();
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
-      vscode.window.showErrorMessage(
-        // todo consider adding a link to the logout command and login command
-        "failed to pull environments: unauthorized, please logout and login again using the command 'env0.logout' and then 'env0.login'"
+      const buttonClicked = await vscode.window.showErrorMessage(
+        "failed to pull environments: unauthorized, please re-login",
+        reLoginButtonText
       );
+      await onReLoginClicked(buttonClicked);
     } else if (error.response?.status === 403) {
-      vscode.window.showErrorMessage(
-        "failed to pull environments: forbidden, please check your credentials"
+      const buttonClicked = await vscode.window.showErrorMessage(
+        "failed to pull environments: forbidden, please check your credentials",
+        reLoginButtonText
       );
+      await onReLoginClicked(buttonClicked);
     }
   }
   vscode.window.showErrorMessage(
     "failed to pull environments: unexpected error"
   );
-  stopEnvironmentPolling();
 };
 
 export const onActionExecutionError = (actionName: string, error: any) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
       vscode.window.showErrorMessage(
-        // todo consider adding a link to the logout command and login command
-        `failed to execute action ${actionName}: unauthorized, please logout and login again using the command 'env0.logout' and then 'env0.login'`
+        `failed to execute action ${actionName}: unauthorized, please re-login`,
+        reLoginButtonText
       );
     } else if (error.response?.status === 403) {
       vscode.window.showErrorMessage(
-        `failed to execute action ${actionName}: forbidden, please check your credentials`
+        `failed to execute action ${actionName}: forbidden, please check your credentials`,
+        reLoginButtonText
       );
     }
   }
