@@ -67,9 +67,9 @@ export class StateManager {
       this.environmentsView.message = "Could not find current git branch.";
     } else if (this._noEnvironment) {
       if (this._currentBranch) {
-        this.environmentsView.message = `couldn’t find environments associated with ${this._currentBranch}, please create one`;
+        this.environmentsView.message = `couldn’t find environments associated with current branch "${this._currentBranch}"`;
       } else {
-        this.environmentsView.message = `couldn’t find environments associated with current branch, please create one`;
+        this.environmentsView.message = `couldn’t find environments associated with current branch`;
       }
     } else if (this._isLoading) {
       if (this._currentBranch) {
