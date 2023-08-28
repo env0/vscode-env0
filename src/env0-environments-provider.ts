@@ -7,7 +7,7 @@ import {
   showSuccessMessage,
   showWaitingForApproval,
 } from "./notification-messages";
-import { stateManager } from "./state-manager";
+import { extensionState } from "./extension-state";
 import { isEmpty } from "lodash";
 
 export class Environment extends vscode.TreeItem {
@@ -108,17 +108,17 @@ export class Env0EnvironmentsProvider
   }
 
   async refresh(): Promise<void> {
-    if (this.isRefreshing || !stateManager.isLoggedIn) {
+    if (this.isRefreshing || !extensionState.isLoggedIn) {
       return;
     }
     this.isRefreshing = true;
     try {
       const newEnvironments = await getEnvironmentsForBranch();
       // we need to avoid taking any action in case user logged out while we were waiting for the response
-      if (!stateManager.isLoggedIn) {
+      if (!extensionState.isLoggedIn) {
         return;
       }
-      stateManager.setNoEnvironment(isEmpty(newEnvironments));
+      extensionState.setNoEnvironment(isEmpty(newEnvironments));
       if (this.shouldUpdate(newEnvironments)) {
         showEnvironmentStatusChangedNotification(
           this.environments,

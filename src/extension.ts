@@ -9,7 +9,7 @@ import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 import { EnvironmentLogsProvider } from "./environment-logs-provider";
 import { registerEnvironmentActions } from "./actions";
-import { stateManager } from "./state-manager";
+import { extensionState } from "./extension-state";
 
 let environmentPollingInstance: NodeJS.Timer;
 let _context: vscode.ExtensionContext;
@@ -37,17 +37,17 @@ export const setContextShowLoginMessage = async (value: boolean) => {
 export const loadEnvironments = async (
   environmentsDataProvider: Env0EnvironmentsProvider
 ) => {
-  stateManager.setIsLoading(true);
+  extensionState.setIsLoading(true);
   let currentBranch: string;
   try {
     currentBranch = await getCurrentBranchWithRetry();
-    stateManager.setCurrentBranch(currentBranch);
+    extensionState.setCurrentBranch(currentBranch);
   } catch (e) {
-    stateManager.onFailedToGetBranch();
+    extensionState.onFailedToGetBranch();
     return;
   }
   await environmentsDataProvider.refresh();
-  stateManager.setIsLoading(false);
+  extensionState.setIsLoading(false);
 };
 
 const restartLogs = async (env: Environment, deploymentId?: string) => {
@@ -63,7 +63,7 @@ const init = async (
   authService: AuthService
 ) => {
   apiClient.init(await authService.getApiKeyCredentials());
-  stateManager.setLoggedIn(true);
+  extensionState.setLoggedIn(true);
   await loadEnvironments(environmentsDataProvider);
 
   environmentPollingInstance = setInterval(async () => {
@@ -78,7 +78,7 @@ const onLogOut = async () => {
   stopEnvironmentPolling();
   environmentsDataProvider.clear();
   apiClient.clearCredentials();
-  stateManager.setLoggedIn(false);
+  extensionState.setLoggedIn(false);
 };
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -87,11 +87,11 @@ export async function activate(context: vscode.ExtensionContext) {
   environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
     treeDataProvider: environmentsDataProvider,
   });
-  stateManager.init(environmentsTree);
+  extensionState.init(environmentsTree);
   EnvironmentLogsProvider.initEnvironmentOutputChannel();
   const authService = new AuthService(context);
   authService.registerLoginCommand(async () => {
-    stateManager.setLoggedIn(true);
+    extensionState.setLoggedIn(true);
     await init(environmentsDataProvider, environmentsTree, authService);
     await setContextShowLoginMessage(false);
   });

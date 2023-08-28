@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Environment } from "./env0-environments-provider";
 
-export class StateManager {
+export class ExtensionState {
   private environmentsView?: vscode.TreeView<Environment>;
   init(environmentsView: vscode.TreeView<Environment>) {
     this.environmentsView = environmentsView;
@@ -79,4 +79,4 @@ export class StateManager {
     }
   }
 }
-export const stateManager = new StateManager();
+export const extensionState = new ExtensionState();
