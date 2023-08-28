@@ -8,6 +8,7 @@ import {
   showWaitingForApproval,
 } from "./notification-messages";
 import { stateManager } from "./state-manager";
+import { isEmpty } from "lodash";
 
 export class Environment extends vscode.TreeItem {
   constructor(
@@ -117,11 +118,7 @@ export class Env0EnvironmentsProvider
       if (!stateManager.isLoggedIn) {
         return;
       }
-      if (newEnvironments.length === 0) {
-        stateManager.setNoEnvironment(true);
-      } else {
-        stateManager.setNoEnvironment(false);
-      }
+      stateManager.setNoEnvironment(isEmpty(newEnvironments));
       if (this.shouldUpdate(newEnvironments)) {
         showEnvironmentStatusChangedNotification(
           this.environments,
