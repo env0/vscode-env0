@@ -20,6 +20,7 @@ export let environmentsDataProvider: Env0EnvironmentsProvider;
 // this function used by tests in order to reset the extension state after each test
 export const _reset = async () => {
   deactivate();
+  extensionState.clear();
   for (const sub of _context.subscriptions) {
     sub.dispose();
   }

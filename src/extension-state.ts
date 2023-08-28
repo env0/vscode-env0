@@ -16,6 +16,17 @@ export class ExtensionState {
     return this._isLoggedIn;
   }
 
+  clear() {
+    this._isLoggedIn = false;
+    this._noEnvironment = false;
+    this._currentBranch = undefined;
+    this._failedToGetBranch = false;
+    this._isLoading = false;
+    if (this.environmentsView) {
+      this.environmentsView.message = undefined;
+    }
+  }
+
   setIsLoading(isLoading: boolean) {
     if (this._isLoading === isLoading) {
       return;
