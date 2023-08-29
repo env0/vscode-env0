@@ -45,7 +45,8 @@ export const mockGetOrganization = (
 export const mockGetEnvironment = (
   organizationId: string,
   environments: EnvironmentModel[],
-  credentials?: Credentials
+  credentials?: Credentials,
+  responseDelayMs = 0
 ) => {
   server.use(
     rest.get(`https://${ENV0_API_URL}/environments`, (req, res, ctx) => {
@@ -56,7 +57,7 @@ export const mockGetEnvironment = (
         new URL(req.url.toString()).searchParams.get("organizationId") ===
         organizationId
       ) {
-        return res(ctx.json(environments));
+        return res(ctx.delay(responseDelayMs), ctx.json(environments));
       }
       return res(ctx.status(404));
     })
