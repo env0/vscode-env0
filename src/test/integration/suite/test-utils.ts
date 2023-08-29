@@ -94,6 +94,8 @@ export const getEnvironmentDataProvider = () => {
   return extension.environmentsDataProvider as Env0EnvironmentsProvider;
 };
 
+export const getEnvironmentViewMessage = () => getEnvironmentsView().message;
+
 export const getEnvironmentsView = () => {
   return extension.environmentsTree;
 };

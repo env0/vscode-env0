@@ -9,6 +9,7 @@ import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 import { EnvironmentLogsProvider } from "./environment-logs-provider";
 import { registerEnvironmentActions } from "./actions";
+import { extensionState } from "./extension-state";
 
 let environmentPollingInstance: NodeJS.Timer;
 let _context: vscode.ExtensionContext;
@@ -19,6 +20,7 @@ export let environmentsDataProvider: Env0EnvironmentsProvider;
 // this function used by tests in order to reset the extension state after each test
 export const _reset = async () => {
   deactivate();
+  extensionState.clear();
   for (const sub of _context.subscriptions) {
     sub.dispose();
   }
@@ -34,14 +36,19 @@ export const setContextShowLoginMessage = async (value: boolean) => {
 };
 
 export const loadEnvironments = async (
-  environmentsDataProvider: Env0EnvironmentsProvider,
-  environmentsTree: vscode.TreeView<Environment>
+  environmentsDataProvider: Env0EnvironmentsProvider
 ) => {
-  environmentsTree.message = `loading environments...`;
-  const currentBranch = await getCurrentBranchWithRetry();
-  environmentsTree.message = `loading environments from branch ${currentBranch}...`;
+  extensionState.setIsLoading(true);
+  let currentBranch: string;
+  try {
+    currentBranch = await getCurrentBranchWithRetry();
+    extensionState.setCurrentBranch(currentBranch);
+  } catch (e) {
+    extensionState.onFailedToGetBranch();
+    return;
+  }
   await environmentsDataProvider.refresh();
-  environmentsTree.message = undefined;
+  extensionState.setIsLoading(false);
 };
 
 const restartLogs = async (env: Environment, deploymentId?: string) => {
@@ -57,8 +64,8 @@ const init = async (
   authService: AuthService
 ) => {
   apiClient.init(await authService.getApiKeyCredentials());
-
-  await loadEnvironments(environmentsDataProvider, environmentsTree);
+  extensionState.setLoggedIn(true);
+  await loadEnvironments(environmentsDataProvider);
 
   environmentPollingInstance = setInterval(async () => {
     environmentsDataProvider.refresh();
@@ -72,8 +79,7 @@ const onLogOut = async () => {
   stopEnvironmentPolling();
   environmentsDataProvider.clear();
   apiClient.clearCredentials();
-  environmentsTree.message =
-    "you are logged out. in order to log in, run the command 'env0.login'";
+  extensionState.setLoggedIn(false);
 };
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -82,10 +88,11 @@ export async function activate(context: vscode.ExtensionContext) {
   environmentsTree = vscode.window.createTreeView(ENV0_ENVIRONMENTS_VIEW_ID, {
     treeDataProvider: environmentsDataProvider,
   });
+  extensionState.init(environmentsTree);
   EnvironmentLogsProvider.initEnvironmentOutputChannel();
   const authService = new AuthService(context);
   authService.registerLoginCommand(async () => {
-    environmentsTree.message = undefined;
+    extensionState.setLoggedIn(true);
     await init(environmentsDataProvider, environmentsTree, authService);
     await setContextShowLoginMessage(false);
   });

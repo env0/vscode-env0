@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as jestMock from "jest-mock";
 
-export const mockGitRepoAndBranch = (branchName: string, repoUrl: string) => {
+export const mockGitRepoAndBranch = (branchName?: string, repoUrl?: string) => {
   const gitExtensionMock = {
     getAPI: jestMock.fn().mockReturnValue({
       repositories: [
@@ -30,4 +30,8 @@ export const mockGitRepoAndBranch = (branchName: string, repoUrl: string) => {
     }
     return {} as vscode.Extension<unknown>;
   });
+};
+
+export const mockNoGitRepo = () => {
+  mockGitRepoAndBranch(undefined, undefined);
 };
