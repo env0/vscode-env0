@@ -27,7 +27,7 @@ export const onPullingEnvironmentError = async (error: any) => {
     }
   }
   vscode.window.showErrorMessage(
-    "failed to pull environments: unexpected error"
+    `failed to pull environments: unexpected error ${error.message}`
   );
 };
 
@@ -46,7 +46,6 @@ export const onActionExecutionError = (actionName: string, error: any) => {
     }
   }
   vscode.window.showErrorMessage(
-    // todo should we show the error message?
-    `failed to execute action ${actionName}: unexpected error`
+    `failed to execute action ${actionName}: unexpected error ${error.message}`
   );
 };
