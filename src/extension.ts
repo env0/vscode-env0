@@ -48,8 +48,14 @@ export const loadEnvironments = async (
     extensionState.onFailedToGetBranch();
     return;
   }
-  await environmentsDataProvider.refresh();
-  extensionState.setIsLoading(false);
+  try {
+    await environmentsDataProvider.refresh();
+    startEnvironmentPolling();
+  } catch (e) {
+    onPullingEnvironmentError(e);
+  } finally {
+    extensionState.setIsLoading(false);
+  }
 };
 
 const restartLogs = async (env: Environment, deploymentId?: string) => {
@@ -67,10 +73,6 @@ const init = async (
   apiClient.init(await authService.getApiKeyCredentials());
   extensionState.setLoggedIn(true);
   await loadEnvironments(environmentsDataProvider);
-
-  environmentPollingInstance = setInterval(async () => {
-    environmentsDataProvider.refresh().catch(onPullingEnvironmentError);
-  }, 3000);
 };
 
 const onLogOut = async () => {
@@ -124,6 +126,12 @@ export async function activate(context: vscode.ExtensionContext) {
     await setContextShowLoginMessage(true);
   }
 }
+const startEnvironmentPolling = () => {
+  environmentPollingInstance = setInterval(async () => {
+    environmentsDataProvider.refresh().catch(onPullingEnvironmentError);
+  }, 3000);
+};
+
 export const stopEnvironmentPolling = () => {
   clearInterval(environmentPollingInstance);
 };

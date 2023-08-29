@@ -31,8 +31,10 @@ export const onPullingEnvironmentError = async (error: any) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
       onUnauthorized("failed to pull environments");
+      return;
     } else if (error.response?.status === 403) {
       onForbidden("failed to pull environments");
+      return;
     }
   }
   vscode.window.showErrorMessage(
@@ -44,8 +46,10 @@ export const onActionExecutionError = (actionName: string, error: any) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
       onUnauthorized(`failed to execute action ${actionName}`);
+      return;
     } else if (error.response?.status === 403) {
       onForbidden(`failed to execute action ${actionName}`);
+      return;
     }
   }
   vscode.window.showErrorMessage(
@@ -57,8 +61,10 @@ export const onLogsPollingError = async (error: any) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
       onUnauthorized("failed to pull logs");
+      return;
     } else if (error.response?.status === 403) {
       onForbidden("failed to pull logs");
+      return;
     }
   }
 
