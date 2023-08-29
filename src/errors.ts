@@ -26,6 +26,7 @@ const onForbidden = async (errorMessage: string) => {
   await onReLoginClicked(buttonClicked);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const onPullingEnvironmentError = async (error: any) => {
   stopEnvironmentPolling();
   if (axios.isAxiosError(error)) {
@@ -42,6 +43,7 @@ export const onPullingEnvironmentError = async (error: any) => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const onActionExecutionError = (actionName: string, error: any) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
@@ -57,6 +59,7 @@ export const onActionExecutionError = (actionName: string, error: any) => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const onLogsPollingError = async (error: any) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
