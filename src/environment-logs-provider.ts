@@ -9,6 +9,7 @@ import {
 } from "./types";
 import axios from "axios";
 import { setMaxListeners } from "events";
+import { onLogsPollingError } from "./errors";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const pollStepLogsInterval = 1000;
@@ -28,13 +29,13 @@ export class EnvironmentLogsProvider {
     if (this.deploymentId) {
       this.logDeployment(this.deploymentId).catch((e) => {
         if (!axios.isCancel(e)) {
-          throw e;
+          onLogsPollingError(e);
         }
       });
     } else {
       this.logDeployment(this.env.latestDeploymentLogId).catch((e) => {
         if (!axios.isCancel(e)) {
-          throw e;
+          onLogsPollingError(e);
         }
       });
     }
