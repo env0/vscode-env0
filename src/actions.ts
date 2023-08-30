@@ -110,7 +110,7 @@ export const registerEnvironmentActions = (
                 });
                 actionResponse = await actions[actionCommand](env);
               } catch (e) {
-                onActionExecutionError(actionsNames[actionCommand], e);
+                onActionExecutionError(actionsNames[actionCommand], e as Error);
               } finally {
                 environmentsDataProvider.refresh();
                 restartLogs(env, actionResponse?.id);

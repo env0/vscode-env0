@@ -52,7 +52,7 @@ export const loadEnvironments = async (
     await environmentsDataProvider.refresh();
     startEnvironmentPolling();
   } catch (e) {
-    onPullingEnvironmentError(e);
+    onPullingEnvironmentError(e as Error);
   } finally {
     extensionState.setIsLoading(false);
   }
