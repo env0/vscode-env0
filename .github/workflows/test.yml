@@ -20,6 +20,6 @@ jobs:
     - name: Install dependencies
       run: pnpm install
     - name: Run unit tests
-      run: npm run test:unit
+      run: npm run unit:test
     - name: Run integration tests
       run: xvfb-run -a npm test
