@@ -9,6 +9,7 @@ export const vscode = {
     },
   },
   window: {
+    showErrorMessage: mocker.fn(),
     showInformationMessage: mocker.fn(),
     showInputBox: mocker.fn(),
     withProgress: (options: any, task: any) => task(),
@@ -32,6 +33,6 @@ export const resetVscodeMocks = () => {
   mocker.resetAllMocks();
 };
 
-export const getRegisteredCommand = (command: string) => {
-  return registeredCommands[command];
+export const executeRegisteredCommand = (command: string) => {
+  return registeredCommands[command]();
 };
