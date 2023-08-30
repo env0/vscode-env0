@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { ENV0_API_URL } from "../../../common";
 import { Credentials } from "../../../types";
