@@ -13,7 +13,9 @@ export const vscode = {
     showErrorMessage: mocker.fn(),
     showInformationMessage: mocker.fn(),
     showInputBox: mocker.fn(),
-    withProgress: (options: any, task: any) => task(),
+    withProgress: mocker
+      .fn()
+      .mockImplementation((options: any, task: any) => task()),
   },
 };
 mock("vscode", vscode);
