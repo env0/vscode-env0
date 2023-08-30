@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mock from "mock-require";
 import { ModuleMocker } from "jest-mock";
 const mocker = new ModuleMocker(global);
