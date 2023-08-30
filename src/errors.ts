@@ -26,8 +26,7 @@ const onForbidden = async (errorMessage: string) => {
   await onReLoginClicked(buttonClicked);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const onPullingEnvironmentError = async (error: any) => {
+export const onPullingEnvironmentError = async (error: Error) => {
   stopEnvironmentPolling();
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
@@ -43,8 +42,7 @@ export const onPullingEnvironmentError = async (error: any) => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const onActionExecutionError = (actionName: string, error: any) => {
+export const onActionExecutionError = (actionName: string, error: Error) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
       onUnauthorized(`failed to execute action ${actionName}`);
@@ -59,8 +57,7 @@ export const onActionExecutionError = (actionName: string, error: any) => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const onLogsPollingError = async (error: any) => {
+export const onLogsPollingError = async (error: Error) => {
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
       onUnauthorized("failed to pull logs");
