@@ -9,7 +9,7 @@ import { apiClient } from "./api-client";
 import { ENV0_ENVIRONMENTS_VIEW_ID } from "./common";
 import { EnvironmentLogsProvider } from "./environment-logs-provider";
 import { registerEnvironmentActions } from "./actions";
-import { onPullingEnvironmentError } from "./errors";
+import { onPollingEnvironmentError } from "./errors";
 import { extensionState } from "./extension-state";
 
 let environmentPollingInstance: NodeJS.Timer;
@@ -52,7 +52,7 @@ export const loadEnvironments = async (
     await environmentsDataProvider.refresh();
     startEnvironmentPolling();
   } catch (e) {
-    onPullingEnvironmentError(e as Error);
+    onPollingEnvironmentError(e as Error);
   } finally {
     extensionState.setIsLoading(false);
   }
@@ -128,7 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 const startEnvironmentPolling = () => {
   environmentPollingInstance = setInterval(async () => {
-    environmentsDataProvider.refresh().catch(onPullingEnvironmentError);
+    environmentsDataProvider.refresh().catch(onPollingEnvironmentError);
   }, 3000);
 };
 

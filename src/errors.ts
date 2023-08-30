@@ -26,7 +26,7 @@ const onForbidden = async (errorMessage: string) => {
   await onReLoginClicked(buttonClicked);
 };
 
-export const onPullingEnvironmentError = async (error: Error) => {
+export const onPollingEnvironmentError = async (error: Error) => {
   stopEnvironmentPolling();
   if (axios.isAxiosError(error)) {
     if (error.response?.status === 401) {
