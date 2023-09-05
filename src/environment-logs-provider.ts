@@ -78,13 +78,20 @@ export class EnvironmentLogsProvider {
     return this.logInProgressDeployment(deploymentId);
   }
 
-  private async logCompletedDeployment(deploymentId: string) {
+  private async logCompletedDeployment(
+    deploymentId: string,
+    stepsAlreadyLogged: string[] = []
+  ) {
     const steps = await apiClient.getDeploymentSteps(
       deploymentId,
       this.abortController
     );
 
-    const stepsEvents = steps.map(async (step) => ({
+    const stepsToLog = steps.filter(
+      (step) => !stepsAlreadyLogged.includes(step.name)
+    );
+
+    const stepsEvents = stepsToLog.map(async (step) => ({
       name: step.name,
       events: await this.getStepLogs(deploymentId, step.name),
     }));
@@ -147,10 +154,13 @@ export class EnvironmentLogsProvider {
       }
 
       await this.processDeploymentSteps(deploymentId);
-
+      const { status: newStatus } = await apiClient.getDeployment(
+        deploymentId,
+        this.abortController
+      );
       if (
         ![DeploymentStatus.QUEUED, DeploymentStatus.IN_PROGRESS].includes(
-          status
+          newStatus
         )
       ) {
         if (status === "WAITING_FOR_USER") {
@@ -172,6 +182,12 @@ export class EnvironmentLogsProvider {
     );
 
     for (const step of steps) {
+      if (await this.checkIfDeploymentIsCompleted(deploymentId)) {
+        return this.logCompletedDeployment(
+          deploymentId,
+          this.stepsAlreadyLogged
+        );
+      }
       const alreadyLogged = this.stepsAlreadyLogged.includes(step.name);
 
       if (!alreadyLogged && step.status !== DeploymentStepStatus.NOT_STARTED) {
@@ -181,6 +197,17 @@ export class EnvironmentLogsProvider {
         this.stepsAlreadyLogged.push(step.name);
       }
     }
+  }
+
+  private async checkIfDeploymentIsCompleted(deploymentId: string) {
+    const { status } = await apiClient.getDeployment(
+      deploymentId,
+      this.abortController
+    );
+    return (
+      status !== DeploymentStatus.IN_PROGRESS ||
+      status !== DeploymentStatus.QUEUED
+    );
   }
 
   private async writeDeploymentStepLog(
