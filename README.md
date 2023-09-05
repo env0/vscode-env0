@@ -11,7 +11,7 @@ Unleash the power of env0 directly from your Visual Studio Code workspace! The e
 - Perform various actions such as `Deploy`, `Destroy`, `Cancel`, and `Abort` without leaving your IDE.
 
 ### 📜 Real-time Logs
-- Once an environment is selected, view the most recent deployment logs in the env0 output channel.
+- View the most recent deployment logs in the env0 output channel.
 
 ### 🛎 Notifications
 - Stay informed with real-time notifications regarding changing environment statuses and pending approvals.
