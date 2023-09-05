@@ -35,7 +35,7 @@ To login or logout, simply use the `env0.login` and `env0.logout` commands throu
 **API Key & Organizations**: If you're using a personal API key and your account is associated with multiple organizations, the extension will default to a single organization and won't provide an option to select others.  
 Use an Organization API key to resolve this.
 
-## 🛠 Setting Up Your Development Environment
+## 🛠 Setting Up Your Local Development for Contributing
 
 1️⃣  Clone the repository to your local machine.  
 2️⃣  Run `pnpm install` to install the required dependencies.  
