@@ -32,7 +32,8 @@ To login or logout, simply use the `env0.login` and `env0.logout` commands throu
 
 ## 🚧 Limitations
 
-**API Key & Organizations**: If you're using a personal API key and your account is associated with multiple organizations, the extension will default to a single organization and won't provide an option to select others. Use an Organization API key to resolve this.
+**API Key & Organizations**: If you're using a personal API key and your account is associated with multiple organizations, the extension will default to a single organization and won't provide an option to select others.  
+Use an Organization API key to resolve this.
 
 ## 🛠 Setting Up Your Development Environment
 
