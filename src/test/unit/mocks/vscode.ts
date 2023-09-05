@@ -20,7 +20,7 @@ export const vscode = {
 };
 mock("vscode", vscode);
 
-export const mockLogin = (keyId: string, secret: string) => {
+export const mockLoginCredentialsInput = (keyId: string, secret: string) => {
   vscode.window.showInputBox = mocker
     .fn<any>()
     .mockResolvedValueOnce(keyId)

@@ -4,26 +4,33 @@ import expect from "expect";
 import {
   contextMock,
   executeRegisteredCommand,
-  mockLogin,
+  mockLoginCredentialsInput,
   resetVscodeMocks,
 } from "./mocks/vscode";
 import { AuthService } from "../../auth";
 import { mockValidateCredentialsRequest } from "./mocks/http";
 
 describe("authentication", () => {
+  const keyId = "keyId";
+  const secret = "secret";
+  let onLogin: jestMock.Mock;
+  let onLogout: jestMock.Mock;
+
+  beforeEach(() => {
+    onLogin = jestMock.fn();
+    onLogout = jestMock.fn();
+    const auth = new AuthService(contextMock);
+    auth.registerLoginCommand(onLogin);
+    auth.registerLogoutCommand(onLogout);
+    mockValidateCredentialsRequest({ keyId, secret });
+  });
+
   afterEach(() => {
     resetVscodeMocks();
   });
 
   it("should save login credentials in secrets store", async () => {
-    const keyId = "keyId";
-    const secret = "secret";
-    const onLogin = jestMock.fn();
-    const auth = new AuthService(contextMock);
-    auth.registerLoginCommand(onLogin);
-
-    mockLogin(keyId, secret);
-    mockValidateCredentialsRequest({ keyId, secret });
+    mockLoginCredentialsInput(keyId, secret);
     await executeRegisteredCommand("env0.login");
 
     expect(onLogin).toHaveBeenCalled();
@@ -35,14 +42,7 @@ describe("authentication", () => {
   });
 
   it("should not save login credentials in secrets store when credentials invalid", async () => {
-    const keyId = "keyId";
-    const secret = "secret";
-    const onLogin = jestMock.fn();
-    const auth = new AuthService(contextMock);
-    auth.registerLoginCommand(onLogin);
-
-    mockLogin(keyId, "invalid secret");
-    mockValidateCredentialsRequest({ keyId, secret });
+    mockLoginCredentialsInput(keyId, "invalid secret");
     await executeRegisteredCommand("env0.login");
 
     expect(contextMock.secrets.store).not.toHaveBeenCalled();
@@ -50,10 +50,6 @@ describe("authentication", () => {
   });
 
   it("should delete login credentials from secrets store when logout", async () => {
-    const onLogout = jestMock.fn();
-    const auth = new AuthService(contextMock);
-    auth.registerLogoutCommand(onLogout);
-
     await executeRegisteredCommand("env0.logout");
 
     expect(onLogout).toHaveBeenCalled();
