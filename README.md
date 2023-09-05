@@ -69,7 +69,7 @@ pnpm run test
 
 For debugging, go to the "Run and Debug" panel in VS Code and select "Extension Test."
 
-#### Technologies Used
+#### Libraries Used
 
 - [**@vscode/test-electron**](https://www.npmjs.com/package/@vscode/test-electron): To launch the tests in the VS Code process.
 - [**Mocha**](https://www.npmjs.com/package/mocha): Utilized as the test runner.
