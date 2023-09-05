@@ -4,16 +4,16 @@ Unleash the power of env0 directly from your Visual Studio Code workspace! The e
 
 ## 🌟 Features
 
-### 🌲 View Environments
+### View Environments
 - Easily access all environments related to the current branch you are working on.
 
-### 🚀 Execute Actions
+### Execute Actions
 - Perform various actions such as `Deploy`, `Destroy`, `Cancel`, and `Abort` without leaving your IDE.
 
-### 📜 Real-time Logs
+### Real-time Logs
 - View the most recent deployment logs in the env0 output channel.
 
-### 🛎 Notifications
+### Notifications
 - Stay informed with real-time notifications regarding changing environment statuses and pending approvals.
 
 
@@ -37,26 +37,26 @@ Use an Organization API key to resolve this.
 
 ## 🛠 Setting Up Your Local Development for Contributing
 
-1️⃣  Clone the repository to your local machine.  
-2️⃣  Run `pnpm install` to install the required dependencies.  
-3️⃣  Navigate to the Debug panel, accessible via the shortcut `CMD+SHIFT+D`.  
-4️⃣  From the `RUN AND DEBUG` dropdown menu, select `Run Extension`.  
-5️⃣  If a warning dialog appears, proceed by clicking `Debug Anyway`.
+1. Clone the repository to your local machine.
+2. Run `pnpm install` to install the required dependencies.
+3. Navigate to the Debug panel, accessible via the shortcut `CMD+SHIFT+D`.
+4. From the `RUN AND DEBUG` dropdown menu, select `Run Extension`.
+5. If a warning dialog appears, proceed by clicking `Debug Anyway`.
 
-🚀 A new VS Code window will now launch, serving as your testing ground for the extension.
+A new VS Code window will now launch, serving as your testing ground for the extension.
 
-### 🎯 Quick Tips for Development
+### Quick Tips for Development
 
-To refresh your debug window without closing it:  
-1️⃣  Press `CMD+SHIFT+P` to open the command palette.  
-2️⃣  Type `reload` in the search bar.  
-3️⃣  Press Enter to execute.
+To refresh your debug window without closing it:
+1. Press `CMD+SHIFT+P` to open the command palette.
+2. Type `reload` in the search bar.
+3. Press Enter to execute.
 
 ⚠️ **Note**: Some modifications may necessitate the complete closure of the Debugging IDE.
 
 ## 🧪 Testing
 
-### 🔄 Integration Testing
+### Integration Testing
 
 #### Running the Tests
 
@@ -77,21 +77,21 @@ For debugging, go to the "Run and Debug" panel in VS Code and select "Extension 
 - [**Jest-Mock**](https://www.npmjs.com/package/jest-mock): For mocking, stubbing, and spying on functions.
 - [**MSW**](https://www.npmjs.com/package/jest-mock): For HTTP mocking.
 
-#### 🛠 Testing Adaptations
+#### Testing Adaptations
 
 The VS Code API presents some unique challenges, such as not being able to read the content of notification messages or the VS Code output channel. To navigate these challenges, we use jest-mock to stub these functions, allowing us to verify that our code is behaving correctly during tests.
 
 Moreover, we import the compiled dist extension file into our test setup. This enables us to run specific functions that are part of the extension, such as resetting its state after each test or ensuring that the Tree View displays the appropriate messages.
 
-### 🛠 Unit Testing
+### Unit Testing
 (WIP)
 
 ### 📚 Recommended Reading
 
-👉 We recommend familiarizing yourself with the following resources:
+We recommend familiarizing yourself with the following resources:
 
-- [📘 Visual Studio Code's Extension Development Guide](https://code.visualstudio.com/api/extension-guides/overview)
-- [📗 Visual Studio Code's Extension User Experience Guidelines](https://code.visualstudio.com/api/ux-guidelines/overview)
+- [Visual Studio Code's Extension Development Guide](https://code.visualstudio.com/api/extension-guides/overview)
+- [Visual Studio Code's Extension User Experience Guidelines](https://code.visualstudio.com/api/ux-guidelines/overview)
 
 
-🌟 **Happy Developing!**
+**Happy Developing!**
