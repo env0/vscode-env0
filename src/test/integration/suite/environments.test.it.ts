@@ -136,7 +136,7 @@ suite("environments", function () {
     await initTest([]);
     await waitFor(() =>
       expect(getEnvironmentViewMessage()).toBe(
-        `couldn’t find environments associated with current branch "main"`
+        `couldn’t find environments associated with current branch "main" Note: This view displays only environments specifically associated with the current working branch. Environments created without specifying a branch (automatically associating them with the default branch) are not displayed, even if your current branch is the default one.`
       )
     );
   });
