@@ -34,9 +34,9 @@ To login or logout, simply use the `env0.login` and `env0.logout` commands throu
 
 **Focused Environments View**: The environments view is designed to show you only the environments that are specifically associated with the current branch you're working on, keeping your workflow clean and focused.
 
-**Unassociated Environments**: Although env0 allows environments to be created without specifying a branch (automatically associating them with the default branch), **such environments are not displayed in the environments view even if you switch to the default branch**.
-
 ## 🚧 Limitations
+
+**Unassociated Environments**: Although env0 allows environments to be created without specifying a branch (automatically associating them with the default branch), **such environments are not displayed in the environments view even if you switch to the default branch**.
 
 **API Key & Organizations**: If you're using a personal API key and your account is associated with multiple organizations, the extension will default to a single organization and won't provide an option to select others.  
 Use an Organization API key to resolve this.
