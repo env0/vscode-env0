@@ -28,7 +28,7 @@ Before using this extension, make sure you meet the following prerequisites:
 
 ## 🔑 Login and Logout
 
-To login or logout, simply use the `env0.login` and `env0.logout` commands through the VS Code command palette (Shift + Command + P / Ctrl + Shift + P).  
+To login or logout, simply use the `env0.login` and `env0.logout` commands through the VS Code command palette (Command / Ctrl + Shift + P).  
 
 ## 🌳 Environments View
 
