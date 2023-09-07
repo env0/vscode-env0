@@ -2,6 +2,8 @@
 
 Unleash the power of env0 directly from your Visual Studio Code workspace! The env0 extension allows seamless interaction with your env0 environments, making your development process smoother and more efficient.
 
+![Demo](assets/demo.gif)
+
 ## 🌟 Features
 
 ### View Environments
