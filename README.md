@@ -90,7 +90,35 @@ The VS Code API presents some unique challenges, such as not being able to read 
 Moreover, we import the compiled dist extension file into our test setup. This enables us to run specific functions that are part of the extension, such as resetting its state after each test or ensuring that the Tree View displays the appropriate messages.
 
 ### Unit Testing
-(WIP)
+
+#### Running the Tests
+
+To run the integration tests, execute the following command in your terminal:
+
+```bash
+pnpm run unit:test
+```
+
+#### Libraries Used
+
+- [**Mocha**](https://www.npmjs.com/package/mocha): This is utilized as the test runner.
+- [**Expect**](https://www.npmjs.com/package/expect): This library is used for assertions.
+- [**Jest-Mock**](https://www.npmjs.com/package/jest-mock): Employed for mocking, stubbing, and spying on functions.
+- [**mock-require**](https://www.npmjs.com/package/mock-require): Used specifically for mocking Visual Studio Code (VSCode).
+
+#### Testing Objectives
+
+Our unit tests are designed to verify the following functionalities:
+- Ensuring that user credentials are correctly saved in the VSCode secrets store upon login.
+- Confirming that these credentials are deleted when the user logs out.
+
+#### Important Note on Imports
+
+When working with the tests, it is imperative to import the `mocks/vscode` file before importing the file under test. This is because we mock the VSCode import within the `mocks/vscode` file.
+
+#### Test Files
+
+The unit tests are executed on the source TypeScript files, not on the compiled files. We have integrated `ts-node` with Mocha to facilitate the compilation of files during testing.
 
 ### 📚 Recommended Reading
 
