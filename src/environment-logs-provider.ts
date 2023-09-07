@@ -179,6 +179,10 @@ export class EnvironmentLogsProvider {
         return this.logCompletedDeployment(deploymentId);
       }
       const stepsToLog = await this.getStepsToLog(deploymentId);
+      if (stepsToLog.length === 0) {
+        await sleep(pollStepLogsInterval);
+        continue;
+      }
       for (const step of stepsToLog) {
         await this.writeDeploymentStepLog(deploymentId, step.name);
         this.stepsAlreadyLogged.push(step.name);
