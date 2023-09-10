@@ -17,7 +17,13 @@ export const vscode = {
       .fn()
       .mockImplementation((options: any, task: any) => task()),
   },
+  workspace: {
+    getConfiguration: () => ({
+      get: mocker.fn(),
+    }),
+  },
 };
+
 mock("vscode", vscode);
 
 export const mockLoginCredentialsInput = (keyId: string, secret: string) => {
