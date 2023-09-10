@@ -11,11 +11,7 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "${defaultBuildTask}",
-      "env": {
-        "ENV0_API_URL": "api-dev.dev.env0.com",
-        "ENV0_WEB_URL": "dev.dev.env0.com"
-      }
+      "preLaunchTask": "${defaultBuildTask}"
     },
     {
       "name": "Extension Tests",
@@ -30,11 +26,7 @@
         "${workspaceFolder}/dist/**/*.js"
       ],
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "npm: pretest",
-      "env": {
-        "ENV0_API_URL": "api-dev.dev.env0.com",
-        "ENV0_WEB_URL": "dev.dev.env0.com"
-      }
+      "preLaunchTask": "npm: pretest"
     }
   ]
 }
