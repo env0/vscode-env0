@@ -33,7 +33,7 @@ Before using this extension, make sure you meet the following prerequisites:
 To login or logout, simply use the `env0.login` and `env0.logout` commands through the VS Code command palette (Command / Ctrl + Shift + P).  
 
 ## 🌳 Environments View
-
+![Demo](assets/demo2.gif)
 **Focused Environments View**: The environments view is designed to show you only the environments that are specifically associated with the current branch you're working on, keeping your workflow clean and focused.
 
 ## 🚧 Limitations
