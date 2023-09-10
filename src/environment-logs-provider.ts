@@ -79,12 +79,9 @@ export class EnvironmentLogsProvider {
   }
 
   private async logCompletedDeployment(deploymentId: string) {
-    const steps = await apiClient.getDeploymentSteps(
-      deploymentId,
-      this.abortController
-    );
+    const stepsToLog = await this.getStepsToLog(deploymentId);
 
-    const stepsEvents = steps.map(async (step) => ({
+    const stepsEvents = stepsToLog.map(async (step) => ({
       name: step.name,
       events: await this.getStepLogs(deploymentId, step.name),
     }));
@@ -117,70 +114,112 @@ export class EnvironmentLogsProvider {
     return result;
   }
 
-  private async logInProgressDeployment(deploymentId: string) {
-    let previousStatus;
+  private async waitForDeploymentToStart(deploymentId: string) {
+    this.log("Deployment is queued! Waiting for it to start...");
+    await sleep(pollStepLogsInterval);
 
     while (!this.isAborted) {
-      const { type, status } = await apiClient.getDeployment(
+      const { status } = await apiClient.getDeployment(
         deploymentId,
         this.abortController
       );
 
       if (status === DeploymentStatus.QUEUED) {
-        if (previousStatus === DeploymentStatus.QUEUED) {
-          this.log(
-            "Queued deployment is still waiting for earlier deployments to finish..."
-          );
-        } else {
-          this.log("Deployment is queued! Waiting for it to start...");
-        }
-        previousStatus = status;
-        await sleep(pollStepLogsInterval);
-        continue;
+        this.log(
+          "Queued deployment is still waiting for earlier deployments to finish..."
+        );
       }
 
-      if (
-        status === DeploymentStatus.IN_PROGRESS &&
-        previousStatus === DeploymentStatus.QUEUED
-      ) {
-        this.log(`Deployment reached its turn! ${type} is starting...`);
+      if (status === DeploymentStatus.IN_PROGRESS) {
+        this.log("Deployment is starting...");
+        return;
       }
 
-      await this.processDeploymentSteps(deploymentId);
-
-      if (
-        ![DeploymentStatus.QUEUED, DeploymentStatus.IN_PROGRESS].includes(
-          status
-        )
-      ) {
-        if (status === "WAITING_FOR_USER") {
-          this.log("Deployment is waiting for an approval.");
-        }
-
-        return status;
-      }
-
-      previousStatus = status;
       await sleep(pollStepLogsInterval);
     }
   }
 
-  private async processDeploymentSteps(deploymentId: string) {
-    const steps = await apiClient.getDeploymentSteps(
+  private async logInProgressDeployment(deploymentId: string) {
+    const { status } = await apiClient.getDeployment(
       deploymentId,
       this.abortController
     );
 
-    for (const step of steps) {
-      const alreadyLogged = this.stepsAlreadyLogged.includes(step.name);
+    if (status === DeploymentStatus.QUEUED) {
+      await this.waitForDeploymentToStart(deploymentId);
+    }
 
-      if (!alreadyLogged && step.status !== DeploymentStepStatus.NOT_STARTED) {
-        this.log(`$$$ ${step.name}`);
-        this.log("#".repeat(100));
+    if (this.isAborted) {
+      return;
+    }
+
+    await this.processDeploymentSteps(deploymentId);
+
+    const { status: newStatus } = await apiClient.getDeployment(
+      deploymentId,
+      this.abortController
+    );
+
+    if (newStatus === "WAITING_FOR_USER") {
+      this.log("Deployment is waiting for an approval.");
+    }
+  }
+
+  private async getStepsToLog(deploymentId: string) {
+    const steps = await apiClient.getDeploymentSteps(
+      deploymentId,
+      this.abortController
+    );
+    return steps.filter((step) => !this.stepsAlreadyLogged.includes(step.name));
+  }
+
+  private async processDeploymentSteps(deploymentId: string) {
+    do {
+      if (await this.checkIfDeploymentIsCompleted(deploymentId)) {
+        return this.logCompletedDeployment(deploymentId);
+      }
+      const stepsToLog = await this.getStepsToLog(deploymentId);
+      if (stepsToLog.length === 0) {
+        await sleep(pollStepLogsInterval);
+        continue;
+      }
+      for (const step of stepsToLog) {
         await this.writeDeploymentStepLog(deploymentId, step.name);
         this.stepsAlreadyLogged.push(step.name);
+        if (await this.checkIfDeploymentIsCompleted(deploymentId)) {
+          return this.logCompletedDeployment(deploymentId);
+        }
       }
-    }
+    } while (!this.isAborted);
+  }
+
+  private async checkIfDeploymentIsCompleted(deploymentId: string) {
+    const { status } = await apiClient.getDeployment(
+      deploymentId,
+      this.abortController
+    );
+    return ![DeploymentStatus.IN_PROGRESS, DeploymentStatus.QUEUED].includes(
+      status
+    );
+  }
+
+  private async waitForStepToStart(
+    deploymentLogId: string,
+    stepName: string
+  ): Promise<void> {
+    let shouldPoll = true;
+    do {
+      const steps = await apiClient.getDeploymentSteps(
+        deploymentLogId,
+        this.abortController
+      );
+
+      const { status } = steps.find((step) => step.name === stepName) || {};
+      shouldPoll = status === DeploymentStepStatus.NOT_STARTED;
+      if (shouldPoll) {
+        await sleep(pollStepLogsInterval);
+      }
+    } while (shouldPoll);
   }
 
   private async writeDeploymentStepLog(
@@ -189,7 +228,9 @@ export class EnvironmentLogsProvider {
   ) {
     let shouldPoll = false;
     let startTime: number | string | undefined;
-
+    await this.waitForStepToStart(deploymentLogId, stepName);
+    this.log(`$$$ ${stepName}`);
+    this.log("#".repeat(100));
     do {
       const steps = await apiClient.getDeploymentSteps(
         deploymentLogId,
