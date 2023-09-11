@@ -4,6 +4,10 @@
   "displayName": "env0",
   "description": "",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/env0/vscode-env0"
+  },
   "engines": {
     "vscode": "^1.71.0",
     "pnpm": "6.35.1"
