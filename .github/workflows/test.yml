@@ -17,13 +17,13 @@ jobs:
         node-version: 16.x
     - name: Install pnpm
       run: npm install -g pnpm@6.35.1
+    - name: Install vcse
+      run: npm install -g @vscode/vsce
     - name: Install dependencies
       run: pnpm install
     - name: Run unit tests
       run: npm run unit:test
     - name: Run integration tests
       run: xvfb-run -a npm test
-    - name: Install vcse
-      run: npm install -g @vscode/vsce
     - name: Run packge
       run: vcse package
