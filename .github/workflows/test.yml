@@ -20,7 +20,7 @@ jobs:
     - name: Install vcse
       run: npm install -g @vscode/vsce
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --shamefully-hoist
     - name: Run unit tests
       run: npm run unit:test
     - name: Run integration tests
