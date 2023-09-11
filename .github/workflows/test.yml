@@ -26,4 +26,4 @@ jobs:
     - name: Run integration tests
       run: xvfb-run -a npm test
     - name: Run packge
-      run: vcse package
+      run: vsce package
