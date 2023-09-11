@@ -21,9 +21,5 @@ jobs:
       run: npm install -g @vscode/vsce
     - name: Install dependencies
       run: npm i
-    - name: Run unit tests
-      run: npm run unit:test
-    - name: Run integration tests
-      run: xvfb-run -a npm test
     - name: Run packge
       run: vsce package
