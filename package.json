@@ -24,12 +24,10 @@
       "properties": {
         "env0.apiUrl": {
           "type": "string",
-          "required": true,
           "default": "api.env0.com"
         },
         "env0.webUrl": {
           "type": "string",
-          "required": true,
           "default": "app.env0.com"
         }
       }
