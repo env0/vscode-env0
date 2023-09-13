@@ -1,8 +1,9 @@
 {
   "name": "vscode-env0",
   "publisher": "env0",
+  "icon": "resources/env0-logo.png",
   "displayName": "env0",
-  "description": "",
+  "description": "control your env0 environments from vs-code",
   "version": "0.0.1",
   "repository": {
     "type": "git",
