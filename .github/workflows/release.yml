@@ -2,6 +2,8 @@ name: Release
 
 on: 
   workflow_dispatch:
+env:
+      MARKET_TOKEN: ${{ secrets.MARKETPLACE_ACCESS_TOKEN }}
 
 jobs:
    deploy:
@@ -17,3 +19,5 @@ jobs:
       run: npm ci
     - name: Install vcse
       run: npm install -g @vscode/vsce
+    - name: Publish
+      run: vsce publish -p "$MARKET_TOKEN"
