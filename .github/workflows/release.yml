@@ -16,4 +16,4 @@ jobs:
     - name: Install dependencies
       run: npm ci
     - name: Install vcse
-      run: npm install -g vcse
+      run: npm install -g @vscode/vsce
