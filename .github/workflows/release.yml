@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
 env:
       MARKET_TOKEN: ${{ secrets.MARKETPLACE_ACCESS_TOKEN }}
+permissions:
+  contents: write
 
 jobs:
    deploy:
@@ -17,7 +19,31 @@ jobs:
         node-version: 16.x
     - name: Install dependencies
       run: npm ci
-    - name: Install vcse
-      run: npm install -g @vscode/vsce
-    - name: Publish
-      run: vsce publish -p "$MARKET_TOKEN"
+    - name: Get version and name from package.json
+      id: package_info
+      run: |
+        echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+        echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_ENV
+    - name: Fetch all tags
+      run: git fetch --tags
+    - name: Check if tag exists
+      run: |
+        if git tag -l | grep -Exq "^v${{ env.version }}$"; then
+          echo "Tag v${{ env.version }} already exists!"
+          exit 1
+        fi
+    - name: Create Git Tag
+      run: git tag v${{ env.version }}
+    - name: Package VS Code extension
+      run: npx vsce package
+    - name: Create GitHub release and upload VSIX
+      uses: softprops/action-gh-release@v1
+      with:
+        files: '${{ env.name }}-${{ env.version }}.vsix'
+        tag_name: v${{ env.version }}
+        name: Release ${{ env.version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish to Visual Studio Marketplace
+      run: npx vsce publish -p "$MARKET_TOKEN" --packagePath '${{ env.name }}-${{ env.version }}.vsix'
