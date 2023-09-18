@@ -1,9 +1,21 @@
-name: Release
+name: Bump Version, Create Tag, and Release
 
 on: 
   workflow_dispatch:
+    inputs:
+      versionBump:
+        description: 'Version bump type'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
 env:
       MARKET_TOKEN: ${{ secrets.MARKETPLACE_ACCESS_TOKEN }}
+
 permissions:
   contents: write
 
@@ -11,31 +23,53 @@ jobs:
    deploy:
     runs-on: ubuntu-latest
     steps:
+    
     - name: Checkout
       uses: actions/checkout@v3
+
     - name: Install Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 16.x
+
     - name: Install dependencies
       run: npm ci
+
+    - name: Configure Git
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "github-actions@env.com"
+
+    - name: Upgrade package version
+      run: npm version ${{ github.event.inputs.versionBump }} -m "Upgrade to %s"
+
+    - name: Push changes
+      run: |
+        git push
+        git push --tags
+  
     - name: Get version and name from package.json
       id: package_info
       run: |
         echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
         echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_ENV
+
     - name: Fetch all tags
       run: git fetch --tags
+
     - name: Check if tag exists
       run: |
         if git tag -l | grep -Exq "^v${{ env.version }}$"; then
           echo "Tag v${{ env.version }} already exists!"
           exit 1
         fi
+
     - name: Create Git Tag
       run: git tag v${{ env.version }}
+
     - name: Package VS Code extension
       run: npx vsce package
+
     - name: Create GitHub release and upload VSIX
       uses: softprops/action-gh-release@v1
       with:
