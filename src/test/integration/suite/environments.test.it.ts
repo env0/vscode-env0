@@ -49,30 +49,6 @@ suite("environments", function () {
     });
   });
 
-  test("should not show inactive environments", async () => {
-    const activeEnvName = "active env";
-    const inactiveEnvName = "inactive env";
-    const environments = [
-      getEnvironmentMock("main", "https://github.com/user/repo", {
-        name: activeEnvName,
-      }),
-      getEnvironmentMock("main", "https://github.com/user/repo", {
-        status: "INACTIVE",
-        name: inactiveEnvName,
-      }),
-    ];
-    await initTest(environments);
-
-    const environmentsDataProvider =
-      extension.environmentsDataProvider as Env0EnvironmentsProvider;
-
-    await waitFor(() => {
-      const environments = environmentsDataProvider.getChildren();
-      expect(environments).toHaveLength(1);
-      expect(environments[0].label).toBe(activeEnvName);
-    });
-  });
-
   test("should show environments only for the current repo", async () => {
     const envName = "active env";
     const differentRepoEnvName = "different repo env";

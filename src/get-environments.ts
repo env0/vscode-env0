@@ -52,18 +52,15 @@ export async function getEnvironmentsForBranch() {
     } else {
       extensionState.setCurrentBranch(currentBranch);
     }
-    environments = environments
-      .filter(
-        (environment) =>
-          repositoriesEqual(
-            environment?.latestDeploymentLog?.blueprintRepository,
-            repository
-          ) &&
-          environment?.latestDeploymentLog?.blueprintRevision === currentBranch
-      )
-      .filter((environment) => environment.status !== "INACTIVE");
+    environments = environments.filter(
+      (environment) =>
+        repositoriesEqual(
+          environment?.latestDeploymentLog?.blueprintRepository,
+          repository
+        ) &&
+        environment?.latestDeploymentLog?.blueprintRevision === currentBranch
+    );
   }
-
   return environments;
 }
 
