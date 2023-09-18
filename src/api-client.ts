@@ -66,7 +66,7 @@ class ApiClient {
     const response = await this.instance.get<EnvironmentModel[]>(
       `/environments`,
       {
-        params: { organizationId },
+        params: { organizationId, isActive: true },
       }
     );
 
