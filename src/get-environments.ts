@@ -45,21 +45,22 @@ export async function getEnvironmentsForBranch() {
   }
 
   if (environments.length > 0) {
-    const { currentBranch, repository } = getGitRepoAndBranch();
+    const { currentBranch, repository, isDefaultBranch } =
+      await getGitRepoAndBranch();
     if (!currentBranch || !repository) {
       extensionState.onFailedToGetBranch();
       return [];
     } else {
       extensionState.setCurrentBranch(currentBranch);
     }
-    environments = environments.filter(
-      (environment) =>
-        repositoriesEqual(
-          environment?.latestDeploymentLog?.blueprintRepository,
-          repository
-        ) &&
-        environment?.latestDeploymentLog?.blueprintRevision === currentBranch
-    );
+    environments = environments.filter((environment) => {
+      const envRepository =
+        environment?.latestDeploymentLog?.blueprintRepository;
+      const envBranch = environment?.latestDeploymentLog?.blueprintRevision;
+      return repositoriesEqual(envRepository, repository) && envBranch
+        ? envBranch === currentBranch
+        : isDefaultBranch;
+    });
   }
   return environments;
 }

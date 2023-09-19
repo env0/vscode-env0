@@ -80,7 +80,7 @@ export class ExtensionState {
     } else if (this._noEnvironment) {
       this.environmentsView.message = `couldn’t find environments associated with current branch${
         currentBranch ? ` "${currentBranch}"` : ""
-      } Note: This view displays only environments specifically associated with the current working branch. Environments created without specifying a branch (automatically associating them with the default branch) are not displayed, even if your current branch is the default one.`;
+      } Note: This view displays only environments specifically associated with the current working branch.`;
     } else if (this._isLoading) {
       this.environmentsView.message = `loading environments${
         currentBranch ? ` for branch ${currentBranch}` : ""
