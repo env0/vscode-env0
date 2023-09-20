@@ -27,6 +27,7 @@ async function getDefaultBranch(repoPath: string): Promise<string | undefined> {
       "Failed to get the default branch with error: " + error.message || error
     );
   }
+  return undefined;
 }
 
 export async function getGitRepoAndBranch() {
