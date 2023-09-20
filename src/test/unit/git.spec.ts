@@ -4,7 +4,7 @@ import {
   mockGitVscodeExtension,
   resetGitMocks,
 } from "./mocks/git";
-import { resetVscodeMocks, vscode } from "./mocks/vscode";
+import { resetVscodeMocks } from "./mocks/vscode";
 import expect from "expect";
 import { getGitRepoAndBranch } from "../../utils/git";
 
