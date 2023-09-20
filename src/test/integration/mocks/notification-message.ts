@@ -38,9 +38,14 @@ export const assertInfoMessageDisplayed = async (message: string) => {
 };
 
 export const assertErrorMessageDisplayed = async (message: string) => {
-  // wait for setInterval to invoke Environments provider state refresh
-  await waitFor(() => expect(showErrorMessageSpy).toHaveBeenCalled());
-  expect(showErrorMessageSpy).toHaveBeenCalledWith(message, "More info");
+  await waitFor(() => {
+    expect(
+      // ignore some calls to showErrorMessage that are not related to the test
+      showErrorMessageSpy.mock.calls.some(
+        (call) => call[0] === message && (call[1] as any) === "More info"
+      )
+    ).toBeTruthy();
+  });
 };
 
 export const assertWarningMessageDisplayed = async (message: string) => {
