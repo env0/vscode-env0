@@ -85,7 +85,7 @@ const mockFailedEnvironment = async (
   mockGetEnvironment(orgId, [failedEnvironment], auth);
 };
 
-const activeEnvironmentIconPath = "favicon-16x16.png";
+const activeEnvironmentIconPath = "favicon-32x32.png";
 const inProgressIconPath = "in_progress.png";
 const inactiveIconPath = "inactive.png";
 const failedIconPath = "failed.png";

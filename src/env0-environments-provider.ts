@@ -218,7 +218,7 @@ const getIconByStatus = (status: string): string => {
       return "failed.png";
     case "SUCCESS":
     case "ACTIVE":
-      return "favicon-16x16.png";
+      return "favicon-32x32.png";
     case "IN_PROGRESS":
     case "DEPLOY_IN_PROGRESS":
     case "DESTROY_IN_PROGRESS":
