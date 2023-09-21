@@ -1,5 +1,7 @@
 import * as jestMock from "jest-mock";
 import expect from "expect";
+// strip ansi mock must be imported before the tested module!!!
+import "./mocks/strip-ansi";
 // vscode mock must be imported before the tested module!!!
 import {
   contextMock,
@@ -9,7 +11,6 @@ import {
 } from "./mocks/vscode";
 import { AuthService } from "../../auth";
 import { mockValidateCredentialsRequest } from "./mocks/http";
-
 describe("authentication", () => {
   const keyId = "keyId";
   const secret = "secret";
