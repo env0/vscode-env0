@@ -127,7 +127,7 @@ The unit tests are executed on the source TypeScript files, not on the compiled 
 
 1. Navigate to the "Actions" tab in the GitHub repository. 
 2. Find and select the "Bump Version, Create Tag, and Release" workflow.
-3. Click "Run workflow," select the desired `versionBump` option (patch, minor, or major) from the dropdown menu, and initiate the workflow.
+3. Click "Run workflow", select the desired `versionBump` option (patch, minor, or major) from the dropdown menu, and initiate the workflow.
 
 The workflow automatically bumps the current version specified in your `package.json` file based on your input. Following this, it creates a new Git tag and releases the new version on GitHub and the Visual Studio Marketplace, all referencing the newly bumped version from the `package.json` file.
 
