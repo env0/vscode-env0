@@ -25,7 +25,9 @@ jobs:
     steps:
     
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.ENV0_BOT_PAT }}
 
     - name: Install Node.js
       uses: actions/setup-node@v3
@@ -37,8 +39,8 @@ jobs:
 
     - name: Configure Git
       run: |
-        git config user.name "GitHub Actions"
-        git config user.email "github-actions@env.com"
+        git config user.name "bot-env0"
+
 
     - name: Upgrade package version and create tag
       run: npm version ${{ github.event.inputs.versionBump }} -m "Upgrade to %s"
@@ -64,7 +66,7 @@ jobs:
         tag_name: v${{ env.version }}
         name: Release ${{ env.version }}
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ENV0_BOT_PAT }}
 
     - name: Publish to Visual Studio Marketplace
       run: npx vsce publish -p "$MARKET_TOKEN" --packagePath '${{ env.name }}-${{ env.version }}.vsix'
