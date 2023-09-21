@@ -2,6 +2,14 @@ import * as jestMock from "jest-mock";
 import * as vscode from "vscode";
 import { waitFor } from "../suite/test-utils";
 import expect from "expect";
+import { mockStripAnsi } from "./strip-ansi";
+// mock strip-ansi should be imported before the errors module!!!
+mockStripAnsi();
+// eslint-disable-next-line import/first
+import {
+  cannotGetDefaultBranchMessage,
+  getDefaultBranchErrorMessage,
+} from "../../../errors";
 
 let showInformationMessageSpy: jestMock.SpyInstance<
   typeof vscode.window.showInformationMessage
@@ -39,12 +47,15 @@ export const assertInfoMessageDisplayed = async (message: string) => {
 
 export const assertErrorMessageDisplayed = async (message: string) => {
   await waitFor(() => {
-    expect(
-      // ignore some calls to showErrorMessage that are not related to the test
-      showErrorMessageSpy.mock.calls.some(
-        (call) => call[0] === message && (call[1] as any) === "More info"
-      )
-    ).toBeTruthy();
+    const calls = showErrorMessageSpy.mock.calls.filter(
+      (call) =>
+        !(
+          call[0].startsWith(cannotGetDefaultBranchMessage) ||
+          call[0].startsWith(getDefaultBranchErrorMessage)
+        )
+    );
+    expect(calls[0][0]).toBe(message);
+    expect(calls[0][1]).toBe("more info");
   });
 };
 

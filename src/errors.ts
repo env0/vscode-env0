@@ -72,3 +72,24 @@ export const onLogsPollingError = async (error: Error) => {
     `failed to pull logs: unexpected error ${error.message}`
   );
 };
+
+export const getCannotFindEnvironmentMessage = (
+  currentBranch: string | undefined
+) =>
+  `couldn’t find environments associated with current branch${
+    currentBranch ? ` "${currentBranch}"` : ""
+  } Note: This view displays only environments specifically associated with the current working branch.`;
+
+export const cannotGetDefaultBranchMessage =
+  "Failed to get repo default branch, All env0 environments without a specified branch will not be displayed";
+
+export const showCannotGetDefaultBranchMessage = () =>
+  vscode.window.showErrorMessage(cannotGetDefaultBranchMessage);
+
+export const getDefaultBranchErrorMessage =
+  "Failed to get the default branch with error: ";
+
+export const showGetDefaultBranchError = (error: Error) =>
+  vscode.window.showErrorMessage(
+    `${getDefaultBranchErrorMessage} ${error.message || error}`
+  );

@@ -17,10 +17,11 @@ import expect from "expect";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
+const branch = "main";
 const initTest = async (environments: EnvironmentModel[]) => {
   mockGetOrganization(orgId, auth);
   mockGetEnvironment(orgId, environments, auth);
-  mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
+  mockGitRepoAndBranch(branch, "git@github.com:user/repo.git");
   await login(auth);
 };
 

@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 import retry from "async-retry";
 import simpleGit, { SimpleGit } from "simple-git";
+import {
+  showCannotGetDefaultBranchMessage,
+  showGetDefaultBranchError,
+} from "../errors";
 
 const DOT_GIT_SUFFIX_LENGTH = 4;
 
@@ -23,9 +27,7 @@ async function getDefaultBranch(repoPath: string): Promise<string | undefined> {
       return defaultBranchMatch[1];
     }
   } catch (error: any) {
-    vscode.window.showErrorMessage(
-      "Failed to get the default branch with error: " + error.message || error
-    );
+    showGetDefaultBranchError(error);
   }
   return undefined;
 }
@@ -51,9 +53,7 @@ export async function getGitRepoAndBranch() {
         : repositoryName;
       const defaultBranch = await getDefaultBranch(repository.rootUri.fsPath);
       if (!defaultBranch) {
-        vscode.window.showErrorMessage(
-          "Failed to get repo default branch, All env0 environments without a specified branch will not be displayed"
-        );
+        showCannotGetDefaultBranchMessage();
       } else {
         isDefaultBranch = currentBranch === defaultBranch;
       }

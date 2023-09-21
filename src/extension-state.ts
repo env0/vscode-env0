@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Environment } from "./env0-environments-provider";
+import { getCannotFindEnvironmentMessage } from "./errors";
 
 export class ExtensionState {
   private environmentsView?: vscode.TreeView<Environment>;
@@ -78,9 +79,8 @@ export class ExtensionState {
     } else if (this._failedToGetBranch) {
       this.environmentsView.message = "Could not find current git branch.";
     } else if (this._noEnvironment) {
-      this.environmentsView.message = `couldn’t find environments associated with current branch${
-        currentBranch ? ` "${currentBranch}"` : ""
-      } Note: This view displays only environments specifically associated with the current working branch.`;
+      this.environmentsView.message =
+        getCannotFindEnvironmentMessage(currentBranch);
     } else if (this._isLoading) {
       this.environmentsView.message = `loading environments${
         currentBranch ? ` for branch ${currentBranch}` : ""
