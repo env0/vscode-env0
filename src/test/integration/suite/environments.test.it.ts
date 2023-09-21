@@ -46,7 +46,7 @@ suite("environments", function () {
       const environments = environmentsDataProvider.getChildren();
       expect(environments).toHaveLength(1);
       expect(environments[0].label).toBe(envName);
-      expect(environments[0].iconPath).toContain("favicon-16x16.png");
+      expect(environments[0].iconPath).toContain("favicon-32x32.png");
     });
   });
 
