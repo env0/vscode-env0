@@ -4,6 +4,8 @@ import {
   mockGitVscodeExtension,
   resetGitMocks,
 } from "./mocks/git";
+// stir-ansi mock must be imported before the tested module!!!
+import "./mocks/strip-ansi";
 import { resetVscodeMocks } from "./mocks/vscode";
 import expect from "expect";
 import { getGitRepoAndBranch } from "../../utils/git";

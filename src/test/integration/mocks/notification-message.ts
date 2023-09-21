@@ -2,10 +2,8 @@ import * as jestMock from "jest-mock";
 import * as vscode from "vscode";
 import { waitFor } from "../suite/test-utils";
 import expect from "expect";
-import { mockStripAnsi } from "./strip-ansi";
 // mock strip-ansi should be imported before the errors module!!!
-mockStripAnsi();
-// eslint-disable-next-line import/first
+import "./strip-ansi";
 import {
   cannotGetDefaultBranchMessage,
   getDefaultBranchErrorMessage,
@@ -47,6 +45,7 @@ export const assertInfoMessageDisplayed = async (message: string) => {
 
 export const assertErrorMessageDisplayed = async (message: string) => {
   await waitFor(() => {
+    // ignore the error messages related to getDefaultBranch
     const calls = showErrorMessageSpy.mock.calls.filter(
       (call) =>
         !(
@@ -55,8 +54,8 @@ export const assertErrorMessageDisplayed = async (message: string) => {
         )
     );
     expect(calls[0][0]).toBe(message);
-    expect(calls[0][1]).toBe("more info");
-  });
+    expect(calls[0][1]).toBe("More info");
+  }, 10);
 };
 
 export const assertWarningMessageDisplayed = async (message: string) => {

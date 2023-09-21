@@ -7,6 +7,7 @@ import {
   mockLoginCredentialsInput,
   resetVscodeMocks,
 } from "./mocks/vscode";
+import "./mocks/strip-ansi";
 import { AuthService } from "../../auth";
 import { mockValidateCredentialsRequest } from "./mocks/http";
 

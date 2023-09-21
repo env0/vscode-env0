@@ -25,6 +25,7 @@ export const vscode = {
   extensions: {
     getExtension: mocker.fn(),
   },
+  TreeItem: class {},
 };
 
 mock("vscode", vscode);
