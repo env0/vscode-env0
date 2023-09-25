@@ -42,7 +42,7 @@ const initMocksAndLogin = async (moreOrgs: typeof selectedOrg[] = []) => {
 };
 
 suite("authentication", function () {
-  this.timeout(1000 * 600);
+  this.timeout(1000 * 10);
 
   afterEach(async () => {
     await logout();
@@ -56,7 +56,7 @@ suite("authentication", function () {
     mockRedeployApiResponse(environmentMock.id, auth, onRedeployCalled);
 
     vscode.commands.executeCommand("env0.redeploy", getFirstEnvironment());
-    await waitFor(() => expect(onRedeployCalled).toHaveBeenCalled(), 10);
+    await waitFor(() => expect(onRedeployCalled).toHaveBeenCalled());
   });
 
   test("should call redeploy with updated credentials when logout and login again ", async () => {
