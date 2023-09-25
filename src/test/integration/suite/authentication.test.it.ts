@@ -105,4 +105,21 @@ suite("authentication", function () {
       )
     );
   });
+
+  test("should show environments for the selected org", async () => {
+    const secondOrg = { name: "second org", id: "second-org-id" };
+    const onQuickPick = spyOnQuickPick();
+    onQuickPick.mockImplementationOnce(() =>
+      Promise.resolve({ label: secondOrg.name, description: secondOrg.id })
+    );
+    mockGetOrganization([selectedOrg, secondOrg], auth);
+    mockGetEnvironment(secondOrg.id, [environmentMock], auth);
+    mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
+    mockGetDeploymentStepsApiResponse();
+    await login(auth);
+
+    await waitFor(() =>
+      expect(getFirstEnvironment().name).toBe(environmentMock.name)
+    );
+  });
 });
