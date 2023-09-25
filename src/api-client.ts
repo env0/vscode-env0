@@ -5,6 +5,7 @@ import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
 
 class ApiClient {
   private credentials?: { username: string; password: string };
+  private currentOrganizationId?: string;
   private readonly instance: AxiosInstance;
   constructor() {
     this.instance = axios.create({ baseURL: `https://${ENV0_API_URL}` });
@@ -16,11 +17,16 @@ class ApiClient {
     });
   }
 
-  public init(credentials: { username: string; password: string }) {
+  public init(
+    credentials: { username: string; password: string },
+    organizationId: string
+  ) {
     this.credentials = credentials;
+    this.currentOrganizationId = organizationId;
   }
 
   public clearCredentials() {
+    this.currentOrganizationId = undefined;
     this.credentials = undefined;
   }
 
@@ -62,11 +68,11 @@ class ApiClient {
     return response.data;
   }
 
-  public async getEnvironments(organizationId: string) {
+  public async getEnvironments() {
     const response = await this.instance.get<EnvironmentModel[]>(
       `/environments`,
       {
-        params: { organizationId, isActive: true },
+        params: { organizationId: this.currentOrganizationId, isActive: true },
       }
     );
 

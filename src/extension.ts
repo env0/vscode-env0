@@ -70,7 +70,10 @@ const init = async (
   environmentsTree: vscode.TreeView<Environment>,
   authService: AuthService
 ) => {
-  apiClient.init(await authService.getApiKeyCredentials());
+  apiClient.init(
+    await authService.getApiKeyCredentials(),
+    authService.getSelectedOrg()!
+  );
   extensionState.setLoggedIn(true);
   await loadEnvironments(environmentsDataProvider);
 };

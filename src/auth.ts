@@ -11,6 +11,13 @@ const env0SecretKey = "env0.secret";
 
 export class AuthService {
   constructor(private readonly context: vscode.ExtensionContext) {}
+
+  private selectedOrgId: string | undefined;
+
+  public getSelectedOrg() {
+    return this.selectedOrgId;
+  }
+
   public registerLoginCommand(onLogin: () => void) {
     const disposable = vscode.commands.registerCommand(
       "env0.login",
@@ -47,9 +54,9 @@ export class AuthService {
           },
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (await this.validateUserCredentials(keyId!, secret!)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const selectedOrgId = await this.pickOrganization(keyId!, secret!);
+        if (selectedOrgId) {
+          this.selectedOrgId = selectedOrgId;
           await this.storeAuthData(keyId!, secret!);
           await onLogin();
         }
@@ -89,19 +96,42 @@ export class AuthService {
     };
   }
 
-  private async validateUserCredentials(keyId: string, secret: string) {
+  private async pickOrganization(keyId: string, secret: string) {
     // Displaying a loading indicator to inform the user that something is happening
     return await vscode.window.withProgress(
       { location: { viewId: ENV0_ENVIRONMENTS_VIEW_ID } },
       async () => {
         try {
-          await axios.get(`https://${ENV0_API_URL}/organizations`, {
-            auth: { username: keyId, password: secret },
-            validateStatus: function (status) {
-              return status >= 200 && status < 300;
-            },
+          const orgsRes = await axios.get(
+            `https://${ENV0_API_URL}/organizations`,
+            {
+              auth: { username: keyId, password: secret },
+              validateStatus: function (status) {
+                return status >= 200 && status < 300;
+              },
+            }
+          );
+          if (orgsRes.data.length === 1) {
+            return orgsRes.data[0].id;
+          }
+          const orgs = orgsRes.data.map((org: any) => ({
+            name: org.name,
+            id: org.id,
+          }));
+          const items: vscode.QuickPickItem[] = orgs.map((org: any) => ({
+            label: org.name,
+            description: org.id,
+          }));
+
+          const selectedItem = await vscode.window.showQuickPick(items, {
+            placeHolder: "Select an organization",
           });
-          return true;
+          const selectedOrgId = selectedItem?.description;
+          if (!selectedOrgId) {
+            vscode.window.showErrorMessage("No organization selected");
+            return undefined;
+          }
+          return selectedOrgId;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
           if (e?.response?.status >= 400 && e?.response?.status < 500) {
@@ -109,7 +139,7 @@ export class AuthService {
           } else {
             showUnexpectedErrorMessage();
           }
-          return false;
+          return undefined;
         }
       }
     );

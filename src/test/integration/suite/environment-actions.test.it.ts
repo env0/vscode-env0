@@ -41,11 +41,12 @@ import {
 } from "../mocks/notification-message";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
-const orgId = "org-id";
+const organization = { name: "my org", id: "org-id" };
+const orgId = organization.id;
 
 const initTest = async (environments: EnvironmentModel[]) => {
-  mockGetOrganization(orgId, auth);
-  mockGetEnvironment(orgId, environments, auth);
+  mockGetOrganization([organization], auth);
+  mockGetEnvironment(organization.id, environments, auth);
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
   mockGetDeploymentStepsApiResponse();
   spyOnShowMessage();

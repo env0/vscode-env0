@@ -28,7 +28,8 @@ import expect from "expect";
 import { DeploymentStatus } from "../../../types";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
-const orgId = "org-id";
+const organization = { name: "my org", id: "org-id" };
+const orgId = organization.id;
 const firstEnvName = "my env";
 const secondEnvName = "my env 2";
 
@@ -62,8 +63,8 @@ suite("deployment logs", function () {
     mockOutputChannel();
     await resetExtension(); // we need to resat because we are mocking the output channel
     const environments = [firstEnvironmentMock, secondEnvironmentMock];
-    mockGetOrganization(orgId, auth);
-    mockGetEnvironment(orgId, environments, auth);
+    mockGetOrganization([organization], auth);
+    mockGetEnvironment(organization.id, environments, auth);
     await login(auth);
     await waitFor(() => expect(getFirstEnvStatus()).toBe("ACTIVE"));
   });

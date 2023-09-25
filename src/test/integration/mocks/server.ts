@@ -29,7 +29,7 @@ const assertAuth = (credentials: Credentials, authHeader: string | null) => {
 };
 
 export const mockGetOrganization = (
-  organizationId: string,
+  orgs: { id: string; name: string }[],
   credentials?: Credentials
 ) => {
   server.use(
@@ -37,7 +37,7 @@ export const mockGetOrganization = (
       if (credentials) {
         assertAuth(credentials, req.headers.get("Authorization"));
       }
-      return res(ctx.json([{ id: organizationId }]));
+      return res(ctx.json(orgs));
     })
   );
 };
