@@ -10,7 +10,10 @@ export const mockValidateCredentialsRequest = (auth: Credentials) => {
       options?.auth?.username === auth.keyId &&
       options?.auth?.password === auth.secret
     ) {
-      return Promise.resolve({ status: 200 });
+      return Promise.resolve({
+        status: 200,
+        data: [{ id: "org-id", name: "org name" }],
+      });
     }
     return Promise.reject(new Error("not found"));
   };
