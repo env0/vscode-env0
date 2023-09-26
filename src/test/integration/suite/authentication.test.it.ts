@@ -100,6 +100,7 @@ suite("authentication", function () {
           description: org.id,
         })),
         {
+          ignoreFocusOut: true,
           placeHolder: "Select an organization",
         }
       )
