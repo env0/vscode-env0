@@ -6,17 +6,18 @@ import {
   showUnexpectedErrorMessage,
 } from "./notification-messages";
 
-const env0KeyIdKey = "env0.keyId";
-const env0SecretKey = "env0.secret";
+const env0KeyIdStoreKey = "env0.keyId";
+const env0SecretStoreKey = "env0.secret";
+const selectedOrgIdStoreKey = "env0.selectedOrgId";
 
 export class AuthService {
   constructor(private readonly context: vscode.ExtensionContext) {}
 
-  private selectedOrgId: string | undefined;
-
-  public getSelectedOrg() {
-    return this.selectedOrgId;
-  }
+  private credentials?: {
+    username: string;
+    password: string;
+    selectedOrgId: string;
+  };
 
   public registerLoginCommand(onLogin: () => void) {
     const disposable = vscode.commands.registerCommand(
@@ -56,8 +57,7 @@ export class AuthService {
 
         const selectedOrgId = await this.pickOrganization(keyId!, secret!);
         if (selectedOrgId) {
-          this.selectedOrgId = selectedOrgId;
-          await this.storeAuthData(keyId!, secret!);
+          await this.storeAuthData(keyId!, secret!, selectedOrgId);
           await onLogin();
         }
       }
@@ -77,22 +77,28 @@ export class AuthService {
   }
 
   public async isLoggedIn() {
-    const { secret, keyId } = await this.getAuthData();
-    return !!(secret && keyId);
+    const { secret, keyId, selectedOrgId } = await this.getAuthData();
+    if (!(secret && keyId && selectedOrgId)) {
+      return false;
+    }
+    this.credentials = { username: keyId, password: secret, selectedOrgId };
+    return true;
   }
 
-  public async getApiKeyCredentials() {
-    const { secret, keyId } = await this.getAuthData();
-    if (!secret || !keyId) {
-      throw new Error("Could not read env0 api key values");
+  public getCredentials() {
+    if (!this.credentials) {
+      // this should happen only if the user is logged out
+      throw new Error("Could not read credentials");
     }
-    return { username: keyId, password: secret };
+
+    return this.credentials;
   }
 
   private async getAuthData() {
     return {
-      keyId: await this.context.secrets.get(env0KeyIdKey),
-      secret: await this.context.secrets.get(env0SecretKey),
+      keyId: await this.context.secrets.get(env0KeyIdStoreKey),
+      secret: await this.context.secrets.get(env0SecretStoreKey),
+      selectedOrgId: await this.context.secrets.get(selectedOrgIdStoreKey),
     };
   }
 
@@ -146,13 +152,20 @@ export class AuthService {
     );
   }
 
-  private async storeAuthData(keyId: string, secret: string) {
-    await this.context.secrets.store(env0KeyIdKey, keyId);
-    await this.context.secrets.store(env0SecretKey, secret);
+  private async storeAuthData(
+    keyId: string,
+    secret: string,
+    selectedOrgId: string
+  ) {
+    this.credentials = { username: keyId, password: secret, selectedOrgId };
+    await this.context.secrets.store(env0KeyIdStoreKey, keyId);
+    await this.context.secrets.store(env0SecretStoreKey, secret);
+    await this.context.secrets.store(selectedOrgIdStoreKey, selectedOrgId);
   }
 
   private async clearAuthData() {
-    await this.context.secrets.delete(env0KeyIdKey);
-    await this.context.secrets.delete(env0SecretKey);
+    await this.context.secrets.delete(env0KeyIdStoreKey);
+    await this.context.secrets.delete(env0SecretStoreKey);
+    await this.context.secrets.delete(selectedOrgIdStoreKey);
   }
 }
