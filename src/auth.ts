@@ -125,6 +125,7 @@ export class AuthService {
 
           const selectedItem = await vscode.window.showQuickPick(items, {
             placeHolder: "Select an organization",
+            ignoreFocusOut: true,
           });
           const selectedOrgId = selectedItem?.description;
           if (!selectedOrgId) {
