@@ -2,7 +2,7 @@ import { mockGitRepoAndBranch } from "../mocks/git";
 import {
   mockGetDeploymentStepsApiResponse,
   mockGetEnvironment,
-  mockGetOrganization,
+  mockGetOrganizations,
   mockRedeployApiResponse,
 } from "../mocks/server";
 import {
@@ -32,7 +32,7 @@ const environmentMock = getEnvironmentMock(
 );
 const selectedOrg = { name: "my org", id: "org-id" };
 const initMocksAndLogin = async (moreOrgs: typeof selectedOrg[] = []) => {
-  mockGetOrganization([selectedOrg, ...moreOrgs], auth);
+  mockGetOrganizations([selectedOrg, ...moreOrgs], auth);
   mockGetEnvironment(selectedOrg.id, [environmentMock], auth);
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
   mockGetDeploymentStepsApiResponse();
@@ -66,7 +66,7 @@ suite("authentication", function () {
       keyId: "different-key-id",
       secret: "different-key-secret",
     };
-    mockGetOrganization([selectedOrg], newAuthData);
+    mockGetOrganizations([selectedOrg], newAuthData);
     mockGetEnvironment(selectedOrg.id, [environmentMock], newAuthData);
 
     await login(newAuthData);
@@ -112,7 +112,7 @@ suite("authentication", function () {
     onQuickPick.mockImplementationOnce(() =>
       Promise.resolve({ label: secondOrg.name, description: secondOrg.id })
     );
-    mockGetOrganization([selectedOrg, secondOrg], auth);
+    mockGetOrganizations([selectedOrg, secondOrg], auth);
     mockGetEnvironment(secondOrg.id, [environmentMock], auth);
     mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
     mockGetDeploymentStepsApiResponse();

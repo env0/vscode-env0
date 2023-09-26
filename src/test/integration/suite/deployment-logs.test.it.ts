@@ -10,7 +10,7 @@ import {
   mockDeploymentLogsResponses,
   mockGetDeploymentApiResponse,
   mockGetEnvironment,
-  mockGetOrganization,
+  mockGetOrganizations,
 } from "../mocks/server";
 import {
   clickOnEnvironmentByName,
@@ -63,7 +63,7 @@ suite("deployment logs", function () {
     mockOutputChannel();
     await resetExtension(); // we need to resat because we are mocking the output channel
     const environments = [firstEnvironmentMock, secondEnvironmentMock];
-    mockGetOrganization([organization], auth);
+    mockGetOrganizations([organization], auth);
     mockGetEnvironment(organization.id, environments, auth);
     await login(auth);
     await waitFor(() => expect(getFirstEnvStatus()).toBe("ACTIVE"));

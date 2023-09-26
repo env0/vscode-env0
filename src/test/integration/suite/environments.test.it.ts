@@ -1,4 +1,4 @@
-import { mockGetEnvironment, mockGetOrganization } from "../mocks/server";
+import { mockGetEnvironment, mockGetOrganizations } from "../mocks/server";
 import { mockGitRepoAndBranch, mockNoGitRepo } from "../mocks/git";
 // @ts-ignore
 import * as extension from "../../../../dist/extension.js";
@@ -19,7 +19,7 @@ const auth = { keyId: "key-id", secret: "key-secret" };
 const organization = { name: "my org", id: "org-id" };
 
 const initTest = async (environments: EnvironmentModel[]) => {
-  mockGetOrganization([organization], auth);
+  mockGetOrganizations([organization], auth);
   mockGetEnvironment(organization.id, environments, auth);
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
   await login(auth);
@@ -81,7 +81,7 @@ suite("environments", function () {
       }),
     ];
     mockNoGitRepo();
-    mockGetOrganization([organization], auth);
+    mockGetOrganizations([organization], auth);
     // we don't await on login because we want to test the loading message
     login(auth);
     await waitFor(
@@ -100,7 +100,7 @@ suite("environments", function () {
 
   test("should show could not find git branch message", async () => {
     mockNoGitRepo();
-    mockGetOrganization([organization], auth);
+    mockGetOrganizations([organization], auth);
     await login(auth);
     await waitFor(() =>
       expect(getEnvironmentViewMessage()).toBe(

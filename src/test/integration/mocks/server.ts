@@ -28,7 +28,7 @@ const assertAuth = (credentials: Credentials, authHeader: string | null) => {
   assert.strictEqual(secret, credentials.secret);
 };
 
-export const mockGetOrganization = (
+export const mockGetOrganizations = (
   orgs: { id: string; name: string }[],
   credentials?: Credentials
 ) => {

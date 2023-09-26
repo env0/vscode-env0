@@ -16,7 +16,7 @@ import {
   mockGetDeploymentStepsApiResponse,
   mockDestroyApiResponse,
   mockGetEnvironment,
-  mockGetOrganization,
+  mockGetOrganizations,
   mockRedeployApiResponse,
 } from "../mocks/server";
 import { mockGitRepoAndBranch } from "../mocks/git";
@@ -45,7 +45,7 @@ const organization = { name: "my org", id: "org-id" };
 const orgId = organization.id;
 
 const initTest = async (environments: EnvironmentModel[]) => {
-  mockGetOrganization([organization], auth);
+  mockGetOrganizations([organization], auth);
   mockGetEnvironment(organization.id, environments, auth);
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
   mockGetDeploymentStepsApiResponse();
