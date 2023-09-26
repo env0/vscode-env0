@@ -57,9 +57,10 @@ export async function getEnvironmentsForBranch() {
       const envRepository =
         environment?.latestDeploymentLog?.blueprintRepository;
       const envBranch = environment?.latestDeploymentLog?.blueprintRevision;
-      return repositoriesEqual(envRepository, repository) && envBranch
-        ? envBranch === currentBranch
-        : isDefaultBranch;
+      if (!repositoriesEqual(envRepository, repository)) return false;
+      if (isDefaultBranch) return true;
+      if (envBranch) return envBranch === currentBranch;
+      return false;
     });
   }
   return environments;
