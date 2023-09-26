@@ -1,12 +1,42 @@
 import * as vscode from "vscode";
 import retry from "async-retry";
+import simpleGit, { SimpleGit } from "simple-git";
+import {
+  showCannotGetDefaultBranchMessage,
+  showGetDefaultBranchError,
+} from "../errors";
 
 const DOT_GIT_SUFFIX_LENGTH = 4;
 
-export function getGitRepoAndBranch() {
+async function getDefaultBranch(repoPath: string): Promise<string | undefined> {
+  try {
+    const git: SimpleGit = simpleGit(repoPath);
+
+    if (!(await git.checkIsRepo())) {
+      return undefined;
+    }
+
+    const remoteShowOrigin: string = await git.raw([
+      "remote",
+      "show",
+      "origin",
+    ]);
+
+    const defaultBranchMatch = remoteShowOrigin.match(/HEAD branch: (\S+)/);
+    if (defaultBranchMatch && defaultBranchMatch.length > 1) {
+      return defaultBranchMatch[1];
+    }
+  } catch (error: any) {
+    showGetDefaultBranchError(error);
+  }
+  return undefined;
+}
+
+export async function getGitRepoAndBranch() {
   const extensions = vscode.extensions;
   let normalizedRepositoryName;
   let currentBranch;
+  let isDefaultBranch = false;
 
   if (extensions) {
     const gitExtension = extensions.getExtension("vscode.git")?.exports;
@@ -21,15 +51,25 @@ export function getGitRepoAndBranch() {
       normalizedRepositoryName = repositoryName.endsWith(".git")
         ? repositoryName?.slice(0, -DOT_GIT_SUFFIX_LENGTH)
         : repositoryName;
+      const defaultBranch = await getDefaultBranch(repository.rootUri.fsPath);
+      if (!defaultBranch) {
+        showCannotGetDefaultBranchMessage();
+      } else {
+        isDefaultBranch = currentBranch === defaultBranch;
+      }
     }
   }
 
-  return { repository: normalizedRepositoryName, currentBranch };
+  return {
+    repository: normalizedRepositoryName,
+    currentBranch,
+    isDefaultBranch,
+  };
 }
 export async function getCurrentBranchWithRetry() {
   return await retry(
-    () => {
-      const result = getGitRepoAndBranch();
+    async () => {
+      const result = await getGitRepoAndBranch();
       if (!result.currentBranch) {
         throw new Error("couldn't find git current branch");
       } else {

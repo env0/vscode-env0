@@ -14,13 +14,15 @@ import {
 import { afterEach } from "mocha";
 import { EnvironmentModel } from "../../../get-environments";
 import expect from "expect";
+import { getCannotFindEnvironmentMessage } from "../../../errors";
 
 const auth = { keyId: "key-id", secret: "key-secret" };
 const orgId = "org-id";
+const branch = "main";
 const initTest = async (environments: EnvironmentModel[]) => {
   mockGetOrganization(orgId, auth);
   mockGetEnvironment(orgId, environments, auth);
-  mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
+  mockGitRepoAndBranch(branch, "git@github.com:user/repo.git");
   await login(auth);
 };
 
@@ -112,7 +114,7 @@ suite("environments", function () {
     await initTest([]);
     await waitFor(() =>
       expect(getEnvironmentViewMessage()).toBe(
-        `couldn’t find environments associated with current branch "main" Note: This view displays only environments specifically associated with the current working branch. Environments created without specifying a branch (automatically associating them with the default branch) are not displayed, even if your current branch is the default one.`
+        getCannotFindEnvironmentMessage(branch)
       )
     );
   });

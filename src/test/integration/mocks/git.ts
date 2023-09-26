@@ -11,6 +11,9 @@ export const mockGitRepoAndBranch = (branchName?: string, repoUrl?: string) => {
               name: branchName,
             },
           },
+          rootUri: {
+            fsPath: "test",
+          },
           repository: {
             remotes: [
               {
