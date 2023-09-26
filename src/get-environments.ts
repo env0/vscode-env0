@@ -58,8 +58,8 @@ export async function getEnvironmentsForBranch() {
         environment?.latestDeploymentLog?.blueprintRepository;
       const envBranch = environment?.latestDeploymentLog?.blueprintRevision;
       if (!repositoriesEqual(envRepository, repository)) return false;
-      if (isDefaultBranch) return true;
       if (envBranch) return envBranch === currentBranch;
+      if (isDefaultBranch) return true;
       return false;
     });
   }
