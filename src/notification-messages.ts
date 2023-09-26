@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { ENV0_WEB_URL } from "./common";
+import stripAnsi from "strip-ansi";
 
 const MORE_INFO_BUTTON = "More info";
 
@@ -38,7 +39,11 @@ export const showErrorMessage = (
   errorMessage: string | undefined,
   linkProps: LinkProps
 ) => {
-  const message = `Deployment has failed for environment ${linkProps.environmentName}. Error: ${errorMessage}`;
+  const normalizedErrorMessage = stripAnsi(errorMessage || "").replace(
+    /│|╷|╵/g,
+    ""
+  );
+  const message = `Deployment has failed for environment ${linkProps.environmentName}. Error: ${normalizedErrorMessage}`;
   vscode.window.showErrorMessage(message, MORE_INFO_BUTTON).then((button) => {
     addLinkToEnvironment(button, linkProps);
   });
