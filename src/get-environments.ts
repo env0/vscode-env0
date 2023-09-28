@@ -38,11 +38,7 @@ function repositoriesEqual(rep1: string, rep2: string): boolean {
 export async function getEnvironmentsForBranch() {
   let environments: EnvironmentModel[] = [];
 
-  const organizationId = await getOrganizationId();
-
-  if (organizationId) {
-    environments = await getEnvironments(organizationId);
-  }
+  environments = await apiClient.getEnvironments();
 
   if (environments.length > 0) {
     const { currentBranch, repository } = getGitRepoAndBranch();
@@ -62,19 +58,4 @@ export async function getEnvironmentsForBranch() {
     );
   }
   return environments;
-}
-
-async function getEnvironments(organizationId: string) {
-  try {
-    return apiClient.getEnvironments(organizationId);
-  } catch (e) {
-    console.log(e);
-  }
-
-  return [];
-}
-
-async function getOrganizationId() {
-  const organizations = await apiClient.getOrganizations();
-  return organizations[0]?.id;
 }

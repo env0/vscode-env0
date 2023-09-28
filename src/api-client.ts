@@ -2,26 +2,27 @@ import axios, { AxiosInstance } from "axios";
 import { ENV0_API_URL } from "./common";
 import { EnvironmentModel } from "./get-environments";
 import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
+import { AuthService } from "./auth";
 
 class ApiClient {
-  private credentials?: { username: string; password: string };
   private readonly instance: AxiosInstance;
+  private authService?: AuthService;
   constructor() {
     this.instance = axios.create({ baseURL: `https://${ENV0_API_URL}` });
     this.instance.interceptors.request.use((config) => {
-      if (this.credentials) {
-        config.auth = this.credentials;
+      const credentials = this.authService?.getCredentials();
+      if (credentials) {
+        config.auth = {
+          username: credentials.username,
+          password: credentials.password,
+        };
       }
       return config;
     });
   }
 
-  public init(credentials: { username: string; password: string }) {
-    this.credentials = credentials;
-  }
-
-  public clearCredentials() {
-    this.credentials = undefined;
+  public init(authService: AuthService) {
+    this.authService = authService;
   }
 
   public async abortDeployment(deploymentId: string) {
@@ -62,11 +63,14 @@ class ApiClient {
     return response.data;
   }
 
-  public async getEnvironments(organizationId: string) {
+  public async getEnvironments() {
     const response = await this.instance.get<EnvironmentModel[]>(
       `/environments`,
       {
-        params: { organizationId, isActive: true },
+        params: {
+          organizationId: this.authService?.getCredentials().selectedOrgId,
+          isActive: true,
+        },
       }
     );
 

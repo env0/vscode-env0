@@ -70,7 +70,7 @@ const init = async (
   environmentsTree: vscode.TreeView<Environment>,
   authService: AuthService
 ) => {
-  apiClient.init(await authService.getApiKeyCredentials());
+  apiClient.init(authService);
   extensionState.setLoggedIn(true);
   await loadEnvironments(environmentsDataProvider);
 };
@@ -81,7 +81,6 @@ const onLogOut = async () => {
   }
   stopEnvironmentPolling();
   environmentsDataProvider.clear();
-  apiClient.clearCredentials();
   extensionState.setLoggedIn(false);
 };
 

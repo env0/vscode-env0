@@ -6,11 +6,19 @@ import {
   showUnexpectedErrorMessage,
 } from "./notification-messages";
 
-const env0KeyIdKey = "env0.keyId";
-const env0SecretKey = "env0.secret";
+const env0KeyIdStoreKey = "env0.keyId";
+const env0SecretStoreKey = "env0.secret";
+const selectedOrgIdStoreKey = "env0.selectedOrgId";
 
 export class AuthService {
   constructor(private readonly context: vscode.ExtensionContext) {}
+
+  private credentials?: {
+    username: string;
+    password: string;
+    selectedOrgId: string;
+  };
+
   public registerLoginCommand(onLogin: () => void) {
     const disposable = vscode.commands.registerCommand(
       "env0.login",
@@ -47,10 +55,9 @@ export class AuthService {
           },
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (await this.validateUserCredentials(keyId!, secret!)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          await this.storeAuthData(keyId!, secret!);
+        const selectedOrgId = await this.pickOrganization(keyId!, secret!);
+        if (selectedOrgId) {
+          await this.storeAuthData(keyId!, secret!, selectedOrgId);
           await onLogin();
         }
       }
@@ -70,38 +77,68 @@ export class AuthService {
   }
 
   public async isLoggedIn() {
-    const { secret, keyId } = await this.getAuthData();
-    return !!(secret && keyId);
+    const { secret, keyId, selectedOrgId } = await this.getAuthData();
+    if (!(secret && keyId && selectedOrgId)) {
+      return false;
+    }
+    this.credentials = { username: keyId, password: secret, selectedOrgId };
+    return true;
   }
 
-  public async getApiKeyCredentials() {
-    const { secret, keyId } = await this.getAuthData();
-    if (!secret || !keyId) {
-      throw new Error("Could not read env0 api key values");
+  public getCredentials() {
+    if (!this.credentials) {
+      // this should happen only if the user is logged out
+      throw new Error("Could not read credentials");
     }
-    return { username: keyId, password: secret };
+
+    return this.credentials;
   }
 
   private async getAuthData() {
     return {
-      keyId: await this.context.secrets.get(env0KeyIdKey),
-      secret: await this.context.secrets.get(env0SecretKey),
+      keyId: await this.context.secrets.get(env0KeyIdStoreKey),
+      secret: await this.context.secrets.get(env0SecretStoreKey),
+      selectedOrgId: await this.context.secrets.get(selectedOrgIdStoreKey),
     };
   }
 
-  private async validateUserCredentials(keyId: string, secret: string) {
+  private async pickOrganization(keyId: string, secret: string) {
     // Displaying a loading indicator to inform the user that something is happening
     return await vscode.window.withProgress(
       { location: { viewId: ENV0_ENVIRONMENTS_VIEW_ID } },
       async () => {
         try {
-          await axios.get(`https://${ENV0_API_URL}/organizations`, {
-            auth: { username: keyId, password: secret },
-            validateStatus: function (status) {
-              return status >= 200 && status < 300;
-            },
+          const orgsRes = await axios.get(
+            `https://${ENV0_API_URL}/organizations`,
+            {
+              auth: { username: keyId, password: secret },
+              validateStatus: function (status) {
+                return status >= 200 && status < 300;
+              },
+            }
+          );
+          if (orgsRes.data.length === 1) {
+            return orgsRes.data[0].id;
+          }
+          const orgs = orgsRes.data.map((org: any) => ({
+            name: org.name,
+            id: org.id,
+          }));
+          const items: vscode.QuickPickItem[] = orgs.map((org: any) => ({
+            label: org.name,
+            description: org.id,
+          }));
+
+          const selectedItem = await vscode.window.showQuickPick(items, {
+            placeHolder: "Select an organization",
+            ignoreFocusOut: true,
           });
-          return true;
+          const selectedOrgId = selectedItem?.description;
+          if (!selectedOrgId) {
+            vscode.window.showErrorMessage("No organization selected");
+            return undefined;
+          }
+          return selectedOrgId;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
           if (e?.response?.status >= 400 && e?.response?.status < 500) {
@@ -109,19 +146,26 @@ export class AuthService {
           } else {
             showUnexpectedErrorMessage();
           }
-          return false;
+          return undefined;
         }
       }
     );
   }
 
-  private async storeAuthData(keyId: string, secret: string) {
-    await this.context.secrets.store(env0KeyIdKey, keyId);
-    await this.context.secrets.store(env0SecretKey, secret);
+  private async storeAuthData(
+    keyId: string,
+    secret: string,
+    selectedOrgId: string
+  ) {
+    this.credentials = { username: keyId, password: secret, selectedOrgId };
+    await this.context.secrets.store(env0KeyIdStoreKey, keyId);
+    await this.context.secrets.store(env0SecretStoreKey, secret);
+    await this.context.secrets.store(selectedOrgIdStoreKey, selectedOrgId);
   }
 
   private async clearAuthData() {
-    await this.context.secrets.delete(env0KeyIdKey);
-    await this.context.secrets.delete(env0SecretKey);
+    await this.context.secrets.delete(env0KeyIdStoreKey);
+    await this.context.secrets.delete(env0SecretStoreKey);
+    await this.context.secrets.delete(selectedOrgIdStoreKey);
   }
 }
