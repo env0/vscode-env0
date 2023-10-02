@@ -28,11 +28,11 @@
       "properties": {
         "env0.apiUrl": {
           "type": "string",
-          "default": "api-dev.dev.env0.com"
+          "default": "api.env0.com"
         },
         "env0.webUrl": {
           "type": "string",
-          "default": "dev.dev.env0.com"
+          "default": "app.env0.com"
         }
       }
     },
