@@ -16,13 +16,15 @@ export type EnvironmentModel = {
       message?: string;
     };
   };
-}; // TODO: change to real Environment Model
+};
+
+export type Project = any; // TODO: change to real Project Model
 
 // Extracts the prefix from http or ssh repositories.
 const repositoryPrefixRegex = /.*[:/]([^/]+\/[^/]+)/;
 
 // Compares repositories irrespective if they're https or ssh.
-function repositoriesEqual(rep1: string, rep2: string): boolean {
+export function repositoriesEqual(rep1: string, rep2: string): boolean {
   const res1 = repositoryPrefixRegex.exec(rep1);
   const res2 = repositoryPrefixRegex.exec(rep2);
 
@@ -38,7 +40,17 @@ function repositoriesEqual(rep1: string, rep2: string): boolean {
 export async function getEnvironmentsForBranch() {
   let environments: EnvironmentModel[] = [];
 
-  environments = await apiClient.getEnvironments();
+  // get all projects
+  const projects: Project[] = await apiClient.getUserProjects();
+  console.log("projects", projects);
+  environments = (
+    await Promise.all(
+      projects
+        .filter((project) => !project.isArchived)
+        .map(async (project: Project) => apiClient.getEnvironments(project.id))
+    )
+  ).flat();
+  // get all environments of all projects
 
   if (environments.length > 0) {
     const { currentBranch, repository } = getGitRepoAndBranch();
