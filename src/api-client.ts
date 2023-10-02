@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { ENV0_API_URL } from "./common";
-import { EnvironmentModel } from "./get-environments";
+import { EnvironmentModel, Project } from "./get-environments";
 import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
 import { AuthService } from "./auth";
 
@@ -63,17 +63,28 @@ class ApiClient {
     return response.data;
   }
 
-  public async getEnvironments() {
+  public async getUserProjects(): Promise<Project[]> {
+    const response = await this.instance.get<EnvironmentModel[]>("/projects", {
+      params: {
+        organizationId: this.authService?.getCredentials().selectedOrgId,
+        isArchived: false,
+      },
+    });
+
+    return response.data;
+  }
+
+  // TODO: support paginzation
+  public async getEnvironments(projectId: string): Promise<EnvironmentModel[]> {
     const response = await this.instance.get<EnvironmentModel[]>(
       `/environments`,
       {
         params: {
-          organizationId: this.authService?.getCredentials().selectedOrgId,
+          projectId,
           isActive: true,
         },
       }
     );
-
     return response.data;
   }
 
