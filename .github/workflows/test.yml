@@ -25,6 +25,6 @@ jobs:
     - name: Run integration tests
       run: xvfb-run -a npm test
     - name: Install VS Code Extension Manager
-      run: npm install -g @vscode/vsce
+      run: npm install -g @vscode/vsce@2
     - name: Run packge
       run: vsce package
