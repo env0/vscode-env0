@@ -32,16 +32,6 @@
       "groupName": "non-major"
     },
     {
-      "matchManagers": ["github-actions"],
-      "matchDepNames": ["node"],
-      "enabled": false
-    },
-    {
-      "matchManagers": ["npm"],
-      "matchPackageNames": ["@types/node"],
-      "allowedVersions": "16.x"
-    },
-    {
       "matchDepTypes": ["engines", "engine"],
       "matchUpdateTypes": ["major", "pin"],
       "enabled": false
