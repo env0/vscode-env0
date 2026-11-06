@@ -32,11 +32,6 @@
       "groupName": "non-major"
     },
     {
-      "matchManagers": ["npm"],
-      "matchFileNames": ["package.json"],
-      "rangeStrategy": "pin"
-    },
-    {
       "matchDepTypes": ["engines", "engine"],
       "matchUpdateTypes": ["major", "pin"],
       "enabled": false
