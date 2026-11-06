@@ -169,7 +169,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.1.1",
     "expect": "^29.6.2",
-    "glob": "^8.0.3",
+    "glob": "^14.0.0",
     "jest-mock": "^29.6.2",
     "lodash": "^4.17.21",
     "mocha": "^10.0.0",
