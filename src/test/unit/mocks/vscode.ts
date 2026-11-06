@@ -28,9 +28,11 @@ mock("vscode", vscode);
 
 export const mockLoginCredentialsInput = (keyId: string, secret: string) => {
   vscode.window.showInputBox = mocker
-    .fn<any>()
-    .mockResolvedValueOnce(keyId)
-    .mockResolvedValueOnce(secret);
+    .fn<(...args: unknown[]) => Promise<string>>()
+    .mockReturnValueOnce(Promise.resolve(keyId))
+    .mockReturnValueOnce(
+      Promise.resolve(secret)
+    ) as typeof vscode.window.showInputBox;
 };
 
 export const contextMock = {
