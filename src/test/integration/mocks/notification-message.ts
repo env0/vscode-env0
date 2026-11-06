@@ -13,9 +13,14 @@ let showWarningMessageSpy: AsyncSpy;
 let openExternalSpy: AsyncSpy;
 
 export const resetShowMessageSpies = () => {
-  showInformationMessageSpy.mockReset();
-  showErrorMessageSpy.mockReset();
-  showWarningMessageSpy.mockReset();
+  [
+    showInformationMessageSpy,
+    showErrorMessageSpy,
+    showWarningMessageSpy,
+  ].forEach((spy) => {
+    spy.mockReset();
+    spy.mockReturnValue(Promise.resolve(undefined));
+  });
 };
 
 // since we can't get the value of the message from vscode, we need to spy on it
@@ -100,6 +105,7 @@ export const spyOnOpenExternal = () => {
 
 export const resetOpenExternalSpy = () => {
   openExternalSpy.mockReset();
+  openExternalSpy.mockReturnValue(Promise.resolve(true));
 };
 
 export const assertOpenEnvironmentInBrowserWhenMoreInfoClicked = async (
