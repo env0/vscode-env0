@@ -12,7 +12,7 @@ import { registerEnvironmentActions } from "./actions";
 import { onPollingEnvironmentError } from "./errors";
 import { extensionState } from "./extension-state";
 
-let environmentPollingInstance: NodeJS.Timer;
+let environmentPollingInstance: ReturnType<typeof setInterval>;
 let _context: vscode.ExtensionContext;
 let environmentLogsProvider: EnvironmentLogsProvider;
 export let environmentsTree: vscode.TreeView<Environment>;
