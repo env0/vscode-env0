@@ -16,9 +16,15 @@ let showWarningMessageSpy: jestMock.SpyInstance<
 let openExternalSpy: jestMock.SpyInstance<typeof vscode.env.openExternal>;
 
 export const resetShowMessageSpies = () => {
-  showInformationMessageSpy.mockReset();
-  showErrorMessageSpy.mockReset();
-  showWarningMessageSpy.mockReset();
+  [
+    showInformationMessageSpy,
+    showErrorMessageSpy,
+    showWarningMessageSpy,
+  ].forEach((spy) => {
+    spy.mockReset();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    spy.mockResolvedValue(undefined as any);
+  });
 };
 
 // since we can't get the value of the message from vscode, we need to spy on it
@@ -97,6 +103,7 @@ export const spyOnOpenExternal = () => {
 
 export const resetOpenExternalSpy = () => {
   openExternalSpy.mockReset();
+  openExternalSpy.mockResolvedValue(true);
 };
 
 export const assertOpenEnvironmentInBrowserWhenMoreInfoClicked = async (

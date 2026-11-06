@@ -44,7 +44,7 @@ export const loadEnvironments = async (
   try {
     currentBranch = await getCurrentBranchWithRetry();
     extensionState.setCurrentBranch(currentBranch);
-  } catch (e) {
+  } catch {
     extensionState.onFailedToGetBranch();
     return;
   }
