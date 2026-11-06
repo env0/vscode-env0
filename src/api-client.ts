@@ -1,8 +1,11 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, GenericAbortSignal } from "axios";
 import { ENV0_API_URL } from "./common";
 import { EnvironmentModel } from "./get-environments";
 import { DeploymentStepLogsResponse, DeploymentStepResponse } from "./types";
 import { AuthService } from "./auth";
+
+const toAxiosSignal = (abortController?: AbortController) =>
+  abortController?.signal as GenericAbortSignal | undefined;
 
 class ApiClient {
   private readonly instance: AxiosInstance;
@@ -88,7 +91,7 @@ class ApiClient {
   ) {
     const response = await this.instance.get(
       `environments/deployments/${deploymentLogId}`,
-      { signal: abortController?.signal }
+      { signal: toAxiosSignal(abortController) }
     );
     return response.data;
   }
@@ -99,7 +102,7 @@ class ApiClient {
   ) {
     const response = await this.instance.get<DeploymentStepResponse>(
       `/deployments/${deploymentLogId}/steps`,
-      { signal: abortController?.signal }
+      { signal: toAxiosSignal(abortController) }
     );
     return response.data;
   }
@@ -114,7 +117,7 @@ class ApiClient {
       `/deployments/${deploymentLogId}/steps/${stepName}/log?startTime=${
         stepStartTime ?? ""
       }`,
-      { signal: abortController?.signal }
+      { signal: toAxiosSignal(abortController) }
     );
     return response.data;
   }
