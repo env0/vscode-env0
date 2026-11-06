@@ -148,8 +148,8 @@
     "unit:test": "mocha -r ts-node/register 'src/test/unit/**/*.spec.ts'"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.6",
-    "@babel/preset-env": "^7.22.6",
+    "@babel/core": "^8.0.0",
+    "@babel/preset-env": "^8.0.0",
     "@types/async-retry": "^1.4.5",
     "@types/glob": "^7.2.0",
     "@types/lodash": "^4.14.197",
