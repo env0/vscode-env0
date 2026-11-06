@@ -32,9 +32,14 @@
       "groupName": "non-major"
     },
     {
+      "matchManagers": ["github-actions"],
+      "matchDepNames": ["node"],
+      "enabled": false
+    },
+    {
       "matchManagers": ["npm"],
-      "matchFileNames": ["package.json"],
-      "rangeStrategy": "pin"
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "16.x"
     },
     {
       "matchDepTypes": ["engines", "engine"],
