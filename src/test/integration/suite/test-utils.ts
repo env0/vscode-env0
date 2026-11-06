@@ -20,8 +20,8 @@ export const waitFor = <T>(
 export const login = async (auth: Credentials) => {
   const inputMock = jestMock.spyOn(vscode.window, "showInputBox");
   inputMock
-    .mockResolvedValueOnce(auth.keyId)
-    .mockResolvedValueOnce(auth.secret);
+    .mockReturnValueOnce(Promise.resolve(auth.keyId))
+    .mockReturnValueOnce(Promise.resolve(auth.secret));
 
   await vscode.commands.executeCommand("env0.login");
   inputMock.mockRestore();

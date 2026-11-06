@@ -3,17 +3,14 @@ import * as vscode from "vscode";
 import { waitFor } from "../suite/test-utils";
 import expect from "expect";
 
-let showInformationMessageSpy: jestMock.SpyInstance<
-  typeof vscode.window.showInformationMessage
->;
-let showErrorMessageSpy: jestMock.SpyInstance<
-  typeof vscode.window.showErrorMessage
->;
-let showWarningMessageSpy: jestMock.SpyInstance<
-  typeof vscode.window.showWarningMessage
->;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type AsyncSpy = jestMock.MockInstance<(...args: any[]) => Promise<any>>;
 
-let openExternalSpy: jestMock.SpyInstance<typeof vscode.env.openExternal>;
+let showInformationMessageSpy: AsyncSpy;
+let showErrorMessageSpy: AsyncSpy;
+let showWarningMessageSpy: AsyncSpy;
+
+let openExternalSpy: AsyncSpy;
 
 export const resetShowMessageSpies = () => {
   showInformationMessageSpy.mockReset();
@@ -26,9 +23,15 @@ export const spyOnShowMessage = () => {
   showInformationMessageSpy = jestMock.spyOn(
     vscode.window,
     "showInformationMessage"
-  );
-  showErrorMessageSpy = jestMock.spyOn(vscode.window, "showErrorMessage");
-  showWarningMessageSpy = jestMock.spyOn(vscode.window, "showWarningMessage");
+  ) as unknown as AsyncSpy;
+  showErrorMessageSpy = jestMock.spyOn(
+    vscode.window,
+    "showErrorMessage"
+  ) as unknown as AsyncSpy;
+  showWarningMessageSpy = jestMock.spyOn(
+    vscode.window,
+    "showWarningMessage"
+  ) as unknown as AsyncSpy;
 };
 
 export const assertInfoMessageDisplayed = async (message: string) => {
@@ -56,8 +59,7 @@ export const assertWarningMessageDisplayed = async (message: string) => {
  * the clicked button.
  */
 export const simulateInfoMessageMoreInfoButtonClicked = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  showInformationMessageSpy.mockResolvedValue("More info" as any);
+  showInformationMessageSpy.mockReturnValue(Promise.resolve("More info"));
 };
 
 /**
@@ -67,8 +69,7 @@ export const simulateInfoMessageMoreInfoButtonClicked = () => {
  * the clicked button.
  */
 export const simulateErrorMessageMoreInfoButtonClicked = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  showErrorMessageSpy.mockResolvedValue("More info" as any);
+  showErrorMessageSpy.mockReturnValue(Promise.resolve("More info"));
 };
 
 /**
@@ -78,8 +79,7 @@ export const simulateErrorMessageMoreInfoButtonClicked = () => {
  * the clicked button.
  */
 export const simulateWarningMessageMoreInfoButtonClicked = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  showWarningMessageSpy.mockResolvedValue("More info" as any);
+  showWarningMessageSpy.mockReturnValue(Promise.resolve("More info"));
 };
 
 // since in the tests we don't have a real uri, we need to mock it
@@ -91,8 +91,11 @@ const spyOnParseUri = () => {
 
 export const spyOnOpenExternal = () => {
   spyOnParseUri();
-  openExternalSpy = jestMock.spyOn(vscode.env, "openExternal");
-  openExternalSpy.mockResolvedValue(true);
+  openExternalSpy = jestMock.spyOn(
+    vscode.env,
+    "openExternal"
+  ) as unknown as AsyncSpy;
+  openExternalSpy.mockReturnValue(Promise.resolve(true));
 };
 
 export const resetOpenExternalSpy = () => {
