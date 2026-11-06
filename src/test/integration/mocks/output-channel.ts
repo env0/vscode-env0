@@ -19,5 +19,6 @@ export const mockOutputChannel = () => {
 };
 
 export const resetOutputChannelMocks = () => {
-  mock.resetAllMocks();
+  mock.clearAllMocks();
+  logs = [];
 };
