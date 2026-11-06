@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "trailingComma": "es5",
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "dist",
+    "out",
+    ".vscode-test",
+    "package-lock.json",
+    ".github",
+    "CHANGELOG.md",
+    "README.md",
+    ".vscode"
+  ]
+}

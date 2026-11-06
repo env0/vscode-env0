@@ -31,7 +31,7 @@ const environmentMock = getEnvironmentMock(
   }
 );
 const selectedOrg = { name: "my org", id: "org-id" };
-const initMocksAndLogin = async (moreOrgs: typeof selectedOrg[] = []) => {
+const initMocksAndLogin = async (moreOrgs: (typeof selectedOrg)[] = []) => {
   mockGetOrganizations([selectedOrg, ...moreOrgs], auth);
   mockGetEnvironment(selectedOrg.id, [environmentMock], auth);
   mockGitRepoAndBranch("main", "git@github.com:user/repo.git");
