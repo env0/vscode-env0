@@ -54,9 +54,7 @@ export class Environment extends vscode.TreeItem {
   static ignoreRestartLogsOnSelect: Record<string, boolean> = {};
 }
 
-export class Env0EnvironmentsProvider
-  implements vscode.TreeDataProvider<Environment>
-{
+export class Env0EnvironmentsProvider implements vscode.TreeDataProvider<Environment> {
   private environments: EnvironmentModel[] = [];
   private isRefreshing = false;
 
