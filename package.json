@@ -171,7 +171,7 @@
     "oxlint": "^1.92.0",
     "ts-loader": "^9.3.1",
     "ts-node": "^10.9.1",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.0",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },
