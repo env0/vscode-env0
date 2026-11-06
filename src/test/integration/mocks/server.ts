@@ -201,7 +201,7 @@ export const mockDeploymentLogsResponses = async (
   });
 
   const stepNames = Object.keys(steps);
-  mockGetDeploymentStepsApiResponse(stepNames.map((name) => ({ name } as any)));
+  mockGetDeploymentStepsApiResponse(stepNames.map((name) => ({ name }) as any));
 
   for (const [stepName, messages] of Object.entries(steps)) {
     const [firstMessage, ...restMessages] = messages;
@@ -217,7 +217,7 @@ export const mockDeploymentLogsResponses = async (
           nextStartTime,
         },
         {
-          events: restMessages.map((message) => ({ message } as any)),
+          events: restMessages.map((message) => ({ message }) as any),
           hasMoreLogs: false,
         },
       ],
