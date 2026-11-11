@@ -158,7 +158,7 @@
     "@types/mock-require": "^3.0.0",
     "@types/node": "26.x",
     "@types/vscode": "^1.71.0",
-    "@vscode/test-electron": "^2.1.5",
+    "@vscode/test-electron": "^3.0.0",
     "babel-jest": "^30.0.0",
     "expect": "^30.0.0",
     "glob": "^14.0.4",
